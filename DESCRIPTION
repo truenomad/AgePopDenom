@@ -1,0 +1,58 @@
+Package: AgePopDenom
+Type: Package
+Title: Package to model fine-grained age-structured population data
+Version: 0.1.0
+Authors@R: c(
+  person("Mohamed A.", "Yusuf", 
+         role = c("aut", "cre"),
+         email = "moyusuf@who.who",  
+         comment = c(ORCID = "0000-0002-9339-4613",
+         second_email = "mohamedayusuf87@gmail.com")),
+  person("Victor A.", "Alegana", 
+         role = "aut",
+         email = "aleganav@who.int"),
+  person("Chris", "Nnanatu", 
+         role = "aut",
+         email = "cc.nnanatu@soton.ac.uk"))
+Description: Package to automate the modelling of age-structured population data
+  using DHS survey data, worldpop popualtion rasters and urban-rural extents.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Remotes:
+  github::yonghah/esri2sf
+Imports:
+    TMB,
+    dplyr,
+    curl,
+    exactextractr,
+    ggplot2,
+    numDeriv,
+    openxlsx,
+    parabar,
+    pdist,
+    purrr,
+    rdhs,
+    rlang,
+    sf,
+    stringr,
+    tibble,
+    terra,
+    tidyr
+Suggests: 
+    stats,
+    utils,
+    cli,
+    countrycode,
+    crayon,
+    scales,
+    glue,
+    haven,
+    here,
+    matrixStats,
+    rstudioapi,
+    geodata,
+    esri2sf,
+    testthat (>= 3.0.0)
+RoxygenNote: 7.3.2
+Config/testthat/edition: 3

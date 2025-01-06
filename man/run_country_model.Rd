@@ -90,7 +90,7 @@ Default: TRUE.}
 "urban".}
 
 \item{cpp_script_name}{Character. Path to the C++ script for the model.
-Default: "02_scripts/model_optim".}
+Default: "02_scripts/model".}
 
 \item{return_results}{Logical. Whether to return the function outputs or not.
 Default: TRUE.}

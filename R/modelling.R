@@ -254,7 +254,7 @@ fit_spatial_model <- function(data, scale_outcome,
 #' @param covariates A string or vector of strings representing the covariates
 #'   to include in the model (default is "urban").
 #' @param cpp_script_name A string specifying the path to the CPP script used
-#'   for optimization (default is "02_scripts/model_optim").
+#'   for optimization (default is "02_scripts/model").
 #' @param output_dir A string specifying the directory where the model results
 #'   should be saved (default is "03_outputs/3a_model_outputs").
 #' @param ignore_cache A boolean input which is set to determine whether
@@ -270,19 +270,20 @@ fit_spatial_model <- function(data, scale_outcome,
 #'   scale_outcome = "log_scale",
 #'   shape_outcome = "log_shape",
 #'   covariates = "urban",
-#'   cpp_script_name = "02_scripts/model_optim",
+#'   cpp_script_name = "02_scripts/model",
 #'   output_dir = "03_outputs/3a_model_outputs"
 #' )
 #'}
 #' @export
-run_spatial_model <- function(country_code,
-                              age_param_data,
-                              scale_outcome = "log_scale",
-                              shape_outcome = "log_shape",
-                              covariates = "urban",
-                              cpp_script_name = "02_scripts/model_optim",
-                              output_dir = "03_outputs/3a_model_outputs",
-                              ignore_cache = FALSE) {
+run_spatial_model <- function(
+    country_code,
+    age_param_data,
+    scale_outcome = "log_scale",
+    shape_outcome = "log_shape",
+    covariates = "urban",
+    cpp_script_name = here::here("02_scripts", "model"),
+    output_dir = here::here("03_outputs", "3a_model_outputs"),
+    ignore_cache = FALSE) {
 
   # Create lowercase country code
   country_code <- tolower(country_code)
@@ -526,7 +527,8 @@ generate_predictor_data <- function(country_code,
                                     adm2_shape,
                                     cell_size = 5000,
                                     ignore_cache = FALSE,
-                                    output_dir = "03_outputs/3a_model_outputs") {
+                                    output_dir = here::here(
+                                      "03_outputs", "3a_model_outputs")) {
 
   # Create lowercase country code
   country_code <- tolower(country_code)
@@ -896,8 +898,8 @@ generate_gamma_predictions <- function(country_code,
                                        n_sim = 10000,
                                        ignore_cache = FALSE,
                                        save_file = FALSE,
-                                       output_dir =
-                                         "03_outputs/3a_model_outputs") {
+                                       output_dir = here::here(
+                                         "03_outputs", "3a_model_outputs")) {
 
   # Create lowercase country code
   country_code <- tolower(country_code)
@@ -1484,7 +1486,7 @@ generate_age_pyramid_plot <- function(dataset,
 #' @param covariates Character. Covariates for the spatial model. Default:
 #'   "urban".
 #' @param cpp_script_name Character. Path to the C++ script for the model.
-#'   Default: "02_scripts/model_optim".
+#'   Default: "02_scripts/model".
 #' @param return_results Logical. Whether to return the function outputs or not.
 #'   Default: TRUE.
 #'
@@ -1510,14 +1512,16 @@ generate_age_pyramid_plot <- function(dataset,
 run_country_model <- function(
     country_code,
     dhs_data_path =
-      "01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds",
-    shape_path = "01_data/1c_shapefiles/district_shape.gpkg",
-    pop_raster_path =  "01_data/1b_rasters/worldpop_100m",
-    ur_raster_path = "01_data/1b_rasters/urban_extent/afurextent.asc",
-    model_output_path = "03_outputs/3a_model_outputs",
-    plot_output_path = "03_outputs/3b_visualizations",
-    raster_output_path = "03_outputs/3c_raster_outputs",
-    table_output_path = "03_outputs/3c_table_outputs",
+    here::here("01_data", "1a_dhs_data",
+               "processed", "dhs_pr_records_combined.rds"),
+    shape_path = here::here("01_data", "1c_shapefiles", "district_shape.gpkg"),
+    pop_raster_path = here::here("01_data", "1b_rasters", "worldpop_100m"),
+    ur_raster_path = here::here("01_data", "1b_rasters",
+                                "urban_extent", "afurextent.asc"),
+    model_output_path = here::here("03_outputs", "3a_model_outputs"),
+    plot_output_path = here::here("03_outputs", "3b_visualizations"),
+    raster_output_path = here::here("03_outputs", "3c_raster_outputs"),
+    table_output_path = here::here("03_outputs", "3c_table_outputs"),
     cell_size = 5000,
     n_sim = 5000,
     ignore_cache = FALSE,
@@ -1529,7 +1533,7 @@ run_country_model <- function(
     scale_outcome = "log_scale",
     shape_outcome = "log_shape",
     covariates = "urban",
-    cpp_script_name = "02_scripts/model",
+    cpp_script_name = here::here("02_scripts", "model"),
     return_results = FALSE
 ) {
 
@@ -1726,11 +1730,14 @@ run_country_model <- function(
 run_models_with_logging <- function(
     country_codes,
     dhs_data_path =
-      "01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds",
-    shape_path = "01_data/1c_shapefiles/district_shape.gpkg",
-    pop_raster_path =  "01_data/1b_rasters/worldpop_100m",
-    ur_raster_path = "01_data/1b_rasters/urban_extent/afurextent.asc",
-    log_path = "03_outputs/3a_model_outputs/modelling_log.rds",
+      here::here("01_data", "1a_dhs_data", "processed",
+                 "dhs_pr_records_combined.rds"),
+    shape_path = here::here("01_data", "1c_shapefiles", "district_shape.gpkg"),
+    pop_raster_path = here::here("01_data", "1b_rasters", "worldpop_100m"),
+    ur_raster_path = here::here("01_data", "1b_rasters", "urban_extent",
+                                "afurextent.asc"),
+    log_path = here::here("03_outputs", "3a_model_outputs",
+                          "modelling_log.rds"),
     ignore_cache = FALSE) {
 
   log_data <- list()
@@ -1822,8 +1829,9 @@ run_models_with_logging <- function(
 #' #)
 #' @export
 process_final_population_data <- function(
-    input_dir = "03_outputs/3c_table_outputs",
-    output_file = "03_outputs/3d_compiled_results/age_pop_denom_2020.xlsx") {
+    input_dir = here::here("03_outputs", "3c_table_outputs"),
+    output_file = here::here("03_outputs", "3d_compiled_results",
+                             "age_pop_denom_2020.xlsx")) {
 
   # Helper function to process individual files
   process_file <- function(file) {
@@ -1905,8 +1913,9 @@ process_final_population_data <- function(
 #' # )
 #' @export
 extract_age_param <- function(
-    dir_path = "03_outputs/3a_model_outputs",
-    output_file = "03_outputs/3d_compiled_results/model_params.csv") {
+    dir_path = here::here("03_outputs", "3a_model_outputs"),
+    output_file = here::here("03_outputs", "3d_compiled_results",
+                             "model_params.csv")) {
 
   # List all relevant files
   files <- list.files(dir_path, full.names = TRUE)
@@ -1952,6 +1961,3 @@ extract_age_param <- function(
 
   return(params_df)
 }
-
-
-

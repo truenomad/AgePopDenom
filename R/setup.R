@@ -38,18 +38,20 @@
 #'
 #' @export
 create_project_structure <- function(base_path = here::here()) {
+
+  # Define your directories using here::here for each subfolder.
   dirs <- c(
-    "01_data/1a_dhs_data/processed",
-    "01_data/1a_dhs_data/raw",
-    "01_data/1b_rasters/urban_extent",
-    "01_data/1b_rasters/worldpop_100m",
-    "01_data/1c_shapefiles",
-    "02_scripts",
-    "03_outputs/3a_model_outputs",
-    "03_outputs/3b_visualizations",
-    "03_outputs/3c_raster_outputs",
-    "03_outputs/3c_table_outputs",
-    "03_outputs/3d_compiled_results"
+    here::here("01_data", "1a_dhs_data", "processed"),
+    here::here("01_data", "1a_dhs_data", "raw"),
+    here::here("01_data", "1b_rasters", "urban_extent"),
+    here::here("01_data", "1b_rasters", "worldpop_100m"),
+    here::here("01_data", "1c_shapefiles"),
+    here::here("02_scripts"),
+    here::here("03_outputs", "3a_model_outputs"),
+    here::here("03_outputs", "3b_visualizations"),
+    here::here("03_outputs", "3c_raster_outputs"),
+    here::here("03_outputs", "3c_table_outputs"),
+    here::here("03_outputs", "3d_compiled_results")
   )
 
   for (dir in dirs) {
@@ -82,7 +84,7 @@ create_project_structure <- function(base_path = here::here()) {
 #' @return Invisibly returns a vector of downloaded dataset filenames.
 #' @export
 download_dhs_datasets_by_type <- function(country_codes, survey_type, file_type,
-                               file_format, output_dir, clear_cache = TRUE) {
+                                          file_format, output_dir, clear_cache = TRUE) {
   cli::cli_h1("Downloading {file_type} datasets for {survey_type} survey...")
 
   # Retrieve dataset filenames
@@ -130,11 +132,12 @@ download_dhs_datasets_by_type <- function(country_codes, survey_type, file_type,
 #'
 #' @return Invisibly returns a list of downloaded dataset filenames.
 #' @export
-download_dhs_datasets <- function(country_codes,
-                                  cache_path = "01_data/1a_dhs_data/raw",
-                                  output_dir_root = "01_data/1a_dhs_data/raw",
-                                  email, project,
-                                  verbose = TRUE) {
+download_dhs_datasets <- function(
+    country_codes,
+    cache_path = here::here("01_data", "1a_dhs_data", "raw"),
+    output_dir_root = here::here("01_data", "1a_dhs_data", "raw"),
+    email, project,
+    verbose = TRUE) {
 
   # ´get the dhs country codes
   dhs_country_code <- countrycode::codelist |>
@@ -342,9 +345,10 @@ aggregate_and_extract_gamma <- function(data,
 #'
 #' @export
 process_dhs_data <- function(
-    rds_dir = "01_data/1a_dhs_data/raw/pr_records",
-    shp_dir = "01_data/1a_dhs_data/raw/shapefiles",
-    output_path = "01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds") {
+    rds_dir = here::here("01_data", "1a_dhs_data", "raw", "pr_records"),
+    shp_dir = here::here("01_data", "1a_dhs_data", "raw", "shapefiles"),
+    output_path = here::here("01_data", "1a_dhs_data",
+                             "processed", "dhs_pr_records_combined.rds")) {
 
   # Create age-population raster
   cli::cli_h1("Processing DHS data and joining with shapefile")
@@ -398,7 +402,8 @@ process_dhs_data <- function(
 
     # Find the matching shapefile
     shp_file <- shp_files[grepl(
-      paste0("/shapefiles/", country_code, ".*L\\.rds$"), shp_files)]
+      paste0(here::here("shapefiles"), here::here(), country_code, ".*L\\.rds$"),
+      shp_files)]
 
     if (length(shp_file) == 1) {
       shp_data <- readRDS(shp_file) |>
@@ -545,44 +550,55 @@ process_dhs_data <- function(
 #' @export
 download_pop_rasters <- function(
     country_codes,
-    dest_files = "01_data/1b_rasters/worldpop_100m",
+    dest_files = here::here("01_data", "1b_rasters", "worldpop_100m"),
     quiet = FALSE) {
 
   dest_files <- here::here(
-    paste0(
-      dest_files, "/",
-      tolower(country_codes), "_ppp_2020_constrained.tif")
+    dest_files,
+    paste0(tolower(country_codes), "_ppp_2020_constrained.tif")
   )
 
   if (length(country_codes) != length(dest_files)) {
     stop("country_codes and dest_files must have same length")
   }
 
-  base_url <- paste0("https://data.worldpop.org/GIS/Population/",
-                     "Global_2000_2020_Constrained/2020/BSGM/")
-  base_url_maxar <- paste0("https://data.worldpop.org/GIS/Population/",
-                           "Global_2000_2020_Constrained/2020/maxar_v1/")
+  base_url <- paste0(
+    "https://data.worldpop.org/GIS/Population/",
+    "Global_2000_2020_Constrained/2020/BSGM/"
+  )
+  base_url_maxar <- paste0(
+    "https://data.worldpop.org/GIS/Population/",
+    "Global_2000_2020_Constrained/2020/maxar_v1/"
+  )
 
   check_url <- function(url) {
     h <- curl::new_handle(nobody = TRUE, timeout = 600)
     res <- tryCatch(
       curl::curl_fetch_memory(url, handle = h),
-      error = function(e) NULL)
+      error = function(e) NULL
+    )
     !is.null(res) && res$status_code == 200
   }
 
   out_files <- mapply(function(cc, df) {
     if (file.exists(df)) {
-      if (!quiet) cli::cli_alert_info(
-        "Raster file already exists: {crayon::blue(basename(df))}")
+      if (!quiet) {
+        cli::cli_alert_info(
+          "Raster file already exists: {crayon::blue(basename(df))}"
+        )
+      }
       return(df)
     }
 
     cc_lower <- tolower(cc)
-    url_bsgm <- paste0(base_url, cc, "/",
-                       cc_lower, "_ppp_2020_constrained.tif")
-    url_maxar <- paste0(base_url_maxar, cc, "/",
-                        cc_lower, "_ppp_2020_constrained.tif")
+    url_bsgm <- here::here(
+      base_url, cc, cc_lower,
+      "_ppp_2020_constrained.tif"
+    )
+    url_maxar <- here::here(
+      base_url_maxar, cc, cc_lower,
+      "_ppp_2020_constrained.tif"
+    )
 
     final_url <- NA_character_
     if (check_url(url_bsgm)) {
@@ -592,20 +608,27 @@ download_pop_rasters <- function(
     }
 
     if (!is.na(final_url)) {
-      curl::curl_download(url = final_url, destfile = df, quiet = quiet,
-                          handle = curl::new_handle(timeout = 600))
+      curl::curl_download(
+        url = final_url, destfile = df, quiet = quiet,
+        handle = curl::new_handle(timeout = 600)
+      )
       df
     } else {
-      if (!quiet)
+      if (!quiet) {
         cli::cli_alert_warning(
-          glue::glue("No file found for {crayon::blue(toupper(cc))}. ",
-                     "Please download from the WorldPop site."))
+          glue::glue(
+            "No file found for {crayon::blue(toupper(cc))}. ",
+            "Please download from the WorldPop site."
+          )
+        )
+      }
       NA_character_
     }
   }, country_codes, dest_files, USE.NAMES = FALSE)
 
   cli::cli_alert_success(
-    "Population raster file successfully downloaded to: {.file {dest_files}}")
+    "Population raster file successfully downloaded to: {.file {dest_files}}"
+  )
 
   invisible(out_files)
 }
@@ -632,8 +655,10 @@ download_pop_rasters <- function(
 #' # print(raster_path)
 #'
 #' @export
-extract_afurextent <- function(dest_dir = "01_data/1b_rasters/urban_extent",
-                               overwrite = FALSE) {
+extract_afurextent <- function(
+    dest_dir = here::here("01_data", "1b_rasters", "urban_extent"),
+    overwrite = FALSE) {
+
   # Ensure the destination directory exists
   if (!dir.exists(dest_dir)) {
     cli::cli_abort(
@@ -702,7 +727,7 @@ extract_afurextent <- function(dest_dir = "01_data/1b_rasters/urban_extent",
 #' @export
 download_shapefile <- function(
     country_codes,
-    dest_file = "01_data/1c_shapefiles/district_shape.gpkg") {
+    dest_file = here::here("01_data", "1c_shapefiles", "district_shape.gpkg")) {
 
   # Initialize existing codes if the file exists
   if (file.exists(dest_file)) {
@@ -737,10 +762,10 @@ download_shapefile <- function(
   )
 
   cli::cli_alert_info(
-   glue::glue(
-     "Downloading missing WHO ADM2 data for: ",
-     "{paste(country_codes, collapse=', ')}")
-   )
+    glue::glue(
+      "Downloading missing WHO ADM2 data for: ",
+      "{paste(country_codes, collapse=', ')}")
+  )
 
   # Download data from the ArcGIS API
   new_sf <- esri2sf::esri2sf(

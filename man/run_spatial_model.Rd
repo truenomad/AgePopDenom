@@ -10,7 +10,7 @@ run_spatial_model(
   scale_outcome = "log_scale",
   shape_outcome = "log_shape",
   covariates = "urban",
-  cpp_script_name = "02_scripts/model_optim",
+  cpp_script_name = "02_scripts/model",
   output_dir = "03_outputs/3a_model_outputs",
   ignore_cache = FALSE
 )
@@ -30,7 +30,7 @@ parameter (default is "log_shape").}
 to include in the model (default is "urban").}
 
 \item{cpp_script_name}{A string specifying the path to the CPP script used
-for optimization (default is "02_scripts/model_optim").}
+for optimization (default is "02_scripts/model").}
 
 \item{output_dir}{A string specifying the directory where the model results
 should be saved (default is "03_outputs/3a_model_outputs").}
@@ -54,7 +54,7 @@ result <- run_spatial_model(
   scale_outcome = "log_scale",
   shape_outcome = "log_shape",
   covariates = "urban",
-  cpp_script_name = "02_scripts/model_optim",
+  cpp_script_name = "02_scripts/model",
   output_dir = "03_outputs/3a_model_outputs"
 )
 }

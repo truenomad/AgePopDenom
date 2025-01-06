@@ -6,14 +6,14 @@
 \usage{
 download_pop_rasters(
   country_codes,
-  dest_files = "01_data/1b_rasters/worldpop_100m",
+  dest_dir = here::here("01_data", "1b_rasters", "worldpop_100m"),
   quiet = FALSE
 )
 }
 \arguments{
 \item{country_codes}{A character vector of ISO3 country codes.}
 
-\item{dest_files}{A character vector of file paths for saving rasters.
+\item{dest_dir}{A character vector of file paths for saving rasters.
 If NULL, defaults to "<cc>_ppp_2020_constrained2.tif" in the project dir.}
 
 \item{quiet}{Logical; if TRUE, suppress status messages.}
@@ -24,7 +24,7 @@ Invisibly returns a vector of downloaded file paths
 }
 \description{
 This function attempts to download population rasters from WorldPop for the
-specified country codes. If `dest_files` is not provided, file paths will be
+specified country codes. If `dest_dir` is not provided, file paths will be
 generated based on the given country codes and saved into the current
 project directory (using `here::here()`). It first checks if a local file
 already exists, and if so, it will skip downloading.

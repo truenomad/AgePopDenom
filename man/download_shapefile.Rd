@@ -6,7 +6,7 @@
 \usage{
 download_shapefile(
   country_codes,
-  dest_file = "01_data/1c_shapefiles/district_shape.gpkg"
+  dest_file = here::here("01_data", "1c_shapefiles", "district_shape.gpkg")
 )
 }
 \arguments{

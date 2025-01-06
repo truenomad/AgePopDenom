@@ -11,7 +11,8 @@ globalVariables(
     "value", "verbose", "web_x", "web_y", "write.csv", "year_of_survey",
     "COUNTRY", "GID_0", "NAME_1", "NAME_2", "lq_mean_prop_age", "mean_prop_age",
     "pop.x", "uq_mean_prop_age", "dev.off", "png", "country_code",
-    "ur_raster_web", "pop.y"
+    "ur_raster_web", "pop.y", "population",
+    "limslow", "limsup"
   ))
 
 

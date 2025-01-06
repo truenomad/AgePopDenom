@@ -5,7 +5,7 @@
 \title{Extract Urban/Rural Extent Raster}
 \usage{
 extract_afurextent(
-  dest_dir = "01_data/1b_rasters/urban_extent",
+  dest_dir = here::here("01_data", "1b_rasters", "urban_extent"),
   overwrite = FALSE
 )
 }

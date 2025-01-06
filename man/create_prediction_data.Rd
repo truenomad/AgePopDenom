@@ -2,30 +2,61 @@
 % Please edit documentation in R/modelling.R
 \name{create_prediction_data}
 \alias{create_prediction_data}
-\title{Create Prediction Data}
+\title{Generate or Load Cached Predictors Data}
 \usage{
 create_prediction_data(
+  country_code,
   country_shape,
   pop_raster,
   ur_raster,
   adm2_shape,
-  cell_size = 5000
+  cell_size = 5000,
+  ignore_cache = FALSE,
+  output_dir = here::here("03_outputs", "3a_model_outputs")
 )
 }
 \arguments{
-\item{country_shape}{sf object containing country boundary shapefile}
+\item{country_code}{A string representing the country code (e.g., "KEN").}
 
-\item{pop_raster}{terra raster object containing population density data}
+\item{country_shape}{An `sf` object representing the country's administrative
+boundaries.}
 
-\item{ur_raster}{terra raster object containing urban/rural classification}
+\item{pop_raster}{A `terra` raster object representing the population raster.}
 
-\item{adm2_shape}{sf object containing admin level 2 boundaries}
+\item{ur_raster}{A `terra` raster object representing the urban extent
+raster.}
 
-\item{cell_size}{numeric grid cell size in meters (default 5000)}
+\item{adm2_shape}{An `sf` object representing the administrative level 2
+boundaries.}
+
+\item{cell_size}{An integer specifying the cell size for the prediction grid
+in meters (default is 5000).}
+
+\item{ignore_cache}{A boolean input which is set to determine whether
+to ignore the existing cache and write over it. Default is set to FALSE.}
+
+\item{output_dir}{A string specifying the directory where the predictors data
+file should be saved (default is "03_outputs/3a_model_outputs").}
 }
 \value{
-data.frame containing processed grid data with predictors
+A data object (`predictor_data`) containing the generated predictors.
 }
 \description{
-Create Prediction Data
+This function creates predictors data based on spatial inputs or loads cached
+predictors data if the file already exists. It saves the generated data to a
+specified directory for reuse and provides progress updates.
+}
+\examples{
+\dontrun{
+predictors <- create_prediction_data(
+  country_code = "KEN",
+  country_shape = country_sf,
+  pop_raster = pop_raster,
+  ur_raster = urban_raster,
+  adm2_shape = adm2_sf,
+  cell_size = 5000,
+  output_dir = "03_outputs/3a_model_outputs"
+)
+}
+
 }

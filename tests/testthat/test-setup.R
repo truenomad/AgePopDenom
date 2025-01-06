@@ -41,7 +41,7 @@ testthat::test_that(
         scale_outcome = "log_scale",
         shape_outcome = "log_shape",
         covariates = "urban",
-        cpp_script_name = here::here(tf, "02_scripts/model"),
+        cpp_script_name = here::here(tf, "02_scripts", "model"),
         output_dir = file.path(tf, "03_outputs", "3a_model_outputs"),
         ignore_cache = TRUE
       )

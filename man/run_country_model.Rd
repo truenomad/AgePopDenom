@@ -6,26 +6,26 @@
 \usage{
 run_country_model(
   country_code,
-  dhs_data_path = "01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds",
-  shape_path = "01_data/1c_shapefiles/district_shape.gpkg",
-  pop_raster_path = "01_data/1b_rasters/worldpop_100m",
-  ur_raster_path = "01_data/1b_rasters/urban_extent/afurextent.asc",
-  model_output_path = "03_outputs/3a_model_outputs",
-  plot_output_path = "03_outputs/3b_visualizations",
-  raster_output_path = "03_outputs/3c_raster_outputs",
-  table_output_path = "03_outputs/3c_table_outputs",
+  dhs_data_path = here::here("01_data", "1a_dhs_data", "processed",
+    "dhs_pr_records_combined.rds"),
+  shape_path = here::here("01_data", "1c_shapefiles", "district_shape.gpkg"),
+  pop_raster_path = here::here("01_data", "1b_rasters", "worldpop_100m"),
+  ur_raster_path = here::here("01_data", "1b_rasters", "urban_extent", "afurextent.asc"),
+  model_output_path = here::here("03_outputs", "3a_model_outputs"),
+  plot_output_path = here::here("03_outputs", "3b_visualizations"),
+  raster_output_path = here::here("03_outputs", "3c_raster_outputs"),
+  table_output_path = here::here("03_outputs", "3c_table_outputs"),
+  compiled_output_path = here::here("03_outputs", "3d_compiled_results"),
   cell_size = 5000,
   n_sim = 5000,
   ignore_cache = FALSE,
-  age_range_table = c(0, 100),
-  interval_table = 5,
-  age_range_raster = c(0, 4),
-  interval_raster = 1,
+  age_range_table = c(0, 99),
+  interval_table = 1,
   return_prop = TRUE,
   scale_outcome = "log_scale",
   shape_outcome = "log_shape",
   covariates = "urban",
-  cpp_script_name = "02_scripts/model",
+  cpp_script_name = here::here("02_scripts", "model"),
   return_results = FALSE
 )
 }
@@ -36,10 +36,10 @@ Tanzania).}
 \item{dhs_data_path}{Character. Path to DHS data. Default:
 "01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds".}
 
-\item{shape_path}{Character. Path to DHS data. Default:
+\item{shape_path}{Character. Path to shapefile data. Default:
 "01_data/1c_shapefiles/district_shape.gpkg".}
 
-\item{pop_raster_path}{Character. Path to DHS data. Default:
+\item{pop_raster_path}{Character. Path to population raster data. Default:
 "01_data/1b_rasters/worldpop_100m".}
 
 \item{ur_raster_path}{Character. Path to urban-rural extent data. Default:
@@ -57,11 +57,14 @@ Default: "03_outputs/3b_visualizations".}
 \item{table_output_path}{Character. Path to save table outputs. Default:
 "03_outputs/3c_table_outputs".}
 
+\item{compiled_output_path}{Character. Path to save compiled results. Default:
+"03_outputs/3d_compiled_results".}
+
 \item{cell_size}{Numeric. Cell size (meters) for predictor generation.
 Default: 5000.}
 
 \item{n_sim}{Numeric. Number of simulations for gamma predictions.
-Default: 10000.}
+Default: 5000.}
 
 \item{ignore_cache}{Logical. Whether to ignore cached data. Default: FALSE.}
 
@@ -69,12 +72,6 @@ Default: 10000.}
 Default: c(0, 100).}
 
 \item{interval_table}{Numeric. Age interval for table generation.
-Default: 5.}
-
-\item{age_range_raster}{Numeric vector. Age range for raster generation.
-Default: c(0, 50).}
-
-\item{interval_raster}{Numeric. Age interval for raster generation.
 Default: 5.}
 
 \item{return_prop}{Logical. Whether to return proportion in raster output.
@@ -93,16 +90,17 @@ Default: TRUE.}
 Default: "02_scripts/model".}
 
 \item{return_results}{Logical. Whether to return the function outputs or not.
-Default: TRUE.}
+Default: FALSE.}
 }
 \value{
-A list containing the following components:
+If return_results is TRUE, a list containing the following components:
   \item{spat_model_param}{Fitted spatial model parameters.}
   \item{predictor_data}{Predictor dataset used for modeling.}
   \item{gamma_prediction}{Generated gamma predictions.}
   \item{pred_list}{Processed gamma prediction results.}
-  \item{final_data}{Age-population table data.}
-  \item{age_pop_raster}{Generated gridded age-population raster.}
+  \item{final_age_pop_table}{Age-population table data.}
+  \item{final_pop}{Compiled population data for all countries.}
+  \item{all_mod_params}{Compiled model parameters for all countries.}
 }
 \description{
 This function runs the entire spatial modeling workflow for a given country
@@ -116,8 +114,6 @@ modular and can be reused for different countries with minimal adjustments.
 
 # Access specific components from the results
 # spat_model_param <- results$spat_model_param
-# age_pop_raster <- results$age_pop_raster
+# final_pop <- results$final_pop
 
-# Visualize the raster
-# terra::plot(age_pop_raster)
 }

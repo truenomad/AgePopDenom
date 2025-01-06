@@ -14,7 +14,7 @@ generate_gamma_predictions(
   n_sim = 10000,
   ignore_cache = FALSE,
   save_file = FALSE,
-  output_dir = "03_outputs/3a_model_outputs"
+  output_dir = here::here("03_outputs", "3a_model_outputs")
 )
 }
 \arguments{

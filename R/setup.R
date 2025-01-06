@@ -39,23 +39,24 @@
 #' @export
 create_project_structure <- function(base_path = here::here()) {
 
-  # Define your directories using here::here for each subfolder.
-  dirs <- c(
-    here::here("01_data", "1a_dhs_data", "processed"),
-    here::here("01_data", "1a_dhs_data", "raw"),
-    here::here("01_data", "1b_rasters", "urban_extent"),
-    here::here("01_data", "1b_rasters", "worldpop_100m"),
-    here::here("01_data", "1c_shapefiles"),
-    here::here("02_scripts"),
-    here::here("03_outputs", "3a_model_outputs"),
-    here::here("03_outputs", "3b_visualizations"),
-    here::here("03_outputs", "3c_raster_outputs"),
-    here::here("03_outputs", "3c_table_outputs"),
-    here::here("03_outputs", "3d_compiled_results")
+  # Define relative directories
+  relative_dirs <- c(
+    "01_data/1a_dhs_data/processed",
+    "01_data/1a_dhs_data/raw",
+    "01_data/1b_rasters/urban_extent",
+    "01_data/1b_rasters/worldpop_100m",
+    "01_data/1c_shapefiles",
+    "02_scripts",
+    "03_outputs/3a_model_outputs",
+    "03_outputs/3b_visualizations",
+    "03_outputs/3c_table_outputs",
+    "03_outputs/3d_compiled_results"
   )
 
-  for (dir in dirs) {
-    dir_path <- file.path(base_path, dir)
+  # Construct full paths and create directories
+  for (relative_dir in relative_dirs) {
+    dir_path <- normalizePath(file.path(base_path, relative_dir),
+                              winslash = "/", mustWork = FALSE)
     if (!dir.exists(dir_path)) {
       dir.create(dir_path, recursive = TRUE)
       cli::cli_alert_info("Created: {dir_path}")
@@ -63,6 +64,7 @@ create_project_structure <- function(base_path = here::here()) {
       cli::cli_alert_warning("Exists: {dir_path}")
     }
   }
+
   cli::cli_alert_success("Folder structure created successfully.")
 }
 
@@ -84,7 +86,8 @@ create_project_structure <- function(base_path = here::here()) {
 #' @return Invisibly returns a vector of downloaded dataset filenames.
 #' @export
 download_dhs_datasets_by_type <- function(country_codes, survey_type, file_type,
-                                          file_format, output_dir, clear_cache = TRUE) {
+                                          file_format, output_dir,
+                                          clear_cache = TRUE) {
   cli::cli_h1("Downloading {file_type} datasets for {survey_type} survey...")
 
   # Retrieve dataset filenames
@@ -402,8 +405,8 @@ process_dhs_data <- function(
 
     # Find the matching shapefile
     shp_file <- shp_files[grepl(
-      paste0(here::here("shapefiles"), here::here(), country_code, ".*L\\.rds$"),
-      shp_files)]
+      paste0(country_code, ".*L\\.rds$"), shp_files
+    )]
 
     if (length(shp_file) == 1) {
       shp_data <- readRDS(shp_file) |>
@@ -527,7 +530,7 @@ process_dhs_data <- function(
 #' Download population rasters for given country codes.
 #'
 #' This function attempts to download population rasters from WorldPop for the
-#' specified country codes. If `dest_files` is not provided, file paths will be
+#' specified country codes. If `dest_dir` is not provided, file paths will be
 #' generated based on the given country codes and saved into the current
 #' project directory (using `here::here()`). It first checks if a local file
 #' already exists, and if so, it will skip downloading.
@@ -538,7 +541,7 @@ process_dhs_data <- function(
 #' WorldPop website directly.
 #'
 #' @param country_codes A character vector of ISO3 country codes.
-#' @param dest_files A character vector of file paths for saving rasters.
+#' @param dest_dir A character vector of file paths for saving rasters.
 #'   If NULL, defaults to "<cc>_ppp_2020_constrained2.tif" in the project dir.
 #' @param quiet Logical; if TRUE, suppress status messages.
 #'
@@ -550,19 +553,27 @@ process_dhs_data <- function(
 #' @export
 download_pop_rasters <- function(
     country_codes,
-    dest_files = here::here("01_data", "1b_rasters", "worldpop_100m"),
+    dest_dir = here::here("01_data", "1b_rasters", "worldpop_100m"),
     quiet = FALSE) {
 
-  dest_files <- here::here(
-    dest_files,
+  # Ensure destination directory exists
+  if (!dir.exists(dest_dir)) {
+    dir.create(dest_dir, recursive = TRUE)
+  }
+
+  # Construct destination file paths
+  dest_files <- file.path(
+    dest_dir,
     paste0(tolower(country_codes), "_ppp_2020_constrained.tif")
   )
 
+  # Check if lengths match
   if (length(country_codes) != length(dest_files)) {
-    stop("country_codes and dest_files must have same length")
+    stop("country_codes and dest_files must have the same length.")
   }
 
-  base_url <- paste0(
+  # Define base URLs
+  base_url_bsgm <- paste0(
     "https://data.worldpop.org/GIS/Population/",
     "Global_2000_2020_Constrained/2020/BSGM/"
   )
@@ -571,6 +582,7 @@ download_pop_rasters <- function(
     "Global_2000_2020_Constrained/2020/maxar_v1/"
   )
 
+  # Check if a URL exists
   check_url <- function(url) {
     h <- curl::new_handle(nobody = TRUE, timeout = 600)
     res <- tryCatch(
@@ -580,31 +592,31 @@ download_pop_rasters <- function(
     !is.null(res) && res$status_code == 200
   }
 
+  # Process each country code
   out_files <- mapply(function(cc, df) {
     if (file.exists(df)) {
       if (!quiet) {
         cli::cli_alert_info(
-          "Raster file already exists: {crayon::blue(basename(df))}"
-        )
+          "Raster file already exists: {crayon::blue(basename(df))}")
       }
       return(df)
     }
 
+    cc_upper <- toupper(cc)
     cc_lower <- tolower(cc)
-    url_bsgm <- here::here(
-      base_url, cc, cc_lower,
-      "_ppp_2020_constrained.tif"
-    )
-    url_maxar <- here::here(
-      base_url_maxar, cc, cc_lower,
-      "_ppp_2020_constrained.tif"
-    )
 
-    final_url <- NA_character_
-    if (check_url(url_bsgm)) {
-      final_url <- url_bsgm
+    url_bsgm <- paste0(base_url_bsgm, cc_upper, "/",
+                       cc_lower, "_ppp_2020_constrained.tif")
+    url_maxar <- paste0(base_url_maxar, cc_upper, "/",
+                        cc_lower, "_ppp_2020_constrained.tif")
+
+    # Determine the final URL to use
+    final_url <- if (check_url(url_bsgm)) {
+      url_bsgm
     } else if (check_url(url_maxar)) {
-      final_url <- url_maxar
+      url_maxar
+    } else {
+      NA_character_
     }
 
     if (!is.na(final_url)) {
@@ -612,24 +624,21 @@ download_pop_rasters <- function(
         url = final_url, destfile = df, quiet = quiet,
         handle = curl::new_handle(timeout = 600)
       )
-      df
+      return(df)
     } else {
       if (!quiet) {
         cli::cli_alert_warning(
           glue::glue(
-            "No file found for {crayon::blue(toupper(cc))}. ",
-            "Please download from the WorldPop site."
+            "No file found for {crayon::blue(cc_upper)}. ",
+            "Please check the WorldPop site for availability."
           )
         )
       }
-      NA_character_
+      return(NA_character_)
     }
   }, country_codes, dest_files, USE.NAMES = FALSE)
 
-  cli::cli_alert_success(
-    "Population raster file successfully downloaded to: {.file {dest_files}}"
-  )
-
+  cli::cli_alert_success("Population raster files successfully processed.")
   invisible(out_files)
 }
 
@@ -784,7 +793,9 @@ download_shapefile <- function(
     )
   # Append new data to the file or create a new one
   if (file.exists(dest_file)) {
-    sf::st_write(new_sf, dest_file, append = TRUE, quiet = TRUE)
+
+    sf::st_write(sf::st_make_valid(new_sf),
+                 dest_file, append = TRUE, quiet = TRUE)
     cli::cli_alert_success(
       glue::glue(
         "Appended missing country codes to existing ",
@@ -792,7 +803,8 @@ download_shapefile <- function(
       )
     )
   } else {
-    sf::st_write(new_sf, dest_file, append = FALSE, quiet = TRUE)
+    sf::st_write(sf::st_make_valid(new_sf),
+                 dest_file, append = FALSE, quiet = TRUE)
     cli::cli_alert_success(
       glue::glue(
         "Created new shapefile with country codes: ",
@@ -873,12 +885,6 @@ AgePopDenom::extract_afurextent()
 
 # Run the model
 AgePopDenom::run_models_with_logging(cntry_codes)
-
-# Compile all the model param data for
-AgePopDenom::extract_age_param()
-
-# Now get final age-structured population data
-AgePopDenom::process_final_population_data()
 '
 
   # Define the C++ script content

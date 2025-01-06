@@ -6,11 +6,27 @@
 \usage{
 run_models_with_logging(
   country_codes,
-  dhs_data_path = "01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds",
-  shape_path = "01_data/1c_shapefiles/district_shape.gpkg",
-  pop_raster_path = "01_data/1b_rasters/worldpop_100m",
-  ur_raster_path = "01_data/1b_rasters/urban_extent/afurextent.asc",
-  log_path = "03_outputs/3a_model_outputs/modelling_log.rds",
+  dhs_data_path = here::here("01_data", "1a_dhs_data", "processed",
+    "dhs_pr_records_combined.rds"),
+  shape_path = here::here("01_data", "1c_shapefiles", "district_shape.gpkg"),
+  pop_raster_path = here::here("01_data", "1b_rasters", "worldpop_100m"),
+  ur_raster_path = here::here("01_data", "1b_rasters", "urban_extent", "afurextent.asc"),
+  model_output_path = here::here("03_outputs", "3a_model_outputs"),
+  plot_output_path = here::here("03_outputs", "3b_visualizations"),
+  raster_output_path = here::here("03_outputs", "3c_raster_outputs"),
+  table_output_path = here::here("03_outputs", "3c_table_outputs"),
+  compiled_output_path = here::here("03_outputs", "3d_compiled_results"),
+  log_path = here::here("03_outputs", "3a_model_outputs", "modelling_log.rds"),
+  cell_size = 5000,
+  n_sim = 5000,
+  age_range_table = c(0, 99),
+  interval_table = 1,
+  return_prop = TRUE,
+  scale_outcome = "log_scale",
+  shape_outcome = "log_shape",
+  covariates = "urban",
+  cpp_script_name = here::here("02_scripts", "model"),
+  return_results = FALSE,
   ignore_cache = FALSE
 )
 }
@@ -20,22 +36,68 @@ run_models_with_logging(
 \item{dhs_data_path}{Character. Path to DHS data. Default:
 "01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds".}
 
-\item{shape_path}{Character. Path to DHS data. Default:
+\item{shape_path}{Character. Path to shapefile data. Default:
 "01_data/1c_shapefiles/district_shape.gpkg".}
 
-\item{pop_raster_path}{Character. Path to DHS data. Default:
+\item{pop_raster_path}{Character. Path to population raster data. Default:
 "01_data/1b_rasters/worldpop_100m".}
 
 \item{ur_raster_path}{Character. Path to urban-rural extent data. Default:
 "01_data/1b_rasters/urban_extent/afurextent.asc".}
 
-\item{log_path}{A character string specifying the file path for the log file.}
+\item{model_output_path}{Character. Path to save model outputs. Default:
+"03_outputs/3a_model_outputs".}
 
-\item{ignore_cache}{A boolean input which is set to determine whether
-to ignore the existing cache and write over it. Default is set to FALSE.}
+\item{plot_output_path}{Character. Path to save visualization outputs.
+Default: "03_outputs/3b_visualizations".}
+
+\item{raster_output_path}{Character. Path to save raster outputs. Default:
+"03_outputs/3c_raster_outputs".}
+
+\item{table_output_path}{Character. Path to save table outputs. Default:
+"03_outputs/3c_table_outputs".}
+
+\item{compiled_output_path}{Character. Path to save compiled results. Default:
+"03_outputs/3d_compiled_results".}
+
+\item{log_path}{Character. Path to save log file. Default:
+"03_outputs/3a_model_outputs/modelling_log.rds".}
+
+\item{cell_size}{Numeric. Cell size in meters for predictor generation.
+Default: 5000.}
+
+\item{n_sim}{Numeric. Number of simulations for gamma predictions.
+Default: 5000.}
+
+\item{age_range_table}{Numeric vector. Age range for table generation.
+Default: c(0, 100).}
+
+\item{interval_table}{Numeric. Age interval for table generation.
+Default: 5.}
+
+\item{return_prop}{Logical. Whether to return proportions in raster output.
+Default: TRUE.}
+
+\item{scale_outcome}{Character. Outcome variable for scaling.
+Default: "log_scale".}
+
+\item{shape_outcome}{Character. Outcome variable for shaping.
+Default: "log_shape".}
+
+\item{covariates}{Character. Covariates for spatial model.
+Default: "urban".}
+
+\item{cpp_script_name}{Character. Path to C++ model script.
+Default: "02_scripts/model".}
+
+\item{return_results}{Logical. Whether to return function outputs.
+Default: FALSE.}
+
+\item{ignore_cache}{Logical. Whether to ignore cached data.
+Default: FALSE.}
 }
 \value{
-None. The function updates the log file at `log_path`.
+None. Updates log file at log_path with model run results.
 }
 \description{
 Runs a model for each country in the provided list, logs the status,

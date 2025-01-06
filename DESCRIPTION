@@ -29,7 +29,6 @@ Imports:
     ggplot2,
     numDeriv,
     openxlsx,
-    parabar,
     pdist,
     purrr,
     rdhs,
@@ -53,6 +52,9 @@ Suggests:
     rstudioapi,
     geodata,
     esri2sf,
+    pbmcapply, 
+    future,
+    future.apply,
     testthat (>= 3.0.0)
 RoxygenNote: 7.3.2
 Config/testthat/edition: 3

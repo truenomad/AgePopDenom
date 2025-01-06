@@ -15,7 +15,7 @@ To install the package from GitHub, use the following commands:
 install.packages("devtools")
 
 # Install AgePopDenom from GitHub
-devtools::install_github("trunomad/AgePopDenom")
+devtools::install_github("truenomad/AgePopDenom")
 ```
 
 ------------------------------------------------------------------------
@@ -32,7 +32,7 @@ AgePopDenom::init()
 
 This function: - Creates a standardized directory structure for managing data, scripts, and outputs systematically. - Generates two essential scripts in the `02_scripts/` directory:
 
-1.   **`full_pipeline.R`**: Contains the complete analytical workflow.
+1.  **`full_pipeline.R`**: Contains the complete analytical workflow.
 
 2.  **`model.cpp`**: Provides the C++ code used to optimize the geostatistical models.
 
@@ -124,13 +124,7 @@ AgePopDenom::extract_afurextent()
 # Run models and get outputs ---------------------------------------------------
 
 # Run the model
-AgePopDenom::run_models_with_logging(cntry_codes)
-
-# Compile all the model param data for
-AgePopDenom::extract_age_param()
-
-# Now get final age-structured population data
-AgePopDenom::process_final_population_data()
+AgePopDenom::run_models_with_logging(cntry_codes) 
 ```
 
 ------------------------------------------------------------------------

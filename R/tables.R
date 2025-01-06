@@ -204,6 +204,25 @@ generate_age_pop_table <- function(predictor_data,
                        by = c("country", "region", "district")
       )
 
+    # order the columns
+    numeric_order <- order(
+      sapply(
+        colnames(final_df),
+        function(x) {
+          # Extract the first numeric component of the column name
+          as.numeric(stringr::str_extract(x, "^\\d+"))
+        },
+        USE.NAMES = FALSE
+      ),
+      na.last = TRUE
+    )
+
+    # Reorder the columns based on the numeric order
+    final_df <- final_df[, numeric_order]
+    final_df <-  final_df |>
+      dplyr::select(country, region, district, popsize,
+                    dplyr::everything())
+
     cli::cli_process_done()
   }
 
@@ -240,6 +259,7 @@ process_final_population_data <- function(
       "03_outputs", "3d_compiled_results",
       "age_pop_denom_2020.xlsx"
     )) {
+
   # Helper function to process individual files
   process_file <- function(file) {
     readRDS(file) |>
@@ -256,8 +276,12 @@ process_final_population_data <- function(
   }
 
   # Read and process all files
-  files <- list.files(input_dir, full.names = TRUE)
+  files <- list.files(input_dir,
+                      pattern = "\\.rds$",
+                      full.names = TRUE
+  )
   pop_df <- lapply(files, process_file) |> dplyr::bind_rows()
+
   # Reshape the data to long format
   pop_long <- pop_df |>
     tidyr::pivot_longer(
@@ -268,8 +292,9 @@ process_final_population_data <- function(
 
   # Summarize data at different levels
   summarize_by <- function(data, group_vars) {
-    data |>
-      dplyr::group_by(dplyr::across(all_of(group_vars))) |>
+    summarized_df <- data |>
+      dplyr::group_by(dplyr::across(
+        dplyr::all_of(group_vars))) |>
       dplyr::summarise(
         population = sum(population, na.rm = TRUE) |> round(),
         .groups = "drop"
@@ -279,6 +304,26 @@ process_final_population_data <- function(
         names_from = age_group,
         values_from = population
       )
+
+    # order the columns
+    numeric_order <- order(
+      sapply(
+        colnames(summarized_df),
+        function(x) {
+          # Extract the first numeric component of the column name
+          as.numeric(stringr::str_extract(x, "^\\d+"))
+        },
+        USE.NAMES = FALSE
+      ),
+      na.last = TRUE
+    )
+
+    # Reorder the columns based on the numeric order
+    summarized_df <- summarized_df[, numeric_order]
+    summarized_df <-  summarized_df |>
+      dplyr::select(dplyr::all_of(setdiff(group_vars, "age_group")),
+                    dplyr::everything())
+
   }
 
   res_adm0 <- summarize_by(pop_long, c("country", "age_group"))
@@ -300,6 +345,10 @@ process_final_population_data <- function(
   add_sheet(wb, "Region", res_adm1)
   add_sheet(wb, "District", res_adm2)
 
+  # Ensure the output directory exists
+  dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
+
+  # Save workbook with explicit output file path
   openxlsx::saveWorkbook(wb, output_file, overwrite = TRUE)
 
   cli::cli_alert_success(

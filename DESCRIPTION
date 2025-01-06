@@ -1,6 +1,6 @@
 Package: AgePopDenom
 Type: Package
-Title: Package to model fine-grained age-structured population data
+Title: Package to model fine-scale age-structured population data
 Version: 0.1.0
 Authors@R: c(
   person("Mohamed A.", "Yusuf", 
@@ -21,6 +21,7 @@ Encoding: UTF-8
 LazyData: true
 Remotes:
   github::yonghah/esri2sf
+SystemRequirements: C++17, TMB
 Imports:
     TMB,
     dplyr,

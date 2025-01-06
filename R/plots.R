@@ -186,7 +186,6 @@ generate_age_pyramid_plot <- function(dataset,
       country, region, district,
       dplyr::contains("mean")
     ) |>
-    dplyr::select(-dplyr::contains("plus")) |>
     dplyr::rename_with(
       ~ stringr::str_replace_all(
         ., c("_mean" = "", "plus" = "+y")
@@ -234,8 +233,10 @@ generate_age_pyramid_plot <- function(dataset,
   # x_break_labels <-   sub("-.*", "", x_break_labels)
 
   plot <- age_struct |>
+    dplyr::select(-dplyr::contains("+y")) |>
     ggplot2::ggplot(
-      ggplot2::aes(x = age_group, y = tot_pop, fill = as.numeric(age_group))
+      ggplot2::aes(x = age_group, y = tot_pop,
+                   fill = as.numeric(age_group))
     ) +
     ggplot2::geom_bar(
       stat = "identity",

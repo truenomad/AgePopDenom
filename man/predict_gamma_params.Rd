@@ -5,7 +5,7 @@
 \title{Predict Gamma Distribution Parameters for Spatial Grid}
 \usage{
 predict_gamma_params(
-  age_param,
+  age_param_data,
   predictor_data,
   model_params,
   shapefile,
@@ -14,7 +14,7 @@ predict_gamma_params(
 )
 }
 \arguments{
-\item{age_param}{A data frame containing:
+\item{age_param_data}{A data frame containing:
 \itemize{
   \item web_x, web_y: Spatial coordinates
   \item urban: Urban/rural indicator

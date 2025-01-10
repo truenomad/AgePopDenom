@@ -16,6 +16,16 @@ install.packages("devtools")
 
 # Install AgePopDenom from GitHub
 devtools::install_github("truenomad/AgePopDenom")
+
+ # Additional packages installed
+Run `install_suggests()` to install additional dependencies
+```
+
+Once the package is installed, it is suggested that users should install additional dependencies by running the following code:
+
+``` r
+# To additional packages 
+AgePopDenom::install_suggests()
 ```
 
 ------------------------------------------------------------------------
@@ -124,7 +134,7 @@ AgePopDenom::extract_afurextent()
 # Run models and get outputs ---------------------------------------------------
 
 # Run the model
-AgePopDenom::run_models_with_logging(cntry_codes) 
+AgePopDenom::run_full_workflow(cntry_codes) 
 ```
 
 ------------------------------------------------------------------------

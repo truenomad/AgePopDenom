@@ -6,7 +6,7 @@
 \usage{
 generate_gamma_predictions(
   country_code,
-  age_param,
+  age_param_data,
   model_params,
   predictor_data,
   shapefile,
@@ -20,7 +20,7 @@ generate_gamma_predictions(
 \arguments{
 \item{country_code}{A string representing the country code (e.g., "KEN").}
 
-\item{age_param}{A data frame or tibble containing the age parameter data.}
+\item{age_param_data}{A data frame or tibble containing the age parameter data.}
 
 \item{model_params}{The fitted spatial model object (e.g.,
 `spat_model_param`).}
@@ -58,9 +58,9 @@ provides progress updates.
 
 # gamma_results <- generate_gamma_predictions(
 #  country_code = "KEN",
-#  age_param = age_param_data,
+#  age_param_data = age_param_data,
 #  model_params = spat_model_param,
-#  predictor_data = predictors_data,
+#  predictor_data = predictor_data,
 #  shapefile = country_sf,
 #  cell_size = 5000,
 #  n_sim = 10000,

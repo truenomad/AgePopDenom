@@ -894,7 +894,7 @@ AgePopDenom::extract_afurextent()
 # Run models and get outputs ---------------------------------------------------
 
 # Run the model
-AgePopDenom::run_models_with_logging(cntry_codes)
+AgePopDenom::run_full_workflow(cntry_codes)
 '
 
   # Define the C++ script content

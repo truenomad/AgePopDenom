@@ -1,5 +1,5 @@
 testthat::test_that(
-  "`run_spatial_model()` returns valid results for Comoros", {
+  "`fit_spatial_model()` returns valid results for Comoros", {
 
     suppressWarnings({
 
@@ -35,9 +35,9 @@ testthat::test_that(
         open_r_script = FALSE
       )
 
-      results <- AgePopDenom::run_spatial_model(
+      results <- AgePopDenom::fit_spatial_model(
         country_code = "COM",
-        age_param_data = df_comoros,
+        data = df_comoros,
         scale_outcome = "log_scale",
         shape_outcome = "log_shape",
         covariates = "urban",

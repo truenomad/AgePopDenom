@@ -20,10 +20,12 @@
 #' }
 #' @export
 install_suggests <- function() {
-  suggested_pkgs <- c("cli", "countrycode", "crayon", "scales", "glue",
-                      "haven", "here", "matrixStats", "rstudioapi", "geodata",
-                      "pbmcapply", "remotes", "future", "future.apply",
-                      "testthat")
+  suggested_pkgs <- c(
+    "cli", "countrycode", "crayon", "scales", "glue",
+    "haven", "here", "matrixStats", "rstudioapi", "geodata",
+    "pbmcapply", "remotes", "future", "future.apply",
+    "testthat" ,"rdhs", "openxlsx2", "purrr", "rlang", "pak"
+  )
 
   # Install CRAN packages
   cran_pkgs <- suggested_pkgs[!vapply(suggested_pkgs, requireNamespace,

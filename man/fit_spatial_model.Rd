@@ -6,18 +6,24 @@
 \usage{
 fit_spatial_model(
   data,
+  country_code = NULL,
   scale_outcome,
   shape_outcome,
   covariates,
   cpp_script_name,
   verbose = TRUE,
   control_params = list(trace = 2),
-  manual_params = NULL
+  manual_params = NULL,
+  output_dir = NULL,
+  ignore_cache = FALSE
 )
 }
 \arguments{
 \item{data}{A data frame containing the response variables, covariates, and
 spatial coordinates (web_x, web_y)}
+
+\item{country_code}{Optional country code to save/load cached model. Default
+NULL runs model without caching.}
 
 \item{scale_outcome}{Character string specifying the column name for the
 scale parameter response variable}
@@ -38,8 +44,8 @@ TRUE}
 Default: list(trace = 2)}
 
 \item{manual_params}{Optional list of manual parameter values. If NULL
-(default), initial parameters are estimated from linear regression. The list
-should contain:
+(default), initial parameters are estimated from linear regression. The
+list should contain:
 \itemize{
   \item beta1: Vector of coefficients for scale model
   \item beta2: Vector of coefficients for shape model
@@ -48,6 +54,11 @@ should contain:
   \item log_phi: Log of phi (default log(100))
   \item log_tau2_1: Log of tau squared (default log(1.0))
 }}
+
+\item{output_dir}{Directory to save cached models. Only used if country_code
+is provided.}
+
+\item{ignore_cache}{Whether to ignore existing cache. Default FALSE.}
 }
 \value{
 An object of class 'nlminb' containing:
@@ -64,7 +75,7 @@ An object of class 'nlminb' containing:
 Fits a spatial model for age parameters using Template Model Builder (TMB)
 and C++. The model incorporates spatial correlation through distance matrices
 and handles both scale and shape parameters simultaneously. Progress is
-tracked with clear status updates.
+tracked with clear status updates. Can optionally load from cache.
 }
 \details{
 The function performs the following steps with progress tracking:
@@ -82,6 +93,7 @@ properly structured for TMB.
 }
 \examples{
 \dontrun{
+# Basic usage
 fit <- fit_spatial_model(
   data = my_data,
   scale_outcome = "scale_param",
@@ -89,6 +101,7 @@ fit <- fit_spatial_model(
   covariates = c("elevation", "temperature"),
   cpp_script_name = "spatial_model"
 )
+
 }
 
 }

@@ -76,7 +76,8 @@ run_parallel_other <- function(n_sim, scale_pred, shape_pred, runnum, n_cores) {
 #'    predictions
 #' @param age_range Numeric vector of length 2 specifying min and max ages,
 #'    default c(0,99)
-#' @param interval Numeric interval size between age groups in years, default 1
+#' @param age_interval Numeric interval size between age groups in years,
+#'    default 1
 #' @param country_code Character ISO3 country code
 #' @param ignore_cache Logical whether to ignore cached results, default FALSE
 #' @param output_dir Character path to output directory
@@ -92,7 +93,7 @@ generate_age_pop_table <- function(predictor_data,
                                    scale_pred,
                                    shape_pred,
                                    age_range = c(0, 99),
-                                   interval = 1,
+                                   age_interval = 1,
                                    country_code,
                                    ignore_cache = FALSE,
                                    output_dir,
@@ -102,7 +103,7 @@ generate_age_pop_table <- function(predictor_data,
     output_dir,
     glue::glue(
       "{country_code}_age_tables_pop_",
-      "{age_range[1]}_{age_range[2]}plus_yrs_by_{interval}yrs.rds"
+      "{age_range[1]}_{age_range[2]}plus_yrs_by_{age_interval}yrs.rds"
     )
   )
 
@@ -130,8 +131,9 @@ generate_age_pop_table <- function(predictor_data,
   pop_df <- base_df
 
   # Define age intervals including the final open-ended interval
-  limslow <- seq(age_range[1], age_range[2], interval)
-  limsup <- c(seq(age_range[1] + interval, age_range[2] + interval, interval), Inf)
+  limslow <- seq(age_range[1], age_range[2], age_interval)
+  limsup <- c(seq(age_range[1] + age_interval,
+                  age_range[2] + age_interval, age_interval), Inf)
 
   n_sim <- ncol(shape_pred)
 
@@ -189,7 +191,7 @@ generate_age_pop_table <- function(predictor_data,
     # Create age class data frames for both proportions and counts
     age_prop_class <- base::data.frame(
       country = predictor_data$country,
-      region = predictor_data$region, 
+      region = predictor_data$region,
       district = predictor_data$district,
       prop = mean_prop_age,
       lower_quantile = quantiles_mean_prop_age[, 1],
@@ -207,7 +209,7 @@ generate_age_pop_table <- function(predictor_data,
     age_pop_class <- base::data.frame(
       country = predictor_data$country,
       region = predictor_data$region,
-      district = predictor_data$district, 
+      district = predictor_data$district,
       pop = mean_prop_age * predictor_data$pop,
       lower_quantile = quantiles_mean_prop_age[, 1] * predictor_data$pop,
       upper_quantile = quantiles_mean_prop_age[, 2] * predictor_data$pop
@@ -316,20 +318,20 @@ process_final_population_data <- function(
       "03_outputs", "3d_compiled_results",
       "age_pop_denom_compiled.xlsx"
     )) {
-  
+
   # Ensure output directory exists
   dir.create(dirname(excel_output_file), recursive = TRUE, showWarnings = FALSE)
-  
+
   # Read and process all files
   files <- list.files(input_dir, pattern = "\\.rds$", full.names = TRUE)
-  
+
   # Read RDS files and extract both pop_df and prop_df
   data_list <- lapply(files, readRDS)
-  
+
   # Combine all pop_df and prop_df separately
   pop_df <- lapply(data_list, function(x) x$pop_df) |> dplyr::bind_rows()
   prop_df <- lapply(data_list, function(x) x$prop_df) |> dplyr::bind_rows()
-  
+
   # Reshape data to long format
   reshape_long <- function(df) {
     df |>
@@ -339,10 +341,10 @@ process_final_population_data <- function(
         values_to = "value"
       )
   }
-  
+
   pop_long <- reshape_long(pop_df)
   prop_long <- reshape_long(prop_df)
-  
+
   # Summarize data at different levels
   summarize_by <- function(data, group_vars) {
     summarized_df <- data |>
@@ -351,9 +353,9 @@ process_final_population_data <- function(
         value = if (
           any(
             grepl("prop", age_group, ignore.case = TRUE))) {
-          mean(value, na.rm = TRUE) |> round(4) 
+          mean(value, na.rm = TRUE) |> round(4)
         } else {
-          sum(value, na.rm = TRUE) |> round(0)  
+          sum(value, na.rm = TRUE) |> round(0)
         },
         .groups = "drop"
       ) |>
@@ -361,7 +363,7 @@ process_final_population_data <- function(
         names_from = age_group,
         values_from = value
       )
-    
+
     # Order columns
     numeric_order <- order(
       sapply(
@@ -373,27 +375,27 @@ process_final_population_data <- function(
       ),
       na.last = TRUE
     )
-    
+
     summarized_df[, numeric_order] |>
       dplyr::select(dplyr::all_of(setdiff(group_vars, "age_group")),
                     dplyr::everything())
   }
-  
+
   # Generate summaries for both population and proportions
   pop_adm0 <- summarize_by(pop_long, c("country", "age_group"))
   pop_adm1 <- summarize_by(pop_long, c("country", "region", "age_group"))
   pop_adm2 <- summarize_by(pop_long, c("country", "region", "district", "age_group"))
-  
+
   prop_adm0 <- summarize_by(prop_long, c("country", "age_group"))
   prop_adm1 <- summarize_by(prop_long, c("country", "region", "age_group"))
   prop_adm2 <- summarize_by(prop_long, c("country", "region", "district", "age_group"))
-  
-  
+
+
   # Prepare named list of data frames
   openxlsx2::write_xlsx(
     x = list(
       "Country (count)" = pop_adm0,
-      "Region (count)" = pop_adm1, 
+      "Region (count)" = pop_adm1,
       "District (count)" = pop_adm2,
       "Country (proportion)" = prop_adm0,
       "Region (proportion)" = prop_adm1,
@@ -401,7 +403,7 @@ process_final_population_data <- function(
     ),
     file = excel_output_file
   )
-  
+
   cli::cli_alert_success(
     "Final age-structured population and proportions saved to {excel_output_file}."
   )

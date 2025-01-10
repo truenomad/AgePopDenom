@@ -9,7 +9,7 @@ generate_age_pop_table(
   scale_pred,
   shape_pred,
   age_range = c(0, 99),
-  interval = 1,
+  age_interval = 1,
   country_code,
   ignore_cache = FALSE,
   output_dir,
@@ -29,7 +29,8 @@ predictions}
 \item{age_range}{Numeric vector of length 2 specifying min and max ages,
 default c(0,99)}
 
-\item{interval}{Numeric interval size between age groups in years, default 1}
+\item{age_interval}{Numeric interval size between age groups in years,
+default 1}
 
 \item{country_code}{Character ISO3 country code}
 

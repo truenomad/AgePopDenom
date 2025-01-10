@@ -4,8 +4,10 @@
 #' Fits a spatial model for age parameters using Template Model Builder (TMB)
 #' and C++. The model incorporates spatial correlation through distance matrices
 #' and handles both scale and shape parameters simultaneously. Progress is
-#' tracked with clear status updates.
+#' tracked with clear status updates. Can optionally load from cache.
 #'
+#' @param country_code Optional country code to save/load cached model. Default
+#'   NULL runs model without caching.
 #' @param data A data frame containing the response variables, covariates, and
 #'   spatial coordinates (web_x, web_y)
 #' @param scale_outcome Character string specifying the column name for the
@@ -21,8 +23,8 @@
 #' @param control_params List of control parameters passed to nlminb optimizer.
 #'   Default: list(trace = 2)
 #' @param manual_params Optional list of manual parameter values. If NULL
-#'   (default), initial parameters are estimated from linear regression. The list
-#'   should contain:
+#'   (default), initial parameters are estimated from linear regression. The
+#'   list should contain:
 #'   \itemize{
 #'     \item beta1: Vector of coefficients for scale model
 #'     \item beta2: Vector of coefficients for shape model
@@ -31,6 +33,9 @@
 #'     \item log_phi: Log of phi (default log(100))
 #'     \item log_tau2_1: Log of tau squared (default log(1.0))
 #'   }
+#' @param output_dir Directory to save cached models. Only used if country_code
+#'   is provided.
+#' @param ignore_cache Whether to ignore existing cache. Default FALSE.
 #'
 #' @return An object of class 'nlminb' containing:
 #'   \itemize{
@@ -58,6 +63,7 @@
 #'
 #' @examples
 #' \dontrun{
+#' # Basic usage
 #' fit <- fit_spatial_model(
 #'   data = my_data,
 #'   scale_outcome = "scale_param",
@@ -65,15 +71,49 @@
 #'   covariates = c("elevation", "temperature"),
 #'   cpp_script_name = "spatial_model"
 #' )
+#'
+# # With caching
+# fit <- fit_spatial_model(
+#   data = my_data,
+#   scale_outcome = "log_scale",
+#   shape_outcome = "log_shape",
+#   covariates = "urban",
+#   cpp_script_name = "02_scripts/model",
+#   country_code = "KEN",
+#   output_dir = "03_outputs/3a_model_outputs"
+# )
 #' }
 #'
 #' @export
-fit_spatial_model <- function(data, scale_outcome,
+fit_spatial_model <- function(data,
+                              country_code = NULL,
+                              scale_outcome,
                               shape_outcome, covariates,
                               cpp_script_name,
                               verbose = TRUE,
                               control_params = list(trace = 2),
-                              manual_params = NULL) {
+                              manual_params = NULL,
+                              output_dir = NULL,
+                              ignore_cache = FALSE) {
+
+  # Check for caching
+  if (!is.null(country_code)) {
+    country_code <- tolower(country_code)
+    model_param_path <- file.path(
+      output_dir,
+      glue::glue("{country_code}_age_param_spatial.rds")
+    )
+
+    if (!ignore_cache && file.exists(model_param_path)) {
+      cli::cli_process_start(
+        msg = "Importing cached model results...",
+        msg_done = "Successfully imported cached model results."
+      )
+      spat_model_param <- readRDS(model_param_path)
+      cli::cli_process_done()
+      return(spat_model_param)
+    }
+  }
 
   # Section 1: Initial Linear Models -------------------------------------------
 
@@ -236,105 +276,21 @@ fit_spatial_model <- function(data, scale_outcome,
   opt$scale_formula <- scale_formula
   opt$shape_formula <- shape_formula
 
-  return(opt)
-}
-
-#' Run or Load a Cached Spatial Model
-#'
-#' This function fits a spatial model for age parameters or loads a cached
-#' result if the model output file already exists. It saves the fitted model
-#' to a specified directory and provides progress updates.
-#'
-#' @param country_code A string representing the country code (e.g., "KEN").
-#' @param age_param_data A data frame or tibble containing the data for the model.
-#' @param scale_outcome A string specifying the outcome variable for the scale
-#'   parameter (default is "log_scale").
-#' @param shape_outcome A string specifying the outcome variable for the shape
-#'   parameter (default is "log_shape").
-#' @param covariates A string or vector of strings representing the covariates
-#'   to include in the model (default is "urban").
-#' @param cpp_script_name A string specifying the path to the CPP script used
-#'   for optimization (default is "02_scripts/model").
-#' @param output_dir A string specifying the directory where the model results
-#'   should be saved (default is "03_outputs/3a_model_outputs").
-#' @param ignore_cache A boolean input which is set to determine whether
-#'  to ignore the existing cache and write over it. Default is set to FALSE.
-#'
-#' @return The fitted spatial model object (`spat_model_param`).
-#'
-#' @examples
-#' \dontrun{
-#' result <- run_spatial_model(
-#'   country_code = "KEN",
-#'   age_param_data = my_data,
-#'   scale_outcome = "log_scale",
-#'   shape_outcome = "log_shape",
-#'   covariates = "urban",
-#'   cpp_script_name = "02_scripts/model",
-#'   output_dir = "03_outputs/3a_model_outputs"
-#' )
-#'}
-#' @export
-run_spatial_model <- function(
-    country_code,
-    age_param_data,
-    scale_outcome = "log_scale",
-    shape_outcome = "log_shape",
-    covariates = "urban",
-    cpp_script_name = here::here("02_scripts", "model"),
-    output_dir = here::here("03_outputs", "3a_model_outputs"),
-    ignore_cache = FALSE) {
-
-  # Create lowercase country code
-  country_code <- tolower(country_code)
-
-  # Construct the model parameter path
-  model_param_path <- file.path(
-    output_dir,
-    glue::glue("{country_code}_age_param_spatial_urban.rds")
-  )
-
-
-  # Check if the model file exists
-  if (ignore_cache || !file.exists(model_param_path)) {
-
-    # Fit the spatial model
-    spat_model_param <- fit_spatial_model(
-      data = age_param_data,
-      scale_outcome = scale_outcome,
-      shape_outcome = shape_outcome,
-      covariates = covariates,
-      cpp_script_name = cpp_script_name
-    )
-
-    # Save the model output
-    saveRDS(spat_model_param, file = model_param_path)
-
+  # Save if country code provided
+  if (!is.null(country_code)) {
+    saveRDS(opt, file = model_param_path)
     cli::cli_alert_success("Model fitted and saved at {model_param_path}")
-  } else {
-
-    # Notify user about cached results
-    cli::cli_process_start(
-      msg = "Importing cached model results...",
-      msg_done = "Successfully imported cached model results."
-    )
-
-    # Read cached model results
-    spat_model_param <- readRDS(model_param_path)
-
-    cli::cli_process_done()
   }
 
-  return(spat_model_param)
+  return(opt)
 }
-
 
 #' Predict Gamma Distribution Parameters for Spatial Grid
 #'
 #' This function predicts the scale and shape parameters of a Gamma distribution
 #' across a spatial grid using a bivariate spatial model.
 #'
-#' @param age_param A data frame containing:
+#' @param age_param_data A data frame containing:
 #'   \itemize{
 #'     \item web_x, web_y: Spatial coordinates
 #'     \item urban: Urban/rural indicator
@@ -358,7 +314,7 @@ run_spatial_model <- function(
 #'   }
 #'
 #' @export
-predict_gamma_params <- function(age_param, predictor_data,
+predict_gamma_params <- function(age_param_data, predictor_data,
                                  model_params, shapefile,
                                  cell_size = 5000, n_sim = 5000) {
 
@@ -387,9 +343,9 @@ predict_gamma_params <- function(age_param, predictor_data,
   tau <- exp(model_params$par['log_tau1'])
   beta1 <- extract_betas(model_params)$beta1
   beta2 <- extract_betas(model_params)$beta2
-  y <- c(age_param$log_scale, age_param$log_shape)
+  y <- c(age_param_data$log_scale, age_param_data$log_shape)
   d1 <- d2 <- model.matrix(model_params$scale_formula,
-                           data = age_param)
+                           data = age_param_data)
   mu1 <- as.numeric(d1 %*% beta1)
   mu2 <- as.numeric(d2 %*% beta2)
   mu <- c(mu1, mu2)
@@ -401,7 +357,7 @@ predict_gamma_params <- function(age_param, predictor_data,
   mu1_pred <- as.numeric(d_pred %*% beta1)
   mu2_pred <- as.numeric(d_pred %*% beta2)
 
-  u_dist <- as.matrix(dist(age_param[, c("web_x", "web_y")]))
+  u_dist <- as.matrix(dist(age_param_data[, c("web_x", "web_y")]))
   n_x <- nrow(u_dist)
 
   cli::cli_process_done()
@@ -413,7 +369,7 @@ predict_gamma_params <- function(age_param, predictor_data,
     msg_done = "Computed pairwise distances for prediction grid.")
 
   u_pred <- pdist::pdist(country_grid,
-                         age_param[,c("web_x","web_y")]) |>
+                         age_param_data[,c("web_x","web_y")]) |>
     as.matrix()
 
   n_pred <- nrow(country_grid)
@@ -434,7 +390,7 @@ predict_gamma_params <- function(age_param, predictor_data,
     u_dist = u_dist,
     n_x = n_x,
     tau2_1 = tau,
-    age_param_data = age_param
+    age_param_data = age_param_data
   ) |>
     chol() |>
     chol2inv()
@@ -523,7 +479,6 @@ compute_cov <- function(gamma, sigma2, phi, u_dist,
 
   m
 }
-
 
 #' Log-Likelihood Function for Spatial Model
 #'
@@ -685,7 +640,7 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
   # Construct the predictors data path
   predictor_data_path <- file.path(
     output_dir,
-    glue::glue("{country_code}_predictor_data_urban.rds")
+    glue::glue("{country_code}_predictor_data.rds")
   )
 
   # Check if predictors data file exists and return if cached
@@ -696,9 +651,9 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
       msg_done = "Successfully imported cached predictors data."
     )
     # Load cached predictors data
-    predictors_data <- readRDS(predictor_data_path)
+    predictor_data <- readRDS(predictor_data_path)
     cli::cli_process_done()
-    return(predictors_data)
+    return(predictor_data)
   }
 
   # Process shapefiles and grids -----------------------------------------------
@@ -808,7 +763,7 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
     )
 
   # Assign unmatched points to the nearest boundary
-  predictors_data <- predictors |>
+  predictor_data <- predictors |>
     dplyr::filter(is.na(country)) |>
     dplyr::select(web_x, web_y, pop, urban) |>
     sf::st_join(
@@ -826,13 +781,13 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
   cli::cli_process_done()
 
   # Save predictors data
-  saveRDS(predictors_data, file = predictor_data_path)
+  saveRDS(predictor_data, file = predictor_data_path)
 
   cli::cli_alert_success(
     "Predictors data created and saved at {predictor_data_path}"
   )
 
-  return(predictors_data)
+  return(predictor_data)
 }
 
 #' Generate or Load Cached Gamma Predictions
@@ -843,7 +798,7 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
 #' provides progress updates.
 #'
 #' @param country_code A string representing the country code (e.g., "KEN").
-#' @param age_param A data frame or tibble containing the age parameter data.
+#' @param age_param_data A data frame or tibble containing the age parameter data.
 #' @param model_params The fitted spatial model object (e.g.,
 #'    `spat_model_param`).
 #' @param predictor_data A data object containing the predictors data.
@@ -866,9 +821,9 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
 #'
 #' # gamma_results <- generate_gamma_predictions(
 #' #  country_code = "KEN",
-#' #  age_param = age_param_data,
+#' #  age_param_data = age_param_data,
 #' #  model_params = spat_model_param,
-#' #  predictor_data = predictors_data,
+#' #  predictor_data = predictor_data,
 #' #  shapefile = country_sf,
 #' #  cell_size = 5000,
 #' #  n_sim = 10000,
@@ -877,7 +832,7 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
 #'
 #' @export
 generate_gamma_predictions <- function(country_code,
-                                       age_param,
+                                       age_param_data,
                                        model_params,
                                        predictor_data,
                                        shapefile,
@@ -894,7 +849,7 @@ generate_gamma_predictions <- function(country_code,
   # Construct the gamma prediction path
   gamma_prediction_path <- file.path(
     output_dir,
-    glue::glue("{country_code}_gamma_prediction_urban.rds")
+    glue::glue("{country_code}_gamma_prediction.rds")
   )
 
   # Check if prediction file exists
@@ -902,7 +857,7 @@ generate_gamma_predictions <- function(country_code,
 
     # Generate gamma parameter predictions
     gamma_prediction <- predict_gamma_params(
-      age_param = age_param,
+      age_param_data = age_param_data,
       model_params = model_params,
       predictor_data = predictor_data,
       shapefile = shapefile,
@@ -973,86 +928,95 @@ process_gamma_predictions <- function(gamma_prediction) {
     shape_hat = shape_hat
   ))
 }
-
-#' Run Country-Specific Spatial Modeling Workflow
+#' Run Country-Specific Spatial Modeling Workflow with Logging
 #'
+#' @description
 #' This function runs the entire spatial modeling workflow for a given country
-#' code. It processes Survey data, fits a spatial model, generates predictions,
-#' creates population tables, and produces raster outputs. The function is
-#' modular and can be reused for different countries with minimal adjustments.
+#' code and logs the results. It processes Survey data, fits a spatial model,
+#' generates predictions, creates population tables, and produces raster
+#' outputs. The function is modular and can be reused for different countries
+#' with minimal adjustments.
 #'
-#' @param country_code Character. The ISO3 country code (e.g., "TZA" for
-#'    Tanzania).
-#' @param survey_data_path Character. Path to Survey data. Default:
-#'     "01_data/1a_survey_data/processed".
-#' @param survey_data_suffix Character. Suffix for Survey data files. Default:
-#'     "dhs_pr_records_combined.rds".
-#' @param shape_path Character. Path to shapefile data. Default:
-#'     "01_data/1c_shapefiles".
-#' @param shape_suffix Character. Suffix for shapefile data. Default:
-#'     "district_shape.gpkg".
-#' @param pop_raster_path Character. Path to population raster data. Default:
-#'     "01_data/1b_rasters/pop_raster".
-#' @param pop_raster_suffix Character. Suffix for population raster files. Default:
-#'   "_ppp_2020_constrained.tif".
-#' @param ur_raster_path Character. Path to urban-rural extent data. Default:
-#'     "01_data/1b_rasters/urban_extent/afurextent.asc".
-#' @param ur_raster_suffix Character. Suffix for urban-rural raster. Default:
-#'    "afurextent.asc".
-#' @param model_output_path Character. Path to save model outputs. Default:
-#'    "03_outputs/3a_model_outputs".
-#' @param plot_output_path Character. Path to save visualization outputs.
-#'    Default: "03_outputs/3b_visualizations".
-#' @param raster_output_path Character. Path to save raster outputs. Default:
-#'    "03_outputs/3c_raster_outputs".
-#' @param table_output_path Character. Path to save table outputs. Default:
-#'    "03_outputs/3c_table_outputs".
-#' @param compiled_output_path Character. Path to save compiled results. Default:
-#'    "03_outputs/3d_compiled_results".
-#' @param excel_output_file A character string specifying the output Excel file path.
-#'   Default is "03_outputs/3d_compiled_results/age_pop_denom_2020.xlsx" in the
-#'   project directory.
-#' @param cell_size Numeric. Cell size (meters) for predictor generation.
-#'    Default: 5000.
-#' @param n_sim Numeric. Number of simulations for gamma predictions.
-#'    Default: 5000.
-#' @param ignore_cache Logical. Whether to ignore cached data. Default: FALSE.
-#' @param age_range_table Numeric vector. Age range for table generation.
-#'   Default: c(0, 99).
-#' @param interval_table Numeric. Age interval for table generation.
-#'   Default: 1.
-#' @param return_prop Logical. Whether to return proportion in raster output.
-#'   Default: TRUE.
-#' @param scale_outcome Character. Outcome variable for scaling. Default:
-#'   "log_scale".
-#' @param shape_outcome Character. Outcome variable for shaping. Default:
-#'   "log_shape".
-#' @param covariates Character. Covariates for the spatial model. Default:
-#'   "urban".
-#' @param cpp_script_name Character. Path to the C++ script for the model.
-#'   Default: "02_scripts/model".
-#' @param return_results Logical. Whether to return the function outputs or not.
-#'   Default: FALSE.
+#' @param country_code Character. The ISO3 country code (e.g., "TZA").
+#' @param survey_data_path Character. Path to Survey data.
+#'   Default: "01_data/1a_survey_data/processed".
+#' @param survey_data_suffix Character. Suffix for Survey data files.
+#'   Default: "dhs_pr_records_combined.rds".
+#' @param shape_path Character. Path to shapefile data.
+#'   Default: "01_data/1c_shapefiles".
+#' @param shape_suffix Character. Suffix for shapefile data.
+#'   Default: "district_shape.gpkg".
+#' @param pop_raster_path Character. Path to population raster data.
+#'   Default: "01_data/1b_rasters/pop_raster".
+#' @param pop_raster_suffix Character. Suffix for population raster files.
+#'   Default: "_ppp_2020_constrained.tif".
+#' @param ur_raster_path Character. Path to urban-rural extent data.
+#'   Default: "01_data/1b_rasters/urban_extent".
+#' @param ur_raster_suffix Character. Suffix for urban-rural raster.
+#'   Default: "afurextent.asc".
+#' @param output_paths List of output paths:
+#'   \itemize{
+#'     \item model: Path for model outputs.
+#'          Default: "03_outputs/3a_model_outputs"
+#'     \item plot: Path for plots.
+#'          Default: "03_outputs/3b_visualizations"
+#'     \item raster: Path for rasters.
+#'          Default: "03_outputs/3c_raster_outputs"
+#'     \item table: Path for tables.
+#'          Default: "03_outputs/3c_table_outputs"
+#'     \item compiled: Path for compiled results.
+#'          Default: "03_outputs/3d_compiled_results"
+#'     \item excel: Path for Excel outputs.
+#'          Default:
+#'           "03_outputs/3d_compiled_results/age_pop_denom_compiled.xlsx"
+#'     \item log: Path for logs.
+#'          Default: "03_outputs/3a_model_outputs/modelling_log.rds"
+#'   }
+#' @param model_params List of model parameters:
+#'   \itemize{
+#'     \item cell_size: Cell size in meters. Default: 5000
+#'     \item n_sim: Number of simulations. Default: 5000
+#'     \item ignore_cache: Whether to ignore cache. Default: FALSE
+#'     \item age_range: Age range vector. Default: c(0, 99)
+#'     \item age_interval: Age interval. Default: 1
+#'     \item return_prop: Return proportions. Default: TRUE
+#'     \item scale_outcome: Scale outcome variable. Default: "log_scale"
+#'     \item shape_outcome: Shape outcome variable. Default: "log_shape"
+#'     \item covariates: Model covariates. Default: "urban"
+#'     \item cpp_script: C++ script path. Default: "02_scripts/model"
+#'   }
+#' @param return_results Logical. Whether to return results. Default: FALSE.
+#' @param ... Additional arguments passed to subfunctions.
 #'
-#' @return If return_results is TRUE, a list containing the following components:
-#'   \item{spat_model_param}{Fitted spatial model parameters.}
-#'   \item{predictor_data}{Predictor dataset used for modeling.}
-#'   \item{gamma_prediction}{Generated gamma predictions.}
-#'   \item{pred_list}{Processed gamma prediction results.}
-#'   \item{final_age_pop_table}{Age-population table data.}
-#'   \item{final_pop}{Compiled population data for all countries.}
-#'   \item{all_mod_params}{Compiled model parameters for all countries.}
+#' @return If return_results is TRUE, a list containing:
+#'   \itemize{
+#'     \item spat_model_param: Fitted spatial model parameters
+#'     \item predictor_data: Predictor dataset
+#'     \item gamma_prediction: Generated gamma predictions
+#'     \item pred_list: Processed gamma prediction results
+#'     \item final_age_pop_table: Age-population table data
+#'     \item final_pop: Compiled population data
+#'     \item all_mod_params: Compiled model parameters
+#'   }
 #'
 #' @examples
-#' # Run the model for Tanzania with default parameters
-#' # results <- run_country_model(country_code = "TZA")
+#' \dontrun{
+#' # Run model for Tanzania with default parameters
+#' results <- run_full_workflow(country_code = "TZA")
 #'
-#' # Access specific components from the results
-#' # spat_model_param <- results$spat_model_param
-#' # final_pop <- results$final_pop
+#' # Run with custom parameters
+#' results <- run_full_workflow(
+#'   country_code = "KEN",
+#'   model_params = list(
+#'     cell_size = 2500,
+#'     n_sim = 10000,
+#'     covariates = c("urban", "elevation")
+#'   )
+#' )
+#' }
 #'
 #' @export
-run_country_model <- function(
+run_full_workflow <- function(
     country_code,
     survey_data_path = here::here("01_data", "1a_survey_data", "processed"),
     survey_data_suffix = "dhs_pr_records_combined.rds",
@@ -1060,386 +1024,279 @@ run_country_model <- function(
     shape_suffix = "district_shape.gpkg",
     pop_raster_path = here::here("01_data", "1b_rasters", "pop_raster"),
     pop_raster_suffix = "_ppp_2020_constrained.tif",
-    ur_raster_path = here::here("01_data", "1b_rasters",
-                                "urban_extent", "afurextent.asc"),
+    ur_raster_path = here::here("01_data", "1b_rasters", "urban_extent"),
     ur_raster_suffix = "afurextent.asc",
-    model_output_path = here::here("03_outputs", "3a_model_outputs"),
-    plot_output_path = here::here("03_outputs", "3b_visualizations"),
-    raster_output_path = here::here("03_outputs", "3c_raster_outputs"),
-    table_output_path = here::here("03_outputs", "3c_table_outputs"),
-    compiled_output_path = here::here("03_outputs", "3d_compiled_results"),
-    excel_output_file = here::here(
-      "03_outputs", "3d_compiled_results",
-      "age_pop_denom_compiled.xlsx"
+    output_paths = list(
+      model = here::here("03_outputs", "3a_model_outputs"),
+      plot = here::here("03_outputs", "3b_visualizations"),
+      raster = here::here("03_outputs", "3c_raster_outputs"),
+      table = here::here("03_outputs", "3c_table_outputs"),
+      compiled = here::here("03_outputs", "3d_compiled_results"),
+      excel = here::here(
+        "03_outputs", "3d_compiled_results",
+        "age_pop_denom_compiled.xlsx"
+      ),
+      log = here::here("03_outputs", "3a_model_outputs", "modelling_log.rds")
     ),
-    cell_size = 5000,
-    n_sim = 5000,
-    ignore_cache = FALSE,
-    age_range_table = c(0, 99),
-    interval_table = 1,
-    return_prop = TRUE,
-    scale_outcome = "log_scale",
-    shape_outcome = "log_shape",
-    covariates = "urban",
-    cpp_script_name = here::here("02_scripts", "model"),
-    return_results = FALSE
-) {
-
-  country_code_lw <- tolower(country_code)
-
-  survey_data_path <- file.path(survey_data_path, survey_data_suffix)
-  if (!file.exists(survey_data_path)) {
-    stop(glue::glue(
-      "Survey data file not found at {survey_data_path}"))
-  }
-
-  age_param_data <- readRDS(survey_data_path)$age_param_data |>
-    dplyr::filter(country_code_iso3 == country_code)
-
-  # Get regional shapefile
-  cntry_code <- country_code
-  shape_path <- file.path(shape_path, shape_suffix)
-  adm2_shape <- sf::read_sf(shape_path) |>
-    dplyr::filter(country_code %in% cntry_code
-    ) |>
-    sf::st_transform(crs = 3857)
-
-  # Make country shapefile from adm2
-  country_shape <- sf::st_union(adm2_shape)
-
-  country_name <- adm2_shape$country[1]
-  country_name_clr <- stringr::str_to_title(country_name) |>
-    crayon::blue()
-
-  # Get population raster
-  pop_raster_path <- here::here(
-    pop_raster_path,
-    glue::glue("{country_code_lw}{pop_raster_suffix}")
-  )
-
-  if (!file.exists(pop_raster_path)) {
-    stop(glue::glue(
-      "Population raster not found for country code ",
-      "{country_name_clr} (country_code) at {pop_raster_path}"))
-  }
-
-  pop_raster <- terra::rast(pop_raster_path)
-
-  if (!file.exists(ur_raster_path)) {
-    stop(glue::glue("Urban extent raster not found at {ur_raster_path}"))
-  }
-
-  ur_raster <- terra::rast(ur_raster_path) |>
-    # Crop raster to pop extent
-    terra::crop(terra::ext(pop_raster))
-
-  # Fit Spatial Model (urban adjusted)
-  cli::cli_h1(glue::glue("Fitting Spatial Model for {country_name_clr}"))
-
-  spat_model_param <- run_spatial_model(
-    country_code,
-    age_param_data,
-    scale_outcome = scale_outcome,
-    shape_outcome = shape_outcome,
-    covariates = covariates,
-    cpp_script_name = cpp_script_name,
-    output_dir = model_output_path,
-    ignore_cache = ignore_cache
-  )
-
-  # Create predictor data
-  cli::cli_h1(glue::glue("Creating Predictor Data for {country_name_clr}"))
-
-  predictors_data <- create_prediction_data(
-    country_code,
-    country_shape,
-    pop_raster,
-    ur_raster,
-    adm2_shape,
-    cell_size = cell_size,
-    ignore_cache = ignore_cache,
-    output_dir = model_output_path
-  )
-
-  # Run prediction
-  cli::cli_h1(glue::glue(
-    "Running Prediction for {country_name_clr}"))
-
-  gamma_prediction <- generate_gamma_predictions(
-    country_code,
-    age_param_data,
-    spat_model_param,
-    predictors_data,
-    adm2_shape,
-    cell_size = cell_size,
-    n_sim = n_sim,
-    ignore_cache = ignore_cache,
-    output_dir = model_output_path
-  )
-
-  # Prediction rasters
-  cli::cli_h1(glue::glue(
-    "Producing Prediction Rasters for {country_name_clr}"))
-
-  # Process gamma prediction results
-  pred_list <- process_gamma_predictions(gamma_prediction)
-
-  # Show and save prediction raster
-  generate_gamma_raster_plot(
-    predictors_data,
-    pred_list,
-    country_code_lw,
-    plot_output_path,
-    save_raster = TRUE
-  )
-
-  # Create age-population tables
-  cli::cli_h1(glue::glue(
-    "Producing District-level Age-Population Tables for {country_name_clr}"))
-
-  # pull scale and shape and
-  # then drop gamma_prediction
-  scale_pred = gamma_prediction$scale_pred
-  shape_pred = gamma_prediction$shape_pred
-  rm(gamma_prediction)
-
-  final_age_pop_table <- generate_age_pop_table(
-    predictor_data = predictors_data,
-    scale_pred = scale_pred,
-    shape_pred = shape_pred,
-    country_code = country_code_lw,
-    age_range = age_range_table,
-    interval = interval_table,
-    ignore_cache = ignore_cache,
-    output_dir = table_output_path
-  )
-
-  # Create age-population pyramid
-  cli::cli_h1(glue::glue(
-    "Producing Regional-level Age-pyramid for {country_name_clr}"))
-
-
-  # set up the y axis label distance
-  axis_by <- (age_range_table/interval_table)[2]/10
-
-  generate_age_pyramid_plot(
-    dataset = final_age_pop_table,
-    country_code = country_code_lw,
-    output_dir = plot_output_path,
-    break_axis_by = axis_by
-  )
-
-  # Create age-population pyramid
-  cli::cli_h1(glue::glue(
-    "Compiling the model parameter data for all countries"))
-
-  # Compile all the model param data for
-  all_mod_params <- extract_age_param(
-    dir_path = model_output_path,
-    output_file = compiled_output_path
-  )
-
-  # Finalise population age structured data
-  cli::cli_h1(glue::glue(
-    "Compiling age-structured population data for all countries"))
-
-  final_pop <- process_final_population_data(
-    input_dir = table_output_path,
-    excel_output_file = excel_output_file
-  )
-
-  # Optionally, return results
-  if (return_results) {
-    return(list(
-      spat_model_param = spat_model_param,
-      predictor_data = predictors_data,
-      gamma_prediction = gamma_prediction,
-      pred_list = pred_list,
-      final_age_pop_table = final_age_pop_table,
-      final_pop = final_pop,
-      all_mod_params = all_mod_params
-    ))
-  }
-}
-
-#' Run Models for Multiple Countries and Log Results
-#'
-#' Runs a model for each country in the provided list, logs the status,
-#' duration, and any errors, and merges with an existing log before saving.
-#'
-#' @param country_codes A character vector of country codes to process.
-#' @param survey_data_path Character. Path to Survey data. Default:
-#'     "01_data/1a_survey_data/processed".
-#' @param survey_data_suffix Character. Suffix for Survey data files. Default:
-#'     "dhs_pr_records_combined.rds".
-#' @param shape_path Character. Path to shapefile data. Default:
-#'     "01_data/1c_shapefiles".
-#' @param shape_suffix Character. Suffix for shapefile data. Default:
-#'     "district_shape.gpkg".
-#' @param pop_raster_path Character. Path to population raster data. Default:
-#'     "01_data/1b_rasters/pop_raster".
-#' @param pop_raster_suffix Character. Suffix for population raster files. Default:
-#'    "_ppp_2020_constrained.tif".
-#' @param ur_raster_path Character. Path to urban-rural extent data. Default:
-#'     "01_data/1b_rasters/urban_extent/afurextent.asc".
-#' @param ur_raster_suffix Character. Suffix for urban-rural raster. Default:
-#'    "afurextent.asc".
-#' @param model_output_path Character. Path to save model outputs. Default:
-#'    "03_outputs/3a_model_outputs".
-#' @param plot_output_path Character. Path to save visualization outputs.
-#'    Default: "03_outputs/3b_visualizations".
-#' @param raster_output_path Character. Path to save raster outputs. Default:
-#'    "03_outputs/3c_raster_outputs".
-#' @param table_output_path Character. Path to save table outputs. Default:
-#'    "03_outputs/3c_table_outputs".
-#' @param compiled_output_path Character. Path to save compiled results. Default:
-#'    "03_outputs/3d_compiled_results".
-#' @param excel_output_file A character string specifying the output Excel file path.
-#'   Default is "03_outputs/3d_compiled_results/age_pop_denom_2020.xlsx" in the
-#'   project directory.
-#' @param log_path Character. Path to save log file. Default:
-#'    "03_outputs/3a_model_outputs/modelling_log.rds".
-#' @param cell_size Numeric. Cell size in meters for predictor generation.
-#'    Default: 5000.
-#' @param n_sim Numeric. Number of simulations for gamma predictions.
-#'    Default: 5000.
-#' @param age_range_table Numeric vector. Age range for table generation.
-#'    Default: c(0, 99).
-#' @param interval_table Numeric. Age interval for table generation.
-#'    Default: 1.
-#' @param return_prop Logical. Whether to return proportions in raster output.
-#'    Default: TRUE.
-#' @param scale_outcome Character. Outcome variable for scaling.
-#'    Default: "log_scale".
-#' @param shape_outcome Character. Outcome variable for shaping.
-#'    Default: "log_shape".
-#' @param covariates Character. Covariates for spatial model.
-#'    Default: "urban".
-#' @param cpp_script_name Character. Path to C++ model script.
-#'    Default: "02_scripts/model".
-#' @param return_results Logical. Whether to return function outputs.
-#'    Default: FALSE.
-#' @param ignore_cache Logical. Whether to ignore cached data.
-#'    Default: FALSE.
-#' @examples
-#' # run_models_with_logging(
-#' #  country_codes = c("KEN", "UGA"),
-#' #  log_path = "03_outputs/3a_model_outputs/modelling_log.rds"
-#' # )
-#' @export
-run_models_with_logging <- function(
-    country_codes,
-    survey_data_path = here::here("01_data", "1a_survey_data", "processed"),
-    survey_data_suffix = "dhs_pr_records_combined.rds",
-    shape_path = here::here("01_data", "1c_shapefiles"),
-    shape_suffix = "district_shape.gpkg",
-    pop_raster_path = here::here("01_data", "1b_rasters", "pop_raster"),
-    pop_raster_suffix = "_ppp_2020_constrained.tif",
-    ur_raster_path = here::here("01_data", "1b_rasters", "urban_extent",
-                               "afurextent.asc"),
-    ur_raster_suffix = "afurextent.asc",
-    model_output_path = here::here("03_outputs", "3a_model_outputs"),
-    plot_output_path = here::here("03_outputs", "3b_visualizations"),
-    raster_output_path = here::here("03_outputs", "3c_raster_outputs"),
-    table_output_path = here::here("03_outputs", "3c_table_outputs"),
-    compiled_output_path = here::here("03_outputs", "3d_compiled_results"),
-    excel_output_file = here::here(
-      "03_outputs", "3d_compiled_results",
-      "age_pop_denom_compiled.xlsx"
+    model_params = list(
+      cell_size = 5000,
+      n_sim = 5000,
+      ignore_cache = FALSE,
+      age_range = c(0, 99),
+      age_interval = 1,
+      return_prop = TRUE,
+      scale_outcome = "log_scale",
+      shape_outcome = "log_shape",
+      covariates = "urban",
+      cpp_script = here::here("02_scripts", "model")
     ),
-    log_path = here::here("03_outputs", "3a_model_outputs", "modelling_log.rds"),
-    cell_size = 5000,
-    n_sim = 5000,
-    age_range_table = c(0, 99),
-    interval_table = 1,
-    return_prop = TRUE,
-    scale_outcome = "log_scale",
-    shape_outcome = "log_shape",
-    covariates = "urban",
-    cpp_script_name = here::here("02_scripts", "model"),
     return_results = FALSE,
-    ignore_cache = FALSE) {
+    ...) {
+  # Logging --------------------------------------------------------------------
 
+  # Initialize logging
+  start_time <- Sys.time()
   log_data <- list()
 
   # Import historical log if exists
-  hist_log <- if (file.exists(log_path)) readRDS(log_path) else list()
-
-  # Loop through country codes
-  for (country in country_codes) {
-    start_time <- Sys.time()
-
-    tryCatch({
-      # Run the model
-      run_country_model(
-        country_code = country,
-        survey_data_path = survey_data_path,
-        survey_data_suffix = survey_data_suffix,
-        shape_path = shape_path,
-        shape_suffix = shape_suffix,
-        pop_raster_path = pop_raster_path,
-        pop_raster_suffix = pop_raster_suffix,
-        ur_raster_path = ur_raster_path,
-        ur_raster_suffix = ur_raster_suffix,
-        model_output_path = model_output_path,
-        plot_output_path = plot_output_path,
-        raster_output_path = raster_output_path,
-        table_output_path = table_output_path,
-        compiled_output_path = compiled_output_path,
-        excel_output_file = excel_output_file,
-        cell_size = cell_size,
-        n_sim = n_sim,
-        age_range_table = age_range_table,
-        interval_table = interval_table,
-        return_prop = return_prop,
-        scale_outcome = scale_outcome,
-        shape_outcome = shape_outcome,
-        covariates = covariates,
-        cpp_script_name = cpp_script_name,
-        return_results = return_results,
-        ignore_cache = ignore_cache
-      )
-
-      # Record success
-      log_data[[country]] <- list(
-        status = "Success",
-        start_time = start_time,
-        end_time = Sys.time(),
-        duration = difftime(Sys.time(), start_time, units = "mins"),
-        error_message = NA
-      )
-    },
-    error = function(e) {
-      # Record error
-      log_data[[country]] <- list(
-        status = "Error",
-        start_time = start_time,
-        end_time = Sys.time(),
-        duration = difftime(Sys.time(), start_time, units = "mins"),
-        error_message = e$message
-      )
-
-      cli::cli_alert_danger(
-        glue::glue("Error running model for {country}: {e$message}")
-      )
-    })
+  hist_log <- if (file.exists(output_paths$log)) {
+    readRDS(output_paths$log)
+  } else {
+    list()
   }
 
-  # Convert log_data to data frame
-  log_data_df <- do.call(rbind, lapply(names(log_data), function(country) {
-    data.frame(
-      Country = country,
-      Status = log_data[[country]]$status,
-      Start_Time = as.character(log_data[[country]]$start_time),
-      End_Time = as.character(log_data[[country]]$end_time),
-      Duration_Minutes = as.numeric(log_data[[country]]$duration),
-      Error_Message = log_data[[country]]$error_message,
-      stringsAsFactors = FALSE
+  # Set up datasets ------------------------------------------------------------
+
+  # Process each country code
+  for (cc in country_code) {
+    # Initialize log entry for this country code
+    log_data[[cc]] <- list()
+
+    tryCatch(
+      {
+        country_code_lw <- tolower(cc)
+
+        # Load survey data
+        survey_file <- file.path(survey_data_path, survey_data_suffix)
+        if (!file.exists(survey_file)) {
+          stop(glue::glue("Survey data file not found at {survey_file}"))
+        }
+
+        age_param_data <- readRDS(survey_file)$age_param_data |>
+          dplyr::filter(country_code_iso3 == cc)
+
+        # Load shapefiles
+        shape_file <- file.path(shape_path, shape_suffix)
+        adm2_shape <- sf::read_sf(shape_file) |>
+          dplyr::filter(country_code %in% cc) |>
+          sf::st_transform(crs = 3857)
+
+        country_shape <- sf::st_union(adm2_shape)
+        country_name <- adm2_shape$country[1]
+        country_name_clr <- stringr::str_to_title(country_name) |>
+          crayon::blue()
+
+        # Load rasters
+        pop_raster_file <- file.path(
+          pop_raster_path,
+          glue::glue("{country_code_lw}{pop_raster_suffix}")
+        )
+
+        if (!file.exists(pop_raster_file)) {
+          stop(glue::glue(
+            "Population raster not found for ",
+            "{country_name_clr} at {pop_raster_file}"
+          ))
+        }
+
+        pop_raster <- terra::rast(pop_raster_file)
+
+        ur_raster_file <- file.path(ur_raster_path, ur_raster_suffix)
+
+        if (!file.exists(ur_raster_file)) {
+          stop(glue::glue(
+            "Urban extent raster not found at {ur_raster_file}"
+          ))
+        }
+
+        ur_raster <- terra::rast(ur_raster_file) |>
+          terra::crop(terra::ext(pop_raster))
+
+        # Run modeling workflow -----------------------------------------------
+
+        cli::cli_h1(glue::glue(
+          "Fitting Spatial Model for {country_name_clr}"
+        ))
+
+        spat_model_param <- fit_spatial_model(
+          country_code = cc,
+          data = age_param_data,
+          scale_outcome = model_params$scale_outcome,
+          shape_outcome = model_params$shape_outcome,
+          covariates = model_params$covariates,
+          cpp_script_name = model_params$cpp_script,
+          output_dir = output_paths$model,
+          ignore_cache = model_params$ignore_cache,
+          ...
+        )
+
+        cli::cli_h1(glue::glue(
+          "Creating Predictor Data for {country_name_clr}"
+        ))
+
+        predictor_data <- create_prediction_data(
+          country_code = cc,
+          country_shape = country_shape,
+          pop_raster = pop_raster,
+          ur_raster = ur_raster,
+          adm2_shape = adm2_shape,
+          cell_size = model_params$cell_size,
+          ignore_cache = model_params$ignore_cache,
+          output_dir = output_paths$model
+        )
+
+        cli::cli_h1(glue::glue(
+          "Running Prediction for {country_name_clr}"
+        ))
+
+        gamma_prediction <- generate_gamma_predictions(
+          country_code = cc,
+          age_param_data = age_param_data,
+          model_params = spat_model_param,
+          predictor_data = predictor_data,
+          shapefile = adm2_shape,
+          cell_size = model_params$cell_size,
+          n_sim = model_params$n_sim,
+          ignore_cache = model_params$ignore_cache,
+          output_dir = output_paths$model,
+          ...
+        )
+
+        # Create outputs -------------------------------------------------------
+
+        cli::cli_h1(glue::glue(
+          "Producing Prediction Rasters for {country_name_clr}"
+        ))
+
+        pred_list <- process_gamma_predictions(gamma_prediction)
+
+        generate_gamma_raster_plot(
+          predictor_data = predictor_data,
+          pred_list = pred_list,
+          country_code = country_code_lw,
+          output_dir = output_paths$plot,
+          save_raster = TRUE,
+          ...
+        )
+
+        cli::cli_h1(glue::glue(
+          "Producing District-level ",
+          "Age-Population Tables for {country_name_clr}"
+        ))
+
+        scale_pred <- gamma_prediction$scale_pred
+        shape_pred <- gamma_prediction$shape_pred
+        rm(gamma_prediction)
+
+        final_age_pop_table <- generate_age_pop_table(
+          predictor_data = predictor_data,
+          scale_pred = scale_pred,
+          shape_pred = shape_pred,
+          country_code = country_code_lw,
+          age_range = model_params$age_range,
+          age_interval = model_params$age_interval,
+          ignore_cache = model_params$ignore_cache,
+          output_dir = output_paths$table,
+          ...
+        )
+
+        cli::cli_h1(glue::glue(
+          "Producing Regional-level Age-pyramid for {country_name_clr}"
+        ))
+
+        # programmatically set up model breaks in y axis
+        axis_by <- (model_params$age_range[2] / model_params$age_interval) / 10
+
+        generate_age_pyramid_plot(
+          dataset = final_age_pop_table,
+          country_code = country_code_lw,
+          output_dir = output_paths$plot,
+          break_axis_by = axis_by,
+          ...
+        )
+
+        cli::cli_h1(
+          glue::glue("Compiling model parameter data for all countries"))
+
+        all_mod_params <- extract_age_param(
+          dir_path = output_paths$model,
+          output_file = output_paths$compiled
+        )
+
+        cli::cli_h1(glue::glue(
+          "Compiling age-structured population data for all countries"
+        ))
+
+        final_pop <- process_final_population_data(
+          input_dir = output_paths$table,
+          excel_output_file = output_paths$excel
+        )
+
+        # Logging workflow ----------------------------------------------------
+
+        # Log success
+        log_data[[cc]] <- list(
+          status = "Success",
+          start_time = start_time,
+          end_time = Sys.time(),
+          duration = difftime(Sys.time(), start_time, units = "mins"),
+          error_message = NA
+        )
+
+        if (return_results) {
+          return(list(
+            spat_model_param = spat_model_param,
+            predictor_data = predictor_data,
+            gamma_prediction = gamma_prediction,
+            pred_list = pred_list,
+            final_age_pop_table = final_age_pop_table,
+            final_pop = final_pop,
+            all_mod_params = all_mod_params
+          ))
+        }
+      },
+      error = function(e) {
+        log_data[[cc]] <- list(
+          status = "Error",
+          start_time = start_time,
+          end_time = Sys.time(),
+          duration = difftime(Sys.time(), start_time, units = "mins"),
+          error_message = e$message
+        )
+
+        cli::cli_alert_danger(glue::glue(
+          "Error running model for {cc}: {e$message}"
+        ))
+      }
     )
+  }
+
+  # Update logs
+  log_data_df <- dplyr::bind_rows(lapply(names(log_data), function(country) {
+    if (length(log_data[[country]]) > 0) {
+      data.frame(
+        Country = country,
+        Status = log_data[[country]]$status,
+        Start_Time = as.character(log_data[[country]]$start_time),
+        End_Time = as.character(log_data[[country]]$end_time),
+        Duration_Minutes = as.numeric(log_data[[country]]$duration),
+        Error_Message = as.character(log_data[[country]]$error_message),
+        stringsAsFactors = FALSE
+      )
+    }
   }))
 
-  # Merge historical and new logs, then save
   logs <- dplyr::bind_rows(hist_log, log_data_df) |>
-    dplyr::mutate(Error_Message = ifelse(is.na(Error_Message), "None", Error_Message))
-  saveRDS(logs, log_path)
+    dplyr::mutate(Error_Message = dplyr::coalesce(Error_Message, "None"))
+  saveRDS(logs, output_paths$log)
 }

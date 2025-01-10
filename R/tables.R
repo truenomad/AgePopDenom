@@ -83,8 +83,9 @@ run_parallel_other <- function(n_sim, scale_pred, shape_pred, runnum, n_cores) {
 #' @param n_cores Integer number of cores for parallel processing, default
 #'    detectCores()-2
 #'
-#' @return Data frame with age-stratified population estimates and
-#'    uncertainty intervals
+#' @return List containing two data frames:
+#'    - prop_df: Age-stratified population proportions with uncertainty intervals
+#'    - pop_df: Age-stratified population counts with uncertainty intervals
 #'
 #' @export
 generate_age_pop_table <- function(predictor_data,
@@ -111,19 +112,22 @@ generate_age_pop_table <- function(predictor_data,
       msg = "Importing cached age population data...",
       msg_done = "Successfully imported cached age population data."
     )
-    final_df <- readRDS(output_path)
+    final_list <- readRDS(output_path)
     cli::cli_process_done()
-    return(final_df)
+    return(final_list)
   }
 
   # Ensure output directory exists
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
-  # Initialize age population data frame
-  final_df <- predictor_data |>
+  # Initialize data frames
+  base_df <- predictor_data |>
     dplyr::group_by(country, region = region, district = district) |>
     dplyr::summarize(popsize = sum(pop, na.rm = TRUE), .groups = "drop") |>
     as.data.frame()
+
+  prop_df <- base_df
+  pop_df <- base_df
 
   # Define age intervals including the final open-ended interval
   limslow <- seq(age_range[1], age_range[2], interval)
@@ -147,17 +151,32 @@ generate_age_pop_table <- function(predictor_data,
       msg_done = glue::glue("Completed interval {runnum}/{length(limslow)}.")
     )
 
-    # Run parallel computation
-    prop_age_pred <- pbmcapply::pbmclapply(
-      1:n_sim,
-      function(sim) {
-        compute_age_proportions(
-          sim = sim, scale = scale_pred, shape = shape_pred,
-          run = runnum, limslow = limslow, limsup = limsup
-        )
-      },
-      mc.cores = n_cores
-    )
+    # Run parallel computation based on OS
+    if (Sys.info()["sysname"] == "Darwin") {
+      # For MacOS
+      prop_age_pred <- pbmcapply::pbmclapply(
+        1:n_sim,
+        function(sim) {
+          compute_age_proportions(
+            sim = sim, scale = scale_pred, shape = shape_pred,
+            run = runnum, limslow = limslow, limsup = limsup
+          )
+        },
+        mc.cores = n_cores
+      )
+    } else {
+      # For Linux/Windows
+      future::plan(future::multisession, workers = n_cores)
+      prop_age_pred <- future.apply::future_lapply(
+        1:n_sim,
+        function(sim) {
+          compute_age_proportions(
+            sim = sim, scale = scale_pred, shape = shape_pred,
+            run = runnum, limslow = limslow, limsup = limsup
+          )
+        }
+      )
+    }
 
     # Combine simulation results
     prop_age_pred <- base::do.call(base::cbind, prop_age_pred)
@@ -167,11 +186,28 @@ generate_age_pop_table <- function(predictor_data,
       probs = c(0.025, 0.975)
     )
 
-    # Create age class data frame
+    # Create age class data frames for both proportions and counts
+    age_prop_class <- base::data.frame(
+      country = predictor_data$country,
+      region = predictor_data$region, 
+      district = predictor_data$district,
+      prop = mean_prop_age,
+      lower_quantile = quantiles_mean_prop_age[, 1],
+      upper_quantile = quantiles_mean_prop_age[, 2]
+    ) |>
+      dplyr::group_by(country, region, district) |>
+      dplyr::summarize(
+        dplyr::across(dplyr::everything(),
+                      base::sum,
+                      .names = "{.col}_tot_class"
+        ),
+        .groups = "drop"
+      )
+
     age_pop_class <- base::data.frame(
       country = predictor_data$country,
       region = predictor_data$region,
-      district = predictor_data$district,
+      district = predictor_data$district, 
       pop = mean_prop_age * predictor_data$pop,
       lower_quantile = quantiles_mean_prop_age[, 1] * predictor_data$pop,
       upper_quantile = quantiles_mean_prop_age[, 2] * predictor_data$pop
@@ -191,168 +227,183 @@ generate_age_pop_table <- function(predictor_data,
     } else {
       paste0(limslow[runnum], "_", limsup[runnum], "y")
     }
+
+    # Update column names for both datasets
+    colnames(age_prop_class) <- c(
+      "country", "region", "district",
+      paste0(interval_name, "_prop_mean"),
+      paste0(interval_name, "_prop_low_interval_2.5%"),
+      paste0(interval_name, "_prop_upper_interval_97.5%")
+    )
+
     colnames(age_pop_class) <- c(
       "country", "region", "district",
-      paste0(interval_name, "_mean"),
-      paste0(interval_name, "_low_interval_2.5%"),
-      paste0(interval_name, "_upper_interval_97.5%")
+      paste0(interval_name, "_pop_mean"),
+      paste0(interval_name, "_pop_low_interval_2.5%"),
+      paste0(interval_name, "_pop_upper_interval_97.5%")
     )
 
-    # Merge with final data frame
-    final_df <- final_df |>
+    # Merge with final data frames
+    prop_df <- prop_df |>
+      dplyr::left_join(age_prop_class,
+                       by = c("country", "region", "district"))
+
+    pop_df <- pop_df |>
       dplyr::left_join(age_pop_class,
-                       by = c("country", "region", "district")
+                       by = c("country", "region", "district"))
+
+    # Order columns for both dataframes
+    numeric_order <- function(df) {
+      order(
+        sapply(
+          colnames(df),
+          function(x) {
+            as.numeric(stringr::str_extract(x, "^\\d+"))
+          },
+          USE.NAMES = FALSE
+        ),
+        na.last = TRUE
       )
+    }
 
-    # order the columns
-    numeric_order <- order(
-      sapply(
-        colnames(final_df),
-        function(x) {
-          # Extract the first numeric component of the column name
-          as.numeric(stringr::str_extract(x, "^\\d+"))
-        },
-        USE.NAMES = FALSE
-      ),
-      na.last = TRUE
-    )
+    # Reorder columns for both dataframes
+    prop_df <- prop_df[, numeric_order(prop_df)] |>
+      dplyr::select(country, region, district, popsize, dplyr::everything())
 
-    # Reorder the columns based on the numeric order
-    final_df <- final_df[, numeric_order]
-    final_df <-  final_df |>
-      dplyr::select(country, region, district, popsize,
-                    dplyr::everything())
+    pop_df <- pop_df[, numeric_order(pop_df)] |>
+      dplyr::select(country, region, district, popsize, dplyr::everything())
 
     cli::cli_process_done()
   }
 
+  # Create final list
+  final_list <- list(
+    prop_df = prop_df,
+    pop_df = pop_df
+  )
+
   # Save results
-  base::saveRDS(final_df, file = output_path)
+  base::saveRDS(final_list, file = output_path)
   cli::cli_alert_success("Final age population data saved to {output_path}")
-  return(final_df)
+  return(final_list)
 }
 
 #' Process Final Population Data
 #'
-#' Reads population data from RDS files in a specified directory, processes the
-#' data to generate age-group-based population summaries at different
-#' administrative levels (Country, Region, District), and writes the results
-#' to an Excel file with separate sheets for each level.
+#' Reads population and proportion data from RDS files in a specified directory,
+#' processes the data to generate age-group-based population summaries and
+#' proportions at different administrative levels (Country, Region, District),
+#' and writes the results to an Excel file with separate sheets for each level
+#' and metric.
 #'
 #' @param input_dir A character string specifying the directory containing RDS
 #'   files. Default is "03_outputs/3c_table_outputs" in the project directory.
-#' @param output_file A character string specifying the output Excel file path.
+#' @param excel_output_file A character string specifying the output Excel file path.
 #'   Default is "03_outputs/3d_compiled_results/age_pop_denom_2020.xlsx" in the
 #'   project directory.
 #' @return None. The function writes an Excel file to the specified output
-#'   location with three sheets: "Country", "Region", and "District", containing
-#'   age-structured population data at different administrative levels.
+#'   location with six sheets containing population counts and proportions at
+#'   different administrative levels.
 #' @examples
 #' # process_final_population_data(
 #' #   input_dir = "03_outputs/3c_table_outputs",
-#' #   output_file = "03_outputs/afro_population_2020.xlsx"
+#' #   excel_output_file = "03_outputs/afro_population_2020.xlsx"
 #' # )
 #' @export
 process_final_population_data <- function(
     input_dir = here::here("03_outputs", "3c_table_outputs"),
-    output_file = here::here(
+    excel_output_file = here::here(
       "03_outputs", "3d_compiled_results",
-      "age_pop_denom_2020.xlsx"
+      "age_pop_denom_compiled.xlsx"
     )) {
-
-  # Helper function to process individual files
-  process_file <- function(file) {
-    readRDS(file) |>
-      dplyr::select(
-        country, region, district,
-        dplyr::contains("mean")
-      ) |>
-      dplyr::rename_with(
-        ~ stringr::str_replace_all(
-          ., c("_mean" = "", "plus" = "+y")
-        ),
-        dplyr::contains("mean")
+  
+  # Ensure output directory exists
+  dir.create(dirname(excel_output_file), recursive = TRUE, showWarnings = FALSE)
+  
+  # Read and process all files
+  files <- list.files(input_dir, pattern = "\\.rds$", full.names = TRUE)
+  
+  # Read RDS files and extract both pop_df and prop_df
+  data_list <- lapply(files, readRDS)
+  
+  # Combine all pop_df and prop_df separately
+  pop_df <- lapply(data_list, function(x) x$pop_df) |> dplyr::bind_rows()
+  prop_df <- lapply(data_list, function(x) x$prop_df) |> dplyr::bind_rows()
+  
+  # Reshape data to long format
+  reshape_long <- function(df) {
+    df |>
+      tidyr::pivot_longer(
+        cols = -c(country, region, district, popsize),
+        names_to = "age_group",
+        values_to = "value"
       )
   }
-
-  # Read and process all files
-  files <- list.files(input_dir,
-                      pattern = "\\.rds$",
-                      full.names = TRUE
-  )
-  pop_df <- lapply(files, process_file) |> dplyr::bind_rows()
-
-  # Reshape the data to long format
-  pop_long <- pop_df |>
-    tidyr::pivot_longer(
-      cols = -c(country, region, district),
-      names_to = "age_group",
-      values_to = "population"
-    )
-
+  
+  pop_long <- reshape_long(pop_df)
+  prop_long <- reshape_long(prop_df)
+  
   # Summarize data at different levels
   summarize_by <- function(data, group_vars) {
     summarized_df <- data |>
-      dplyr::group_by(dplyr::across(
-        dplyr::all_of(group_vars))) |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) |>
       dplyr::summarise(
-        population = sum(population, na.rm = TRUE) |> round(),
+        value = if (
+          any(
+            grepl("prop", age_group, ignore.case = TRUE))) {
+          mean(value, na.rm = TRUE) |> round(4) 
+        } else {
+          sum(value, na.rm = TRUE) |> round(0)  
+        },
         .groups = "drop"
       ) |>
-      # Reshape back to wide format
       tidyr::pivot_wider(
         names_from = age_group,
-        values_from = population
+        values_from = value
       )
-
-    # order the columns
+    
+    # Order columns
     numeric_order <- order(
       sapply(
         colnames(summarized_df),
         function(x) {
-          # Extract the first numeric component of the column name
           as.numeric(stringr::str_extract(x, "^\\d+"))
         },
         USE.NAMES = FALSE
       ),
       na.last = TRUE
     )
-
-    # Reorder the columns based on the numeric order
-    summarized_df <- summarized_df[, numeric_order]
-    summarized_df <-  summarized_df |>
+    
+    summarized_df[, numeric_order] |>
       dplyr::select(dplyr::all_of(setdiff(group_vars, "age_group")),
                     dplyr::everything())
-
   }
-
-  res_adm0 <- summarize_by(pop_long, c("country", "age_group"))
-  res_adm1 <- summarize_by(pop_long, c("country", "region", "age_group"))
-  res_adm2 <- summarize_by(
-    pop_long,
-    c("country", "region", "district", "age_group")
+  
+  # Generate summaries for both population and proportions
+  pop_adm0 <- summarize_by(pop_long, c("country", "age_group"))
+  pop_adm1 <- summarize_by(pop_long, c("country", "region", "age_group"))
+  pop_adm2 <- summarize_by(pop_long, c("country", "region", "district", "age_group"))
+  
+  prop_adm0 <- summarize_by(prop_long, c("country", "age_group"))
+  prop_adm1 <- summarize_by(prop_long, c("country", "region", "age_group"))
+  prop_adm2 <- summarize_by(prop_long, c("country", "region", "district", "age_group"))
+  
+  
+  # Prepare named list of data frames
+  openxlsx2::write_xlsx(
+    x = list(
+      "Country (count)" = pop_adm0,
+      "Region (count)" = pop_adm1, 
+      "District (count)" = pop_adm2,
+      "Country (proportion)" = prop_adm0,
+      "Region (proportion)" = prop_adm1,
+      "District (proportion)" = prop_adm2
+    ),
+    file = excel_output_file
   )
-
-  # Create Excel workbook and write data
-  wb <- openxlsx::createWorkbook()
-
-  add_sheet <- function(wb, sheet_name, data) {
-    openxlsx::addWorksheet(wb, sheet_name)
-    openxlsx::writeData(wb, sheet_name, data)
-  }
-
-  add_sheet(wb, "Country", res_adm0)
-  add_sheet(wb, "Region", res_adm1)
-  add_sheet(wb, "District", res_adm2)
-
-  # Ensure the output directory exists
-  dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
-
-  # Save workbook with explicit output file path
-  openxlsx::saveWorkbook(wb, output_file, overwrite = TRUE)
-
+  
   cli::cli_alert_success(
-    "Final age-structured population is saved to {output_file}."
+    "Final age-structured population and proportions saved to {excel_output_file}."
   )
 }
 

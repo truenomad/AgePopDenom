@@ -19,6 +19,8 @@ run_country_model(
   raster_output_path = here::here("03_outputs", "3c_raster_outputs"),
   table_output_path = here::here("03_outputs", "3c_table_outputs"),
   compiled_output_path = here::here("03_outputs", "3d_compiled_results"),
+  excel_output_file = here::here("03_outputs", "3d_compiled_results",
+    "age_pop_denom_compiled.xlsx"),
   cell_size = 5000,
   n_sim = 5000,
   ignore_cache = FALSE,
@@ -74,6 +76,10 @@ Default: "03_outputs/3b_visualizations".}
 
 \item{compiled_output_path}{Character. Path to save compiled results. Default:
 "03_outputs/3d_compiled_results".}
+
+\item{excel_output_file}{A character string specifying the output Excel file path.
+Default is "03_outputs/3d_compiled_results/age_pop_denom_2020.xlsx" in the
+project directory.}
 
 \item{cell_size}{Numeric. Cell size (meters) for predictor generation.
 Default: 5000.}

@@ -6,15 +6,15 @@
 \usage{
 process_final_population_data(
   input_dir = here::here("03_outputs", "3c_table_outputs"),
-  output_file = here::here("03_outputs", "3d_compiled_results",
-    "age_pop_denom_2020.xlsx")
+  excel_output_file = here::here("03_outputs", "3d_compiled_results",
+    "age_pop_denom_compiled.xlsx")
 )
 }
 \arguments{
 \item{input_dir}{A character string specifying the directory containing RDS
 files. Default is "03_outputs/3c_table_outputs" in the project directory.}
 
-\item{output_file}{A character string specifying the output Excel file path.
+\item{excel_output_file}{A character string specifying the output Excel file path.
 Default is "03_outputs/3d_compiled_results/age_pop_denom_2020.xlsx" in the
 project directory.}
 }
@@ -33,6 +33,6 @@ and metric.
 \examples{
 # process_final_population_data(
 #   input_dir = "03_outputs/3c_table_outputs",
-#   output_file = "03_outputs/afro_population_2020.xlsx"
+#   excel_output_file = "03_outputs/afro_population_2020.xlsx"
 # )
 }

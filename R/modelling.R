@@ -977,20 +977,28 @@ process_gamma_predictions <- function(gamma_prediction) {
 #' Run Country-Specific Spatial Modeling Workflow
 #'
 #' This function runs the entire spatial modeling workflow for a given country
-#' code. It processes DHS data, fits a spatial model, generates predictions,
+#' code. It processes Survey data, fits a spatial model, generates predictions,
 #' creates population tables, and produces raster outputs. The function is
 #' modular and can be reused for different countries with minimal adjustments.
 #'
 #' @param country_code Character. The ISO3 country code (e.g., "TZA" for
 #'    Tanzania).
-#' @param dhs_data_path Character. Path to DHS data. Default:
-#'     "01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds".
+#' @param survey_data_path Character. Path to Survey data. Default:
+#'     "01_data/1a_survey_data/processed".
+#' @param survey_data_suffix Character. Suffix for Survey data files. Default:
+#'     "dhs_pr_records_combined.rds".
 #' @param shape_path Character. Path to shapefile data. Default:
-#'     "01_data/1c_shapefiles/district_shape.gpkg".
+#'     "01_data/1c_shapefiles".
+#' @param shape_suffix Character. Suffix for shapefile data. Default:
+#'     "district_shape.gpkg".
 #' @param pop_raster_path Character. Path to population raster data. Default:
-#'     "01_data/1b_rasters/worldpop_100m".
+#'     "01_data/1b_rasters/pop_raster".
+#' @param pop_raster_suffix Character. Suffix for population raster files. Default:
+#'   "_ppp_2020_constrained.tif".
 #' @param ur_raster_path Character. Path to urban-rural extent data. Default:
 #'     "01_data/1b_rasters/urban_extent/afurextent.asc".
+#' @param ur_raster_suffix Character. Suffix for urban-rural raster. Default:
+#'    "afurextent.asc".
 #' @param model_output_path Character. Path to save model outputs. Default:
 #'    "03_outputs/3a_model_outputs".
 #' @param plot_output_path Character. Path to save visualization outputs.
@@ -1001,15 +1009,18 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'    "03_outputs/3c_table_outputs".
 #' @param compiled_output_path Character. Path to save compiled results. Default:
 #'    "03_outputs/3d_compiled_results".
+#' @param excel_output_file A character string specifying the output Excel file path.
+#'   Default is "03_outputs/3d_compiled_results/age_pop_denom_2020.xlsx" in the
+#'   project directory.
 #' @param cell_size Numeric. Cell size (meters) for predictor generation.
 #'    Default: 5000.
 #' @param n_sim Numeric. Number of simulations for gamma predictions.
 #'    Default: 5000.
 #' @param ignore_cache Logical. Whether to ignore cached data. Default: FALSE.
 #' @param age_range_table Numeric vector. Age range for table generation.
-#'   Default: c(0, 100).
+#'   Default: c(0, 99).
 #' @param interval_table Numeric. Age interval for table generation.
-#'   Default: 5.
+#'   Default: 1.
 #' @param return_prop Logical. Whether to return proportion in raster output.
 #'   Default: TRUE.
 #' @param scale_outcome Character. Outcome variable for scaling. Default:
@@ -1043,18 +1054,24 @@ process_gamma_predictions <- function(gamma_prediction) {
 #' @export
 run_country_model <- function(
     country_code,
-    dhs_data_path =
-      here::here("01_data", "1a_dhs_data",
-                 "processed", "dhs_pr_records_combined.rds"),
-    shape_path = here::here("01_data", "1c_shapefiles", "district_shape.gpkg"),
-    pop_raster_path = here::here("01_data", "1b_rasters", "worldpop_100m"),
+    survey_data_path = here::here("01_data", "1a_survey_data", "processed"),
+    survey_data_suffix = "dhs_pr_records_combined.rds",
+    shape_path = here::here("01_data", "1c_shapefiles"),
+    shape_suffix = "district_shape.gpkg",
+    pop_raster_path = here::here("01_data", "1b_rasters", "pop_raster"),
+    pop_raster_suffix = "_ppp_2020_constrained.tif",
     ur_raster_path = here::here("01_data", "1b_rasters",
                                 "urban_extent", "afurextent.asc"),
+    ur_raster_suffix = "afurextent.asc",
     model_output_path = here::here("03_outputs", "3a_model_outputs"),
     plot_output_path = here::here("03_outputs", "3b_visualizations"),
     raster_output_path = here::here("03_outputs", "3c_raster_outputs"),
     table_output_path = here::here("03_outputs", "3c_table_outputs"),
     compiled_output_path = here::here("03_outputs", "3d_compiled_results"),
+    excel_output_file = here::here(
+      "03_outputs", "3d_compiled_results",
+      "age_pop_denom_compiled.xlsx"
+    ),
     cell_size = 5000,
     n_sim = 5000,
     ignore_cache = FALSE,
@@ -1070,16 +1087,18 @@ run_country_model <- function(
 
   country_code_lw <- tolower(country_code)
 
-  if (!file.exists(dhs_data_path)) {
+  survey_data_path <- file.path(survey_data_path, survey_data_suffix)
+  if (!file.exists(survey_data_path)) {
     stop(glue::glue(
-      "DHS data file not found at {dhs_data_path}"))
+      "Survey data file not found at {survey_data_path}"))
   }
 
-  age_param_data <- readRDS(dhs_data_path)$age_param_data |>
+  age_param_data <- readRDS(survey_data_path)$age_param_data |>
     dplyr::filter(country_code_iso3 == country_code)
 
   # Get regional shapefile
   cntry_code <- country_code
+  shape_path <- file.path(shape_path, shape_suffix)
   adm2_shape <- sf::read_sf(shape_path) |>
     dplyr::filter(country_code %in% cntry_code
     ) |>
@@ -1095,7 +1114,7 @@ run_country_model <- function(
   # Get population raster
   pop_raster_path <- here::here(
     pop_raster_path,
-    glue::glue("{country_code_lw}_ppp_2020_constrained.tif")
+    glue::glue("{country_code_lw}{pop_raster_suffix}")
   )
 
   if (!file.exists(pop_raster_path)) {
@@ -1226,7 +1245,7 @@ run_country_model <- function(
 
   final_pop <- process_final_population_data(
     input_dir = table_output_path,
-    output_file = compiled_output_path
+    excel_output_file = excel_output_file
   )
 
   # Optionally, return results
@@ -1243,21 +1262,28 @@ run_country_model <- function(
   }
 }
 
-
 #' Run Models for Multiple Countries and Log Results
 #'
 #' Runs a model for each country in the provided list, logs the status,
 #' duration, and any errors, and merges with an existing log before saving.
 #'
 #' @param country_codes A character vector of country codes to process.
-#' @param dhs_data_path Character. Path to DHS data. Default:
-#'     "01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds".
+#' @param survey_data_path Character. Path to Survey data. Default:
+#'     "01_data/1a_survey_data/processed".
+#' @param survey_data_suffix Character. Suffix for Survey data files. Default:
+#'     "dhs_pr_records_combined.rds".
 #' @param shape_path Character. Path to shapefile data. Default:
-#'     "01_data/1c_shapefiles/district_shape.gpkg".
+#'     "01_data/1c_shapefiles".
+#' @param shape_suffix Character. Suffix for shapefile data. Default:
+#'     "district_shape.gpkg".
 #' @param pop_raster_path Character. Path to population raster data. Default:
-#'     "01_data/1b_rasters/worldpop_100m".
+#'     "01_data/1b_rasters/pop_raster".
+#' @param pop_raster_suffix Character. Suffix for population raster files. Default:
+#'    "_ppp_2020_constrained.tif".
 #' @param ur_raster_path Character. Path to urban-rural extent data. Default:
 #'     "01_data/1b_rasters/urban_extent/afurextent.asc".
+#' @param ur_raster_suffix Character. Suffix for urban-rural raster. Default:
+#'    "afurextent.asc".
 #' @param model_output_path Character. Path to save model outputs. Default:
 #'    "03_outputs/3a_model_outputs".
 #' @param plot_output_path Character. Path to save visualization outputs.
@@ -1268,6 +1294,9 @@ run_country_model <- function(
 #'    "03_outputs/3c_table_outputs".
 #' @param compiled_output_path Character. Path to save compiled results. Default:
 #'    "03_outputs/3d_compiled_results".
+#' @param excel_output_file A character string specifying the output Excel file path.
+#'   Default is "03_outputs/3d_compiled_results/age_pop_denom_2020.xlsx" in the
+#'   project directory.
 #' @param log_path Character. Path to save log file. Default:
 #'    "03_outputs/3a_model_outputs/modelling_log.rds".
 #' @param cell_size Numeric. Cell size in meters for predictor generation.
@@ -1275,9 +1304,9 @@ run_country_model <- function(
 #' @param n_sim Numeric. Number of simulations for gamma predictions.
 #'    Default: 5000.
 #' @param age_range_table Numeric vector. Age range for table generation.
-#'    Default: c(0, 100).
+#'    Default: c(0, 99).
 #' @param interval_table Numeric. Age interval for table generation.
-#'    Default: 5.
+#'    Default: 1.
 #' @param return_prop Logical. Whether to return proportions in raster output.
 #'    Default: TRUE.
 #' @param scale_outcome Character. Outcome variable for scaling.
@@ -1292,7 +1321,6 @@ run_country_model <- function(
 #'    Default: FALSE.
 #' @param ignore_cache Logical. Whether to ignore cached data.
 #'    Default: FALSE.
-#' @return None. Updates log file at log_path with model run results.
 #' @examples
 #' # run_models_with_logging(
 #' #  country_codes = c("KEN", "UGA"),
@@ -1301,26 +1329,25 @@ run_country_model <- function(
 #' @export
 run_models_with_logging <- function(
     country_codes,
-    dhs_data_path =
-      here::here(
-        "01_data", "1a_dhs_data", "processed",
-        "dhs_pr_records_combined.rds"
-      ),
-    shape_path = here::here("01_data", "1c_shapefiles", "district_shape.gpkg"),
-    pop_raster_path = here::here("01_data", "1b_rasters", "worldpop_100m"),
-    ur_raster_path = here::here(
-      "01_data", "1b_rasters", "urban_extent",
-      "afurextent.asc"
-    ),
+    survey_data_path = here::here("01_data", "1a_survey_data", "processed"),
+    survey_data_suffix = "dhs_pr_records_combined.rds",
+    shape_path = here::here("01_data", "1c_shapefiles"),
+    shape_suffix = "district_shape.gpkg",
+    pop_raster_path = here::here("01_data", "1b_rasters", "pop_raster"),
+    pop_raster_suffix = "_ppp_2020_constrained.tif",
+    ur_raster_path = here::here("01_data", "1b_rasters", "urban_extent",
+                               "afurextent.asc"),
+    ur_raster_suffix = "afurextent.asc",
     model_output_path = here::here("03_outputs", "3a_model_outputs"),
     plot_output_path = here::here("03_outputs", "3b_visualizations"),
     raster_output_path = here::here("03_outputs", "3c_raster_outputs"),
     table_output_path = here::here("03_outputs", "3c_table_outputs"),
     compiled_output_path = here::here("03_outputs", "3d_compiled_results"),
-    log_path = here::here(
-      "03_outputs", "3a_model_outputs",
-      "modelling_log.rds"
+    excel_output_file = here::here(
+      "03_outputs", "3d_compiled_results",
+      "age_pop_denom_compiled.xlsx"
     ),
+    log_path = here::here("03_outputs", "3a_model_outputs", "modelling_log.rds"),
     cell_size = 5000,
     n_sim = 5000,
     age_range_table = c(0, 99),
@@ -1332,70 +1359,73 @@ run_models_with_logging <- function(
     cpp_script_name = here::here("02_scripts", "model"),
     return_results = FALSE,
     ignore_cache = FALSE) {
+
   log_data <- list()
 
-  # Import historical log
-  if (file.exists(log_path)) {
-    hist_log <- readRDS(log_path)
-  } else {
-    hist_log <- list()
-  }
+  # Import historical log if exists
+  hist_log <- if (file.exists(log_path)) readRDS(log_path) else list()
 
   # Loop through country codes
   for (country in country_codes) {
-    start_time <- Sys.time() # Record start time
+    start_time <- Sys.time()
 
-    tryCatch(
-      {
-        # Run the model
-        run_country_model(
-          country_code = country,
-          dhs_data_path = dhs_data_path,
-          shape_path = shape_path,
-          pop_raster_path = pop_raster_path,
-          ur_raster_path = ur_raster_path,
-          compiled_output_path = compiled_output_path,
-          cell_size = cell_size,
-          n_sim = n_sim,
-          age_range_table = age_range_table,
-          interval_table = interval_table,
-          return_prop = return_prop,
-          scale_outcome = scale_outcome,
-          shape_outcome = shape_outcome,
-          covariates = covariates,
-          cpp_script_name = cpp_script_name,
-          return_results = return_results,
-          ignore_cache = ignore_cache
-        )
+    tryCatch({
+      # Run the model
+      run_country_model(
+        country_code = country,
+        survey_data_path = survey_data_path,
+        survey_data_suffix = survey_data_suffix,
+        shape_path = shape_path,
+        shape_suffix = shape_suffix,
+        pop_raster_path = pop_raster_path,
+        pop_raster_suffix = pop_raster_suffix,
+        ur_raster_path = ur_raster_path,
+        ur_raster_suffix = ur_raster_suffix,
+        model_output_path = model_output_path,
+        plot_output_path = plot_output_path,
+        raster_output_path = raster_output_path,
+        table_output_path = table_output_path,
+        compiled_output_path = compiled_output_path,
+        excel_output_file = excel_output_file,
+        cell_size = cell_size,
+        n_sim = n_sim,
+        age_range_table = age_range_table,
+        interval_table = interval_table,
+        return_prop = return_prop,
+        scale_outcome = scale_outcome,
+        shape_outcome = shape_outcome,
+        covariates = covariates,
+        cpp_script_name = cpp_script_name,
+        return_results = return_results,
+        ignore_cache = ignore_cache
+      )
 
-        # Record success
-        log_data[[country]] <- list(
-          status = "Success",
-          start_time = start_time,
-          end_time = Sys.time(),
-          duration = difftime(Sys.time(), start_time, units = "mins"),
-          error_message = NA
-        )
-      },
-      error = function(e) {
-        # Record error
-        log_data[[country]] <- list(
-          status = "Error",
-          start_time = start_time,
-          end_time = Sys.time(),
-          duration = difftime(Sys.time(), start_time, units = "mins"),
-          error_message = e$message
-        )
+      # Record success
+      log_data[[country]] <- list(
+        status = "Success",
+        start_time = start_time,
+        end_time = Sys.time(),
+        duration = difftime(Sys.time(), start_time, units = "mins"),
+        error_message = NA
+      )
+    },
+    error = function(e) {
+      # Record error
+      log_data[[country]] <- list(
+        status = "Error",
+        start_time = start_time,
+        end_time = Sys.time(),
+        duration = difftime(Sys.time(), start_time, units = "mins"),
+        error_message = e$message
+      )
 
-        # Print error message
-        cli::cli_alert_danger(
-          glue::glue("Error running model for {country}: {e$message}")
-        )
-      }
-    )
+      cli::cli_alert_danger(
+        glue::glue("Error running model for {country}: {e$message}")
+      )
+    })
   }
 
-  # Convert log_data to a data frame
+  # Convert log_data to data frame
   log_data_df <- do.call(rbind, lapply(names(log_data), function(country) {
     data.frame(
       Country = country,
@@ -1403,14 +1433,13 @@ run_models_with_logging <- function(
       Start_Time = as.character(log_data[[country]]$start_time),
       End_Time = as.character(log_data[[country]]$end_time),
       Duration_Minutes = as.numeric(log_data[[country]]$duration),
-      Error_Message = log_data[[country]]$error_message
+      Error_Message = log_data[[country]]$error_message,
+      stringsAsFactors = FALSE
     )
   }))
 
   # Merge historical and new logs, then save
   logs <- dplyr::bind_rows(hist_log, log_data_df) |>
-    dplyr::mutate(
-      Error_Message = ifelse(is.na(Error_Message), "None", Error_Message)
-    )
+    dplyr::mutate(Error_Message = ifelse(is.na(Error_Message), "None", Error_Message))
   saveRDS(logs, log_path)
 }

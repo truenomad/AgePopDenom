@@ -20,14 +20,15 @@ project directory.}
 }
 \value{
 None. The function writes an Excel file to the specified output
-  location with three sheets: "Country", "Region", and "District", containing
-  age-structured population data at different administrative levels.
+  location with six sheets containing population counts and proportions at
+  different administrative levels.
 }
 \description{
-Reads population data from RDS files in a specified directory, processes the
-data to generate age-group-based population summaries at different
-administrative levels (Country, Region, District), and writes the results
-to an Excel file with separate sheets for each level.
+Reads population and proportion data from RDS files in a specified directory,
+processes the data to generate age-group-based population summaries and
+proportions at different administrative levels (Country, Region, District),
+and writes the results to an Excel file with separate sheets for each level
+and metric.
 }
 \examples{
 # process_final_population_data(

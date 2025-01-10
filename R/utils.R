@@ -12,7 +12,8 @@
 #' Additionally, it installs the esri2sf package from GitHub if not present.
 #'
 #' @return None (called for side effects)
-#'
+#'d
+#'f
 #' @examples
 #' \dontrun{
 #' install_suggests()

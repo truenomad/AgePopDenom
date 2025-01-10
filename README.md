@@ -42,12 +42,12 @@ The following directories will be created automatically:
 
 ``` plaintext
 01_data/
-├── 1a_dhs_data/
+├── 1a_survey_data/
 │   ├── processed/
 │   └── raw/
 ├── 1b_rasters/
 │   ├── urban_extent/
-│   └── worldpop_100m/
+│   └── pop_raster/
 ├── 1c_shapefiles/
 02_scripts/
 03_outputs/

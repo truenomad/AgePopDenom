@@ -15,13 +15,15 @@ generate_age_pyramid_plot(
 )
 }
 \arguments{
-\item{dataset}{A data frame containing population data, with columns for
-`country`, `region`, `district`, and columns ending with "mean".}
+\item{dataset}{A list containing two data frames:
+- prop_df: Population proportions data frame
+- pop_df: Population counts data frame
+Each with columns for `country`, `region`, `district`, and columns ending
+with "mean"}
 
 \item{country_code}{A string representing the country code (e.g., "ken").}
 
-\item{output_dir}{A string specifying the directory where the plot should
-be saved.}
+\item{output_dir}{A string specifying the directory where plots should be saved.}
 
 \item{line_color}{A string specifying the color of the plot's lines. Default
 is `"#67000d"`.}
@@ -32,20 +34,20 @@ is `"#fee0d2"`.}
 \item{fill_low}{A string specifying the fill color for low values. Default
 is `"#a50f15"`}
 
-\item{break_axis_by}{break axis to show less clutterd age groups.  Default
+\item{break_axis_by}{break axis to show less cluttered age groups. Default
 is 10}
 }
 \value{
-The file path of the saved plot.
+A list containing both proportion and count plots.
 }
 \description{
 This function processes an input dataset to compute age distribution,
-generates an age pyramid plot by region, and saves the plot to a specified
-directory.
+generates age pyramid plots by region showing both proportions and counts,
+and saves the plots to a specified directory.
 }
 \examples{
 # generate_age_pyramid_plot(
-#  dataset = results,
+#  dataset = list(prop_df = prop_results, pop_df = pop_results),
 #  country_code = "ken",
 #  output_dir = "03_outputs/3b_figures"
 # )

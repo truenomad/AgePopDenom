@@ -6,9 +6,9 @@
 Parameters}
 \usage{
 process_dhs_data(
-  rds_dir = here::here("01_data", "1a_dhs_data", "raw", "pr_records"),
-  shp_dir = here::here("01_data", "1a_dhs_data", "raw", "shapefiles"),
-  output_path = here::here("01_data", "1a_dhs_data", "processed",
+  rds_dir = here::here("01_data", "1a_survey_data", "raw", "pr_records"),
+  shp_dir = here::here("01_data", "1a_survey_data", "raw", "shapefiles"),
+  output_path = here::here("01_data", "1a_survey_data", "processed",
     "dhs_pr_records_combined.rds")
 )
 }
@@ -46,9 +46,9 @@ The final output includes two datasets:
 \examples{
 \dontrun{
 process_dhs_data(
-  rds_dir = "01_data/1a_dhs_data/raw/pr_records",
-  shp_dir = "01_data/1a_dhs_data/raw/shapefiles/",
-  output_path = "01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds"
+  rds_dir = "01_data/1a_survey_data/raw/pr_records",
+  shp_dir = "01_data/1a_survey_data/raw/shapefiles/",
+  output_path = "01_data/1a_survey_data/processed/dhs_pr_records_combined.rds"
 )
 }
 

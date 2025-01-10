@@ -8,6 +8,8 @@ install_suggests()
 }
 \value{
 None (called for side effects)
+d
+f
 }
 \description{
 This function installs suggested packages required for extended functionality.

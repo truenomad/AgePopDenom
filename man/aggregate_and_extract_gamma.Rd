@@ -2,7 +2,7 @@
 % Please edit documentation in R/setup.R
 \name{aggregate_and_extract_gamma}
 \alias{aggregate_and_extract_gamma}
-\title{Aggregate Individual DHS Data and Extract Gamma Parameters by Location}
+\title{Aggregate Individual Survey Data and Extract Gamma Parameters by Location}
 \usage{
 aggregate_and_extract_gamma(
   data,
@@ -14,7 +14,7 @@ aggregate_and_extract_gamma(
 }
 \arguments{
 \item{data}{Data frame containing individual-level age data with
-coordinates and urban/rural classification}
+coordinates and urban/rural classification.}
 
 \item{lat_column}{Column name for latitude coordinates (default: "lat")}
 
@@ -36,6 +36,6 @@ List containing:
         }
 }
 \description{
-This script aggregates the individual DHS data to location level and extracts
+This script aggregates the individual Survey data to location level and extracts
 the gamma parameters for the locations.
 }

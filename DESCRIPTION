@@ -15,7 +15,7 @@ Authors@R: c(
          role = "aut",
          email = "cc.nnanatu@soton.ac.uk"))
 Description: Package to automate the modelling of age-structured population data
-  using DHS survey data, worldpop popualtion rasters and urban-rural extents.
+  using survey data, popualtion rasters and urban-rural extents.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -41,7 +41,7 @@ Imports:
 Suggests: 
     stats,
     cli,
-    openxlsx,
+    openxlsx2,
     countrycode,
     crayon,
     scales,

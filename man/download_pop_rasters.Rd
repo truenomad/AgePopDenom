@@ -6,7 +6,7 @@
 \usage{
 download_pop_rasters(
   country_codes,
-  dest_dir = here::here("01_data", "1b_rasters", "worldpop_100m"),
+  dest_dir = here::here("01_data", "1b_rasters", "pop_raster"),
   quiet = FALSE
 )
 }

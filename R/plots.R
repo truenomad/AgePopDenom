@@ -138,27 +138,29 @@ generate_gamma_raster_plot <- function(predictor_data,
 #' Generate and Save Age Pyramid Plot
 #'
 #' This function processes an input dataset to compute age distribution,
-#' generates an age pyramid plot by region, and saves the plot to a specified
-#' directory.
+#' generates age pyramid plots by region showing both proportions and counts,
+#' and saves the plots to a specified directory.
 #'
-#' @param dataset A data frame containing population data, with columns for
-#'   `country`, `region`, `district`, and columns ending with "mean".
+#' @param dataset A list containing two data frames:
+#'   - prop_df: Population proportions data frame
+#'   - pop_df: Population counts data frame
+#'   Each with columns for `country`, `region`, `district`, and columns ending
+#'   with "mean"
 #' @param country_code A string representing the country code (e.g., "ken").
-#' @param output_dir A string specifying the directory where the plot should
-#'  be saved.
+#' @param output_dir A string specifying the directory where plots should be saved.
 #' @param line_color A string specifying the color of the plot's lines. Default
 #'   is `"#67000d"`.
 #' @param fill_high A string specifying the fill color for high values. Default
 #'   is `"#fee0d2"`.
 #' @param fill_low A string specifying the fill color for low values. Default
 #'   is `"#a50f15"`
-#' @param break_axis_by break axis to show less clutterd age groups.  Default
+#' @param break_axis_by break axis to show less cluttered age groups. Default
 #'   is 10
-#' @return The file path of the saved plot.
+#' @return A list containing both proportion and count plots.
 #'
 #' @examples
 #' # generate_age_pyramid_plot(
-#' #  dataset = results,
+#' #  dataset = list(prop_df = prop_results, pop_df = pop_results),
 #' #  country_code = "ken",
 #' #  output_dir = "03_outputs/3b_figures"
 #' # )
@@ -171,117 +173,169 @@ generate_age_pyramid_plot <- function(dataset,
                                       fill_high = "#fee0d2",
                                       fill_low = "#a50f15",
                                       break_axis_by = 10) {
-
-  # Validate required columns --------------------------------------------------
-  required_cols <- c("country", "region", "popsize")
-  if (!all(required_cols %in% names(dataset))) {
-    stop("Dataset must contain the following columns: ",
-         paste(required_cols, collapse = ", "))
+  
+  # Validate inputs ------------------------------------------------------------
+  if (!all(c("prop_df", "pop_df") %in% names(dataset))) {
+    stop("Dataset must be a list containing 'prop_df' and 'pop_df'")
   }
-
-  # Process the dataset for age structure --------------------------------------
-
-  age_struct <- dataset |>
-    dplyr::select(
-      country, region, district,
-      dplyr::contains("mean")
-    ) |>
-    dplyr::rename_with(
-      ~ stringr::str_replace_all(
-        ., c("_mean" = "", "plus" = "+y")
-      ),
-      dplyr::contains("mean")
-    ) |>
-    tidyr::pivot_longer(
-      cols = -c(country, region, district),
-      names_to = "age_group",
-      values_to = "population"
-    ) |>
-    dplyr::mutate(
-      age_group = stringr::str_remove(age_group, "_mean"),
-      age_group = stringr::str_replace_all(
-        age_group, c("_" = "-", "to" = "-", " " = "")),
-      region = stringr::str_to_title(region),
-      region = stringr::str_remove(region, " County"))
-
-  # get levels
-  levels_age <- unique(age_struct$age_group)
-
-  age_struct <- age_struct |>
-    dplyr::group_by(country, region, age_group) |>
-    dplyr::summarise(
-      tot_pop = sum(population, na.rm = TRUE),
-      .groups = 'drop'
-    ) |>
-    dplyr::filter(!is.na(age_group)) |>
-    dplyr::mutate(
-      age_group = factor(age_group, levels = levels_age)
-    )
-
-  # Calculate total population for the country ---------------------------------
-
-  total_pop <- sum(age_struct$tot_pop, na.rm = TRUE) |>
+  
+  required_cols <- c("country", "region", "popsize")
+  for (df in list(dataset$prop_df, dataset$pop_df)) {
+    if (!all(required_cols %in% names(df))) {
+      stop("Each dataset must contain: ", 
+           paste(required_cols, collapse = ", "))
+    }
+  }
+  
+  # Process datasets for age structure
+  process_age_data <- function(df, type = "count") {
+    df |>
+      dplyr::select(
+        country, region, district,
+        dplyr::contains("mean")
+      ) |>
+      dplyr::rename_with(
+        ~ stringr::str_replace_all(
+          ., c("_mean" = "", "_pop" = "", "_prop" = "", 
+               "plus" = "+y")
+        ),
+        dplyr::contains("mean")
+      ) |>
+      tidyr::pivot_longer(
+        cols = -c(country, region, district),
+        names_to = "age_group",
+        values_to = ifelse(type == "count", "population", "proportion")
+      ) |>
+      dplyr::mutate(
+        age_group = stringr::str_remove(age_group, "_mean"),
+        age_group = stringr::str_replace_all(
+          age_group, c("_" = "-", "to" = "-", " " = "")),
+        region = stringr::str_to_title(region),
+        region = stringr::str_remove(region, " County"))
+    
+    
+  }
+  
+  age_struct_pop <- process_age_data(dataset$pop_df, "count")
+  age_struct_prop <- process_age_data(dataset$prop_df, "prop")
+  
+  # Get common age group levels
+  levels_age <- unique(age_struct_pop$age_group)
+  
+  # Aggregate data by region
+  summarize_data <- function(data, value_col) {
+    data |>
+      dplyr::group_by(country, region, age_group) |>
+      dplyr::summarise(
+        total = sum(.data[[value_col]], na.rm = TRUE),
+        .groups = 'drop'
+      ) |>
+      dplyr::filter(!is.na(age_group)) |>
+      dplyr::mutate(
+        age_group = factor(age_group, levels = levels_age)
+      )
+  }
+  
+  pop_by_region <- summarize_data(age_struct_pop, "population")
+  prop_by_region <- summarize_data(age_struct_prop, "proportion")
+  
+  # Generate plots
+  create_pyramid <- function(data, value_type, total_label) {
+    
+    x_break_labels <- levels(data$age_group)[
+      seq(1, length(levels(data$age_group)), by = break_axis_by)]
+    
+    data |> 
+      dplyr::filter(age_group != "99+y") |> 
+      ggplot2::ggplot(
+        ggplot2::aes(x = age_group, y = total, fill = as.numeric(age_group))
+      ) +
+      ggplot2::geom_bar(
+        stat = "identity", 
+        color = line_color,
+        linewidth = 0.4,
+        position = "identity",
+        width = 1
+      ) +
+      ggplot2::scale_y_continuous(
+        labels = \(x) {
+          if (value_type == "count") {
+            format(x, scientific = FALSE, big.mark = ",")
+          } else {
+            scales::percent(x/100, accuracy = .1)
+          }
+        }
+      ) +
+      ggplot2::scale_x_discrete(
+        breaks = x_break_labels,
+        labels = x_break_labels
+      ) +
+      ggplot2::coord_flip() +
+      ggplot2::facet_wrap(~region) +
+      ggplot2::labs(
+        title = glue::glue(
+          "Age Pyramid by Region ({value_type})",
+          "\n{stringr::str_to_title(data$country[1])} {total_label}"
+        ),
+        x = "Age Group \n",
+        y = ifelse(value_type == "count",
+                  "\n Population", 
+                  "\n Proportion of Population"),
+        fill = "Region",
+        caption = 
+          "Note: Total population includes ages 99+, pyramid shows ages 0-99"
+      ) +
+      ggplot2::scale_fill_gradient(high = fill_high, low = fill_low) +
+      ggplot2::guides(fill = "none") +
+      ggplot2::theme_minimal() +
+      ggplot2::theme(
+        strip.text = ggplot2::element_text(face = "bold"),
+        plot.title = ggplot2::element_text(size = 15, face = "bold"),
+        plot.caption = ggplot2::element_text(
+          hjust = 1,  
+          vjust = 1, 
+          face = "italic",
+          size = 10,
+          margin = ggplot2::margin(t = 10)  
+        ),
+        plot.margin = ggplot2::margin(t = 10, r = 10, b = 10, l = 10)  
+      )
+    
+  }
+  
+  # Calculate totals for labels
+  total_pop <- sum(pop_by_region$total, na.rm = TRUE) |>
     round() |> format(big.mark = ",")
-
-  # Generate the plot ----------------------------------------------------------
-
-  # Dynamically generate breaks for the x-axis
-  x_breaks <- levels(age_struct$age_group)
-  x_break_labels <- levels(age_struct$age_group)[seq(
-    1, length(x_breaks), by = break_axis_by)]
-
-  # x_break_labels <-   sub("-.*", "", x_break_labels)
-
-  plot <- age_struct |>
-    dplyr::select(-dplyr::contains("+y")) |>
-    ggplot2::ggplot(
-      ggplot2::aes(x = age_group, y = tot_pop,
-                   fill = as.numeric(age_group))
-    ) +
-    ggplot2::geom_bar(
-      stat = "identity",
-      color = line_color,
-      linewidth = 0.4,
-      position = "identity",
-      width = 1
-    ) +
-    ggplot2::scale_y_continuous(
-      labels = \(x) format(x, scientific = FALSE, big.mark = ",")
-    ) +
-    ggplot2::scale_x_discrete(
-      breaks = x_break_labels,
-      labels = x_break_labels
-    ) +
-    ggplot2::coord_flip() +
-    ggplot2::facet_wrap(~region) +
-    ggplot2::labs(
-      title = glue::glue(
-        "Age Pyramid by Region",
-        ", {stringr::str_to_title(age_struct$country[1])} (N = ",
-        "{total_pop}) \n"),
-      x = "Age Group \n",
-      y = "\n Population",
-      fill = "Region"
-    ) +
-    ggplot2::scale_fill_gradient(high = fill_high, low = fill_low) +
-    ggplot2::guides(fill = "none") +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(
-      strip.text = ggplot2::element_text(face = "bold"),
-      plot.title = ggplot2::element_text(size = 15, face = "bold")
+  
+  # Create both plots
+  pop_plot <- create_pyramid(pop_by_region, "count",
+                             glue::glue("(N = {total_pop})"))
+  prop_plot <- create_pyramid(prop_by_region, "proportion", "")
+  
+  # Save plots
+  for (plot_type in c("count", "prop")) {
+    output_file <- file.path(
+      output_dir,
+      glue::glue("{country_code}_age_pyramid_{plot_type}.png")
     )
-
-  # Save the plot --------------------------------------------------------------
-  output_file <- file.path(
-    output_dir, glue::glue("{country_code}_age_pyramid.png")
-  )
-
-  ggplot2::ggsave(
-    output_file, plot = plot, width = 14,
-    height = 14, dpi = 500, scale = 1, device = "png"
-  )
-
-  cli::cli_alert_success("Age pyramid plot saved to {output_file}")
-
-  return(plot)
+    
+    plot_to_save <- if(plot_type == "count") pop_plot else prop_plot
+    
+    ggplot2::ggsave(
+      output_file,
+      plot = plot_to_save,
+      width = 14,
+      height = 14,
+      dpi = 500,
+      scale = 1,
+      device = "png"
+    )
+    
+    cli::cli_alert_success("Age pyramid {plot_type} plot saved to {output_file}")
+  }
+  
+  return(list(
+    count_plot = pop_plot,
+    prop_plot = prop_plot
+  ))
 }

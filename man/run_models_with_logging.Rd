@@ -6,11 +6,14 @@
 \usage{
 run_models_with_logging(
   country_codes,
-  dhs_data_path = here::here("01_data", "1a_dhs_data", "processed",
-    "dhs_pr_records_combined.rds"),
-  shape_path = here::here("01_data", "1c_shapefiles", "district_shape.gpkg"),
-  pop_raster_path = here::here("01_data", "1b_rasters", "worldpop_100m"),
+  survey_data_path = here::here("01_data", "1a_survey_data", "processed"),
+  survey_data_suffix = "dhs_pr_records_combined.rds",
+  shape_path = here::here("01_data", "1c_shapefiles"),
+  shape_suffix = "district_shape.gpkg",
+  pop_raster_path = here::here("01_data", "1b_rasters", "pop_raster"),
+  pop_raster_suffix = "_ppp_2020_constrained.tif",
   ur_raster_path = here::here("01_data", "1b_rasters", "urban_extent", "afurextent.asc"),
+  ur_raster_suffix = "afurextent.asc",
   model_output_path = here::here("03_outputs", "3a_model_outputs"),
   plot_output_path = here::here("03_outputs", "3b_visualizations"),
   raster_output_path = here::here("03_outputs", "3c_raster_outputs"),
@@ -33,17 +36,29 @@ run_models_with_logging(
 \arguments{
 \item{country_codes}{A character vector of country codes to process.}
 
-\item{dhs_data_path}{Character. Path to DHS data. Default:
-"01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds".}
+\item{survey_data_path}{Character. Path to Survey data. Default:
+"01_data/1a_survey_data/processed".}
+
+\item{survey_data_suffix}{Character. Suffix for Survey data files. Default:
+"dhs_pr_records_combined.rds".}
 
 \item{shape_path}{Character. Path to shapefile data. Default:
-"01_data/1c_shapefiles/district_shape.gpkg".}
+"01_data/1c_shapefiles".}
+
+\item{shape_suffix}{Character. Suffix for shapefile data. Default:
+"district_shape.gpkg".}
 
 \item{pop_raster_path}{Character. Path to population raster data. Default:
-"01_data/1b_rasters/worldpop_100m".}
+"01_data/1b_rasters/pop_raster".}
+
+\item{pop_raster_suffix}{Character. Suffix for population raster files. Default:
+"_ppp_2020_constrained.tif".}
 
 \item{ur_raster_path}{Character. Path to urban-rural extent data. Default:
 "01_data/1b_rasters/urban_extent/afurextent.asc".}
+
+\item{ur_raster_suffix}{Character. Suffix for urban-rural raster. Default:
+"afurextent.asc".}
 
 \item{model_output_path}{Character. Path to save model outputs. Default:
 "03_outputs/3a_model_outputs".}
@@ -70,10 +85,10 @@ Default: 5000.}
 Default: 5000.}
 
 \item{age_range_table}{Numeric vector. Age range for table generation.
-Default: c(0, 100).}
+Default: c(0, 99).}
 
 \item{interval_table}{Numeric. Age interval for table generation.
-Default: 5.}
+Default: 1.}
 
 \item{return_prop}{Logical. Whether to return proportions in raster output.
 Default: TRUE.}
@@ -95,9 +110,6 @@ Default: FALSE.}
 
 \item{ignore_cache}{Logical. Whether to ignore cached data.
 Default: FALSE.}
-}
-\value{
-None. Updates log file at log_path with model run results.
 }
 \description{
 Runs a model for each country in the provided list, logs the status,

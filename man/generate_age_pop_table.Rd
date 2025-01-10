@@ -41,8 +41,9 @@ default c(0,99)}
 detectCores()-2}
 }
 \value{
-Data frame with age-stratified population estimates and
-   uncertainty intervals
+List containing two data frames:
+   - prop_df: Age-stratified population proportions with uncertainty intervals
+   - pop_df: Age-stratified population counts with uncertainty intervals
 }
 \description{
 Creates age-stratified population tables from predictor data and gamma

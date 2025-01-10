@@ -14,12 +14,12 @@
 #' @details The function generates the following folder structure:
 #' \preformatted{
 #' # 01_data/
-#' # ├── 1a_dhs_data/
+#' # ├── 1a_survey_data/
 #' # │   ├── processed/
 #' # │   └── raw/
 #' # ├── 1b_rasters/
 #' # │   ├── urban_extent/
-#' # │   └── worldpop_100m/
+#' # │   └── pop_raster/
 #' # ├── 1c_shapefiles/
 #' # 02_scripts/
 #' # 03_outputs/
@@ -41,10 +41,10 @@ create_project_structure <- function(base_path = here::here()) {
 
   # Define relative directories
   relative_dirs <- c(
-    "01_data/1a_dhs_data/processed",
-    "01_data/1a_dhs_data/raw",
+    "01_data/1a_survey_data/processed",
+    "01_data/1a_survey_data/raw",
     "01_data/1b_rasters/urban_extent",
-    "01_data/1b_rasters/worldpop_100m",
+    "01_data/1b_rasters/pop_raster",
     "01_data/1c_shapefiles",
     "02_scripts",
     "03_outputs/3a_model_outputs",
@@ -137,8 +137,8 @@ download_dhs_datasets_by_type <- function(country_codes, survey_type, file_type,
 #' @export
 download_dhs_datasets <- function(
     country_codes,
-    cache_path = here::here("01_data", "1a_dhs_data", "raw"),
-    output_dir_root = here::here("01_data", "1a_dhs_data", "raw"),
+    cache_path = here::here("01_data", "1a_survey_data", "raw"),
+    output_dir_root = here::here("01_data", "1a_survey_data", "raw"),
     email, project,
     verbose = TRUE) {
 
@@ -188,13 +188,13 @@ download_dhs_datasets <- function(
   invisible(list(PR = pr_datasets, GE = ge_datasets))
 }
 
-#' Aggregate Individual DHS Data and Extract Gamma Parameters by Location
+#' Aggregate Individual Survey Data and Extract Gamma Parameters by Location
 #'
-#' This script aggregates the individual DHS data to location level and extracts
+#' This script aggregates the individual Survey data to location level and extracts
 #' the gamma parameters for the locations.
 #'
 #' @param data Data frame containing individual-level age data with
-#'        coordinates and urban/rural classification
+#'        coordinates and urban/rural classification.
 #' @param lat_column Column name for latitude coordinates (default: "lat")
 #' @param long_column Column name for longitude coordinates (default: "long")
 #' @param age_column Column name for age values (default: "ageyrs")
@@ -209,10 +209,24 @@ download_dhs_datasets <- function(
 #'                 b1, c, b2, nsampled
 #'         }
 aggregate_and_extract_gamma <- function(data,
-                                        lat_column = "lat",
-                                        long_column = "long",
-                                        age_column = "ageyrs",
-                                        urban_column = "urban") {
+                                      lat_column = "lat",
+                                      long_column = "long",
+                                      age_column = "ageyrs",
+                                      urban_column = "urban") {
+
+  # Validate input column names exist in data
+  if (
+    !all(
+      c(lat_column, long_column,
+      age_column, urban_column) %in% names(data))) {
+    stop(
+      "Missing required input columns. Please ensure data contains: ",
+      paste(setdiff(
+        c(lat_column, long_column, age_column, urban_column),
+        names(data)
+      ), collapse = ", ")
+    )
+  }
 
   # Convert coordinates
   coords_sf <- data |>
@@ -252,7 +266,7 @@ aggregate_and_extract_gamma <- function(data,
     dplyr::group_modify(~ {
       sub_data <- .x |>
         dplyr::filter(is.finite(!!rlang::sym(age_column)),
-                      !!rlang::sym(age_column) != 0)
+                     !!rlang::sym(age_column) != 0)
 
       age_x_i <- sub_data[[age_column]]
       shape_start <- mean(age_x_i)^2 / var(age_x_i)
@@ -283,23 +297,19 @@ aggregate_and_extract_gamma <- function(data,
     }) |>
     dplyr::ungroup() |>
     dplyr::left_join(
-      dplyr::select(
-        data,
-        country,
-        year_of_survey, survey_code,
-        country_code_iso3,
-        country_code_dhs,
-        lat, lon = long,
-      ), by = c("lat", "lon")
+      data |>
+      dplyr::select(dplyr::any_of(c(
+        "country", "year_of_survey", "survey_code",
+        "country_code_iso3", "country_code_dhs",
+        "lat", "long"
+      ))) |>
+      dplyr::rename(lon = long),
+      by = c("lat", "lon")
     ) |>
-    dplyr::select(
-      country,
-      country_code_iso3,
-      country_code_dhs,
-      survey_code,
-      year_of_survey,
-      dplyr::everything()
-    )
+    dplyr::select(dplyr::any_of(c(
+      "country", "country_code_iso3", "country_code_dhs",
+      "survey_code", "year_of_survey"
+    )), dplyr::everything())
 
   # Return list of results
   list(
@@ -340,17 +350,17 @@ aggregate_and_extract_gamma <- function(data,
 #' @examples
 #' \dontrun{
 #' process_dhs_data(
-#'   rds_dir = "01_data/1a_dhs_data/raw/pr_records",
-#'   shp_dir = "01_data/1a_dhs_data/raw/shapefiles/",
-#'   output_path = "01_data/1a_dhs_data/processed/dhs_pr_records_combined.rds"
+#'   rds_dir = "01_data/1a_survey_data/raw/pr_records",
+#'   shp_dir = "01_data/1a_survey_data/raw/shapefiles/",
+#'   output_path = "01_data/1a_survey_data/processed/dhs_pr_records_combined.rds"
 #' )
 #' }
 #'
 #' @export
 process_dhs_data <- function(
-    rds_dir = here::here("01_data", "1a_dhs_data", "raw", "pr_records"),
-    shp_dir = here::here("01_data", "1a_dhs_data", "raw", "shapefiles"),
-    output_path = here::here("01_data", "1a_dhs_data",
+    rds_dir = here::here("01_data", "1a_survey_data", "raw", "pr_records"),
+    shp_dir = here::here("01_data", "1a_survey_data", "raw", "shapefiles"),
+    output_path = here::here("01_data", "1a_survey_data",
                              "processed", "dhs_pr_records_combined.rds")) {
 
   # Create age-population raster
@@ -553,7 +563,7 @@ process_dhs_data <- function(
 #' @export
 download_pop_rasters <- function(
     country_codes,
-    dest_dir = here::here("01_data", "1b_rasters", "worldpop_100m"),
+    dest_dir = here::here("01_data", "1b_rasters", "pop_raster"),
     quiet = FALSE) {
 
   # Ensure destination directory exists

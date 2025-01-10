@@ -6,8 +6,8 @@
 \usage{
 download_dhs_datasets(
   country_codes,
-  cache_path = here::here("01_data", "1a_dhs_data", "raw"),
-  output_dir_root = here::here("01_data", "1a_dhs_data", "raw"),
+  cache_path = here::here("01_data", "1a_survey_data", "raw"),
+  output_dir_root = here::here("01_data", "1a_survey_data", "raw"),
   email,
   project,
   verbose = TRUE

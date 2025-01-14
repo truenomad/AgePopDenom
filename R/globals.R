@@ -12,7 +12,8 @@ globalVariables(
     "COUNTRY", "GID_0", "NAME_1", "NAME_2", "lq_mean_prop_age", "mean_prop_age",
     "pop.x", "uq_mean_prop_age", "dev.off", "png", "country_code",
     "ur_raster_web", "pop.y", "population",
-    "limslow", "limsup", "total", ".data"
+    "limslow", "limsup", "total", ".data", "lower_quantile", "upper_quantile",
+    "prop", "vario_fit", "mean_age", "n_samples", "quantile", "sd"
   ))
 
 

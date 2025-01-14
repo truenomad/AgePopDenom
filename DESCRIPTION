@@ -33,14 +33,14 @@ Imports:
     utils,
     remotes,
     sf,
-    stringr,
+    cli,
     tibble,
     terra,
     tidyr,
     matrixStats
 Suggests: 
     stats,
-    cli,
+    stringr,
     openxlsx2,
     countrycode,
     crayon,
@@ -58,6 +58,8 @@ Suggests:
     rdhs,
     rlang,
     pak,
+    sp,
+    automap,
     testthat (>= 3.0.0)
 RoxygenNote: 7.3.2
 Config/testthat/edition: 3

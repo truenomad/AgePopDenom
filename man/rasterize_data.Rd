@@ -4,7 +4,7 @@
 \alias{rasterize_data}
 \title{Rasterize Spatial Data}
 \usage{
-rasterize_data(x_coords, y_coords, values, resolution, crs, fun = mean)
+rasterize_data(x_coords, y_coords, values, cell_size = 5000, crs, fun = mean)
 }
 \arguments{
 \item{x_coords}{Numeric vector of x-coordinates (e.g., longitude).}
@@ -13,8 +13,7 @@ rasterize_data(x_coords, y_coords, values, resolution, crs, fun = mean)
 
 \item{values}{Numeric vector of values associated with each point.}
 
-\item{resolution}{Numeric, the resolution of the raster in map units
-(e.g., meters for EPSG:3857).}
+\item{cell_size}{Numeric. Grid cell size in meters (default: 5000).}
 
 \item{crs}{Character, the coordinate reference system in EPSG format
 (e.g., "EPSG:3857").}
@@ -31,6 +30,6 @@ into a raster using a specified resolution and CRS.
 \examples{
 # rast <- rasterize_data(
 #   predictor_data$web_x, predictor_data$web_y, pred_list$shape_hat,
-#   resolution = 5000, crs = "EPSG:3857"
+#   cell_size = 5000, crs = "EPSG:3857"
 # )
 }

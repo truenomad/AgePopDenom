@@ -51,7 +51,7 @@ list should contain:
   \item beta2: Vector of coefficients for shape model
   \item gamma: Scalar value (default 1.0)
   \item log_sigma2: Log of sigma squared (default log(1.0))
-  \item log_phi: Log of phi (default log(100))
+  \item log_phi: Log of phi (estimated from variogram)
   \item log_tau2_1: Log of tau squared (default log(1.0))
 }}
 
@@ -81,8 +81,9 @@ tracked with clear status updates. Can optionally load from cache.
 The function performs the following steps with progress tracking:
 1. Fits initial linear models for scale and shape parameters
 2. Calculates spatial distance matrix from web coordinates
-3. Compiles and loads the TMB C++ template
-4. Optimizes the joint likelihood using nlminb
+3. Estimates optimal phi parameter using variogram
+4. Compiles and loads the TMB C++ template
+5. Optimizes the joint likelihood using nlminb
 
 The C++ template should implement the joint spatial model for both
 parameters.

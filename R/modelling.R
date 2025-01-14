@@ -30,7 +30,7 @@
 #'     \item beta2: Vector of coefficients for shape model
 #'     \item gamma: Scalar value (default 1.0)
 #'     \item log_sigma2: Log of sigma squared (default log(1.0))
-#'     \item log_phi: Log of phi (default log(100))
+#'     \item log_phi: Log of phi (estimated from variogram)
 #'     \item log_tau2_1: Log of tau squared (default log(1.0))
 #'   }
 #' @param output_dir Directory to save cached models. Only used if country_code
@@ -51,8 +51,9 @@
 #' The function performs the following steps with progress tracking:
 #' 1. Fits initial linear models for scale and shape parameters
 #' 2. Calculates spatial distance matrix from web coordinates
-#' 3. Compiles and loads the TMB C++ template
-#' 4. Optimizes the joint likelihood using nlminb
+#' 3. Estimates optimal phi parameter using variogram
+#' 4. Compiles and loads the TMB C++ template
+#' 5. Optimizes the joint likelihood using nlminb
 #'
 #' The C++ template should implement the joint spatial model for both
 #' parameters.
@@ -156,19 +157,50 @@ fit_spatial_model <- function(data,
 
   cli::cli_process_done()
 
-  # Section 2: Distance Matrix -------------------------------------------------
+  # Section 2: Distance Matrix and Variogram ----------------------------------
 
-  cli::cli_process_start(
-    msg = "Calculating distance matrix...",
-    msg_done =  "Calculated distance matrix.")
+  # Initialize range estimate
+  range_est <- NA
+  if (is.null(manual_params) || is.null(manual_params$log_phi)) {
+    cli::cli_process_start(msg = "Calculating empirical variogram...",
+                           msg_done = "Empirical variogram fitted.")
 
-  dist_matrix <- data |>
-    dplyr::select(web_x, web_y) |>
-    as.matrix() |>
-    dist() |>
-    as.matrix()
+    if (!requireNamespace("automap", quietly = TRUE)) {
+      stop("Package 'automap' is required for variogram fitting.")
+    }
 
-  cli::cli_process_done()
+    # Create spatial coordinates
+    coords <- data |>
+      dplyr::select(web_x, web_y) |>
+      as.matrix()
+
+    # Calculate distance matrix
+    dist_matrix <- coords |>
+      dist() |>
+      as.matrix()
+
+    # Set up spatial data
+    vgm_data <- data
+    sp::coordinates(vgm_data) <- ~web_x + web_y
+
+    # Fit variogram using automap
+    fit_vario <- automap::autofitVariogram(
+      stats::formula(paste0(scale_outcome, "~1")),
+      vgm_data,
+      cutoff = max(dist_matrix) / 2
+    )$var_model
+
+    # Get range estimate from the auto-fitted model
+    range_est <- fit_vario$range[2]
+
+    # Set default if estimate is invalid
+    if (range_est <= 0) range_est <- 100
+
+    cli::cli_inform(c("i" = paste("Estimated range:", range_est)))
+    cli::cli_process_done()
+  }
+
+  optimal_phi <- range_est
 
   # Section 3: Parameter Setup ------------------------------------------------
 
@@ -177,12 +209,8 @@ fit_spatial_model <- function(data,
     msg_done = "Initialization complete."
   )
 
-  # set up phi based on the country type
-  if (any(data$country_code_iso3 %in% c("BFA", "CAF"))) {
-    log_phi = 4000 } else {log_phi = 100}
-
   # Use manual parameters if provided,
-  # otherwise use linear regression estimates
+  # otherwise use linear regression estimates and variogram phi
   parameters <- if (!is.null(manual_params)) {
     # Validate manual parameters structure
     required_params <- c("beta1", "beta2", "gamma", "log_sigma2",
@@ -198,11 +226,8 @@ fit_spatial_model <- function(data,
       beta2 = as.vector(coef(lm_shape)),
       gamma = 1.0,
       log_sigma2 = log(1.0),
-      log_phi = log(log_phi),
+      log_phi = log(optimal_phi),
       log_tau2_1 = log(1.0)
-      # log_sigma2 = log(1.0),
-      # log_phi = log(100),
-      # log_tau2_1 = log(1.0)
     )
   }
 
@@ -275,6 +300,7 @@ fit_spatial_model <- function(data,
   # include formula to output
   opt$scale_formula <- scale_formula
   opt$shape_formula <- shape_formula
+  opt$variogram <- fit_vario
 
   # Save if country code provided
   if (!is.null(country_code)) {
@@ -767,7 +793,7 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
     dplyr::filter(is.na(country)) |>
     dplyr::select(web_x, web_y, pop, urban) |>
     sf::st_join(
-      sf::st_transform(adm2_shape,
+      sf::st_transform(dplyr::select(adm2_shape, -country_code),
                        crs = 3857
       ),
       join = sf::st_nearest_feature
@@ -776,7 +802,10 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
       predictors |>
         dplyr::filter(!is.na(country))
     ) |>
-    sf::st_drop_geometry()
+    sf::st_drop_geometry()  |>
+    dplyr::mutate(
+      country_code = toupper(country_code)
+    )
 
   cli::cli_process_done()
 
@@ -1052,6 +1081,39 @@ run_full_workflow <- function(
     ),
     return_results = FALSE,
     ...) {
+
+  # Define default output paths
+  default_output_paths <- list(
+    model = here::here("03_outputs", "3a_model_outputs"),
+    plot = here::here("03_outputs", "3b_visualizations"),
+    raster = here::here("03_outputs", "3c_raster_outputs"),
+    table = here::here("03_outputs", "3c_table_outputs"),
+    compiled = here::here("03_outputs", "3d_compiled_results"),
+    excel = here::here(
+      "03_outputs", "3d_compiled_results",
+      "age_pop_denom_compiled.xlsx"
+    ),
+    log = here::here("03_outputs", "3a_model_outputs", "modelling_log.rds")
+  )
+
+  # Define default model parameters
+  default_model_params <- list(
+    cell_size = 5000,
+    n_sim = 5000,
+    ignore_cache = FALSE,
+    age_range = c(0, 99),
+    age_interval = 1,
+    return_prop = TRUE,
+    scale_outcome = "log_scale",
+    shape_outcome = "log_shape",
+    covariates = "urban",
+    cpp_script = here::here("02_scripts", "model")
+  )
+
+  # Merge user-provided parameters with defaults
+  output_paths <- utils::modifyList(default_output_paths, output_paths)
+  model_params <-  utils::modifyList(default_model_params, model_params)
+
   # Logging --------------------------------------------------------------------
 
   # Initialize logging
@@ -1151,7 +1213,7 @@ run_full_workflow <- function(
           ur_raster = ur_raster,
           adm2_shape = adm2_shape,
           cell_size = model_params$cell_size,
-          ignore_cache = model_params$ignore_cache,
+          ignore_cache = T,
           output_dir = output_paths$model
         )
 
@@ -1205,7 +1267,7 @@ run_full_workflow <- function(
           country_code = country_code_lw,
           age_range = model_params$age_range,
           age_interval = model_params$age_interval,
-          ignore_cache = model_params$ignore_cache,
+          ignore_cache = T,
           output_dir = output_paths$table,
           ...
         )

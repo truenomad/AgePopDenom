@@ -124,7 +124,7 @@ generate_gamma_raster_plot <- function(predictor_data,
     png(output_file, width = width, height = height, res = png_resolution)
 
     # Adjust layout and spacing
-    par(
+    graphics::par(
       mfrow = c(2, 2), # Arrange plots in 2 rows and 2 columns
       mar = c(5, 5, 4, 2) + 0.1, # Margins for axis labels
       oma = c(0, 0, 2, 0) # Outer margins for titles
@@ -140,7 +140,7 @@ generate_gamma_raster_plot <- function(predictor_data,
                 cex.axis = 0.8, cex.lab = 1.2
     )
     # Skip the third position (top right) by plotting in fourth position
-    par(mfg = c(2, 1)) # Move to bottom left position
+    graphics::par(mfg = c(2, 1)) # Move to bottom left position
     terra::plot(rast_mean_age,
                 main = "Mean Age Prediction", cex.main = 1.2,
                 cex.axis = 0.8, cex.lab = 1.2
@@ -173,6 +173,8 @@ generate_gamma_raster_plot <- function(predictor_data,
 #'   is `"#a50f15"`
 #' @param break_axis_by break axis to show less cluttered age groups. Default
 #'   is 10
+#' @param caption A string specifying the caption text. Default is "Note: Total
+#'   population includes ages 99+, pyramid shows ages 0-99"
 #' @return A list containing both proportion and count plots.
 #'
 #' @examples
@@ -183,13 +185,17 @@ generate_gamma_raster_plot <- function(predictor_data,
 #' # )
 #'
 #' @export
-generate_age_pyramid_plot <- function(dataset,
-                                      country_code,
-                                      output_dir,
-                                      line_color = "#67000d",
-                                      fill_high = "#fee0d2",
-                                      fill_low = "#a50f15",
-                                      break_axis_by = 10) {
+generate_age_pyramid_plot <- function(
+    dataset,
+    country_code,
+    output_dir,
+    line_color = "#67000d",
+    fill_high = "#fee0d2",
+    fill_low = "#a50f15",
+    break_axis_by = 10,
+    caption =
+      paste0("Note: Total population includes ",
+             "ages 99+, pyramid shows ages 0-99")) {
 
   # Validate inputs ------------------------------------------------------------
   if (!all(c("prop_df", "pop_df") %in% names(dataset))) {
@@ -279,7 +285,7 @@ generate_age_pyramid_plot <- function(dataset,
           if (value_type == "count") {
             format(x, scientific = FALSE, big.mark = ",")
           } else {
-            scales::percent(x/100, accuracy = .1)
+            scales::percent(x, accuracy = .1)
           }
         }
       ) +
@@ -296,11 +302,10 @@ generate_age_pyramid_plot <- function(dataset,
         ),
         x = "Age Group \n",
         y = ifelse(value_type == "count",
-                  "\n Population",
-                  "\n Proportion of Population"),
+                   "\n Population",
+                   "\n Proportion of Population"),
         fill = "Region",
-        caption =
-          "Note: Total population includes ages 99+, pyramid shows ages 0-99"
+        caption = caption
       ) +
       ggplot2::scale_fill_gradient(high = fill_high, low = fill_low) +
       ggplot2::guides(fill = "none") +
@@ -356,3 +361,5 @@ generate_age_pyramid_plot <- function(dataset,
     prop_plot = prop_plot
   ))
 }
+
+

@@ -189,7 +189,7 @@ generate_age_pop_table <- function(predictor_data,
     )
 
     # Create age class data frames for both proportions and counts
-    age_prop_class <- base::data.frame(
+    age_prop_class <- data.frame(
       country = predictor_data$country,
       region = predictor_data$region,
       district = predictor_data$district,
@@ -199,14 +199,13 @@ generate_age_pop_table <- function(predictor_data,
     ) |>
       dplyr::group_by(country, region, district) |>
       dplyr::summarize(
-        dplyr::across(dplyr::everything(),
-                      base::sum,
-                      .names = "{.col}_tot_class"
-        ),
+        prop = mean(prop, na.rm = TRUE),
+        lower_quantile = mean(lower_quantile, na.rm = TRUE),
+        upper_quantile = mean(upper_quantile, na.rm = TRUE),
         .groups = "drop"
       )
 
-    age_pop_class <- base::data.frame(
+    age_pop_class <- data.frame(
       country = predictor_data$country,
       region = predictor_data$region,
       district = predictor_data$district,
@@ -216,10 +215,9 @@ generate_age_pop_table <- function(predictor_data,
     ) |>
       dplyr::group_by(country, region, district) |>
       dplyr::summarize(
-        dplyr::across(dplyr::everything(),
-                      base::sum,
-                      .names = "{.col}_tot_class"
-        ),
+        pop = sum(pop, na.rm = TRUE),
+        lower_quantile = sum(lower_quantile, na.rm = TRUE),
+        upper_quantile = sum(upper_quantile, na.rm = TRUE),
         .groups = "drop"
       )
 
@@ -437,7 +435,7 @@ extract_age_param <- function(
   files <- list.files(dir_path, full.names = TRUE)
 
   # Filter files matching the desired pattern
-  param_files <- grep("age_param_spatial_urban", files, value = TRUE)
+  param_files <- grep("age_param_spatial", files, value = TRUE)
 
   # Initialize a list to store data frames
   param_list <- lapply(param_files, function(file) {

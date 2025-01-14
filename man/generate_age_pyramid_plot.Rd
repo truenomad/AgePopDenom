@@ -11,7 +11,9 @@ generate_age_pyramid_plot(
   line_color = "#67000d",
   fill_high = "#fee0d2",
   fill_low = "#a50f15",
-  break_axis_by = 10
+  break_axis_by = 10,
+  caption = paste0("Note: Total population includes ",
+    "ages 99+, pyramid shows ages 0-99")
 )
 }
 \arguments{
@@ -36,6 +38,9 @@ is `"#a50f15"`}
 
 \item{break_axis_by}{break axis to show less cluttered age groups. Default
 is 10}
+
+\item{caption}{A string specifying the caption text. Default is "Note: Total
+population includes ages 99+, pyramid shows ages 0-99"}
 }
 \value{
 A list containing both proportion and count plots.

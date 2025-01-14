@@ -13,7 +13,7 @@ generate_gamma_raster_plot(
   file_name_suffix = "gamma_prediction_rasters",
   width = 2500,
   height = 2000,
-  resolution = 300
+  png_resolution = 300
 )
 }
 \arguments{
@@ -35,12 +35,12 @@ Default is TRUE.}
 \item{file_name_suffix}{A string specifying the suffix for the file name
 (default is "gamma_prediction_rasters").}
 
-\item{width}{Width of output plot. width is 2500.}
+\item{width}{Numeric. Width of output plot in pixels (default: 2500).}
 
-\item{height}{Width of output plot. width is 2000}
+\item{height}{Numeric. Height of output plot in pixels (default: 2000).}
 
-\item{resolution}{An integer specifying the resolution of the plot in DPI
-(default is 300).}
+\item{png_resolution}{An integer specifying the resolution of the plot in DPI
+(default: 300).}
 }
 \value{
 The path to the saved raster plot.
@@ -51,10 +51,10 @@ stack, and saves the faceted plot to a specified file.
 }
 \examples{
 # raster_path <- generate_gamma_raster_plot(
-#  predictor_data = predictor_data,
-#  pred_list = pred_list,
-#  country_code = "ken",
-#  output_dir = "03_outputs/3b_visualizations"
+#   predictor_data = predictor_data,
+#   pred_list = pred_list,
+#   country_code = "ken",
+#   output_dir = "03_outputs/3b_visualizations"
 # )
 
 }

@@ -14,9 +14,9 @@ process_final_population_data(
 \item{input_dir}{A character string specifying the directory containing RDS
 files. Default is "03_outputs/3c_table_outputs" in the project directory.}
 
-\item{excel_output_file}{A character string specifying the output Excel file path.
-Default is "03_outputs/3d_compiled_results/age_pop_denom_2020.xlsx" in the
-project directory.}
+\item{excel_output_file}{A character string specifying the output Excel file
+path. Default is "03_outputs/3d_compiled_results/age_pop_denom_compiled.xlsx"
+in the project directory.}
 }
 \value{
 None. The function writes an Excel file to the specified output
@@ -24,11 +24,10 @@ None. The function writes an Excel file to the specified output
   different administrative levels.
 }
 \description{
-Reads population and proportion data from RDS files in a specified directory,
-processes the data to generate age-group-based population summaries and
-proportions at different administrative levels (Country, Region, District),
-and writes the results to an Excel file with separate sheets for each level
-and metric.
+Reads population and proportion data from RDS files, processes the data to
+generate age-group-based population summaries and proportions at different
+administrative levels (Country, Region, District), and writes the results to
+an Excel file with separate sheets for each level and metric.
 }
 \examples{
 # process_final_population_data(

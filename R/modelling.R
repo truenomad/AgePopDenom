@@ -45,22 +45,41 @@
 #'     \item message - Convergence message
 #'     \item iterations - Number of iterations
 #'     \item evaluations - Number of function/gradient evaluations
+#'     \item scale_formula - Formula used for scale model
+#'     \item shape_formula - Formula used for shape model
+#'     \item variogram - Fitted variogram model from automap containing:
+#'       \itemize{
+#'         \item range - Spatial correlation range parameter
+#'         \item psill - Partial sill (structured variance)
+#'         \item nugget - Nugget effect (unstructured variance)
+#'         \item kappa - Smoothness parameter for Matern models
+#'       }
 #'   }
 #'
 #' @details
 #' The function performs the following steps with progress tracking:
 #' 1. Fits initial linear models for scale and shape parameters
 #' 2. Calculates spatial distance matrix from web coordinates
-#' 3. Estimates optimal phi parameter using variogram
+#' 3. Estimates optimal phi parameter using variogram:
+#'    - Computes empirical variogram using automap
+#'    - Automatically selects best theoretical variogram model
+#'    - Range parameter is used to initialize spatial correlation
+#'    - Default range of 100 used if estimation fails
 #' 4. Compiles and loads the TMB C++ template
 #' 5. Optimizes the joint likelihood using nlminb
+#'
+#' The spatial correlation is modeled using an exponential variogram with
+#' parameters estimated from the data. The distance matrix is computed from
+#' the web coordinates (web_x, web_y) and used in the spatial covariance
+#' structure.
 #'
 #' The C++ template should implement the joint spatial model for both
 #' parameters.
 #'
 #' @note
 #' Requires TMB package and a working C++ compiler. The C++ template must be
-#' properly structured for TMB.
+#' properly structured for TMB. The automap package is required for variogram
+#' fitting.
 #'
 #' @examples
 #' \dontrun{
@@ -96,7 +115,6 @@ fit_spatial_model <- function(data,
                               manual_params = NULL,
                               output_dir = NULL,
                               ignore_cache = FALSE) {
-
   # Check for caching
   if (!is.null(country_code)) {
     country_code <- tolower(country_code)
@@ -118,18 +136,20 @@ fit_spatial_model <- function(data,
 
   # Section 1: Initial Linear Models -------------------------------------------
 
-  cli::cli_process_start(msg = "Fitting initial linear models...",
-                         msg_done = "Fitted initial linear models.")
+  cli::cli_process_start(
+    msg = "Fitting initial linear models...",
+    msg_done = "Fitted initial linear models."
+  )
 
   # Create model formulas
   scale_formula <- reformulate(covariates,
-                               response = scale_outcome,
-                               intercept = FALSE
+    response = scale_outcome,
+    intercept = FALSE
   )
 
   shape_formula <- reformulate(covariates,
-                               response = shape_outcome,
-                               intercept = FALSE
+    response = shape_outcome,
+    intercept = FALSE
   )
 
   # Fit
@@ -162,8 +182,10 @@ fit_spatial_model <- function(data,
   # Initialize range estimate
   range_est <- NA
   if (is.null(manual_params) || is.null(manual_params$log_phi)) {
-    cli::cli_process_start(msg = "Calculating empirical variogram...",
-                           msg_done = "Empirical variogram fitted.")
+    cli::cli_process_start(
+      msg = "Calculating empirical variogram...",
+      msg_done = "Empirical variogram fitted."
+    )
 
     if (!requireNamespace("automap", quietly = TRUE)) {
       stop("Package 'automap' is required for variogram fitting.")
@@ -181,7 +203,7 @@ fit_spatial_model <- function(data,
 
     # Set up spatial data
     vgm_data <- data
-    sp::coordinates(vgm_data) <- ~web_x + web_y
+    sp::coordinates(vgm_data) <- ~ web_x + web_y
 
     # Fit variogram using automap
     fit_vario <- automap::autofitVariogram(
@@ -213,11 +235,15 @@ fit_spatial_model <- function(data,
   # otherwise use linear regression estimates and variogram phi
   parameters <- if (!is.null(manual_params)) {
     # Validate manual parameters structure
-    required_params <- c("beta1", "beta2", "gamma", "log_sigma2",
-                         "log_phi", "log_tau2_1")
+    required_params <- c(
+      "beta1", "beta2", "gamma", "log_sigma2",
+      "log_phi", "log_tau2_1"
+    )
     if (!all(required_params %in% names(manual_params))) {
-      stop("manual_params must contain all required parameters: ",
-           paste(required_params, collapse = ", "))
+      stop(
+        "manual_params must contain all required parameters: ",
+        paste(required_params, collapse = ", ")
+      )
     }
     manual_params
   } else {
@@ -245,18 +271,20 @@ fit_spatial_model <- function(data,
 
   # Section 4: TMB Compilation ------------------------------------------------
 
-  cli::cli_process_start(msg = "Compiling TMB model",
-                         msg_done  = "Compiled TMB model")
+  cli::cli_process_start(
+    msg = "Compiling TMB model",
+    msg_done = "Compiled TMB model"
+  )
 
   if (!verbose) {
     suppressWarnings(
       suppressMessages({
         system2("R",
-                args = c(
-                  "CMD", "SHLIB",
-                  paste0(cpp_script_name, ".cpp"), "-O2"
-                ),
-                stdout = FALSE, stderr = FALSE
+          args = c(
+            "CMD", "SHLIB",
+            paste0(cpp_script_name, ".cpp"), "-O2"
+          ),
+          stdout = FALSE, stderr = FALSE
         )
         dyn.load(TMB::dynlib(cpp_script_name))
       })
@@ -270,14 +298,17 @@ fit_spatial_model <- function(data,
 
   # Section 5: Optimization ----------------------------------------------------
 
-  cli::cli_process_start(msg = "Optimizing model",
-                         msg_done  = "Optimized model")
+  cli::cli_process_start(
+    msg = "Optimizing model",
+    msg_done = "Optimized model"
+  )
 
   obj <- TMB::MakeADFun(
     data = tmb_data,
     parameters = parameters,
     DLL = stringr::str_extract(
-      cpp_script_name, "[^/]+$"),
+      cpp_script_name, "[^/]+$"
+    ),
     silent = TRUE
   )
 
@@ -286,7 +317,7 @@ fit_spatial_model <- function(data,
   }
 
   opt <- nlminb(obj$par, obj$fn, obj$gr,
-                control = control_params
+    control = control_params
   )
 
   names(opt$par) <- c(
@@ -343,12 +374,12 @@ fit_spatial_model <- function(data,
 predict_gamma_params <- function(age_param_data, predictor_data,
                                  model_params, shapefile,
                                  cell_size = 5000, n_sim = 5000) {
-
   # Make grid ----------------------------------------------------------------
 
   cli::cli_process_start(
     msg = "Making a prediction grid...",
-    msg_done = "Prediction grid successfully made.")
+    msg_done = "Prediction grid successfully made."
+  )
 
   country_grid <- predictor_data |> dplyr::select(web_x, web_y)
 
@@ -361,24 +392,27 @@ predict_gamma_params <- function(age_param_data, predictor_data,
 
   cli::cli_process_start(
     msg = "Setting model parameters...",
-    msg_done = "Model parameters set successfully.")
+    msg_done = "Model parameters set successfully."
+  )
 
-  gamma <- model_params$par['gamma']
-  sigma2 <- exp(model_params$par['log_sigma2'])
-  phi <- exp(model_params$par['log_phi'])
-  tau <- exp(model_params$par['log_tau1'])
+  gamma <- model_params$par["gamma"]
+  sigma2 <- exp(model_params$par["log_sigma2"])
+  phi <- exp(model_params$par["log_phi"])
+  tau <- exp(model_params$par["log_tau1"])
   beta1 <- extract_betas(model_params)$beta1
   beta2 <- extract_betas(model_params)$beta2
   y <- c(age_param_data$log_scale, age_param_data$log_shape)
   d1 <- d2 <- model.matrix(model_params$scale_formula,
-                           data = age_param_data)
+    data = age_param_data
+  )
   mu1 <- as.numeric(d1 %*% beta1)
   mu2 <- as.numeric(d2 %*% beta2)
   mu <- c(mu1, mu2)
 
   # Predict the gamma parameters
   d_pred <- model.matrix(model_params$scale_formula,
-                         data = predictor_data)
+    data = predictor_data
+  )
 
   mu1_pred <- as.numeric(d_pred %*% beta1)
   mu2_pred <- as.numeric(d_pred %*% beta2)
@@ -392,10 +426,13 @@ predict_gamma_params <- function(age_param_data, predictor_data,
 
   cli::cli_process_start(
     msg = "Calculating pairwise distances for prediction grid...",
-    msg_done = "Computed pairwise distances for prediction grid.")
+    msg_done = "Computed pairwise distances for prediction grid."
+  )
 
-  u_pred <- pdist::pdist(country_grid,
-                         age_param_data[,c("web_x","web_y")]) |>
+  u_pred <- pdist::pdist(
+    country_grid,
+    age_param_data[, c("web_x", "web_y")]
+  ) |>
     as.matrix()
 
   n_pred <- nrow(country_grid)
@@ -404,10 +441,13 @@ predict_gamma_params <- function(age_param_data, predictor_data,
 
   cli::cli_process_start(
     msg = "Computing and inverting covariance matrix...",
-    msg_done = "Computed and inverted covariance matrix.")
+    msg_done = "Computed and inverted covariance matrix."
+  )
 
-  c_s_star <- cbind(sigma2 * exp(-u_pred / phi),
-                    gamma * sigma2 * exp(-u_pred / phi))
+  c_s_star <- cbind(
+    sigma2 * exp(-u_pred / phi),
+    gamma * sigma2 * exp(-u_pred / phi)
+  )
 
   matrix_inv <- compute_cov(
     gamma = gamma,
@@ -425,7 +465,8 @@ predict_gamma_params <- function(age_param_data, predictor_data,
 
   cli::cli_process_start(
     msg = "Computing mean and standard deviation of predictions...",
-    msg_done = "Computed mean and standard deviation of predictions.")
+    msg_done = "Computed mean and standard deviation of predictions."
+  )
 
   a <- c_s_star %*% matrix_inv
   mean_s_pred <- a %*% (y - mu)
@@ -437,10 +478,13 @@ predict_gamma_params <- function(age_param_data, predictor_data,
 
   cli::cli_process_start(
     msg = "Simulating random effects...",
-    msg_done = "Simulated random effects.")
+    msg_done = "Simulated random effects."
+  )
 
-  s_samples <- sapply(1:n_sim,
-                      function(i) rnorm(n_pred, mean_s_pred, sd_s_pred))
+  s_samples <- sapply(
+    1:n_sim,
+    function(i) rnorm(n_pred, mean_s_pred, sd_s_pred)
+  )
 
   cli::cli_process_done()
 
@@ -448,12 +492,17 @@ predict_gamma_params <- function(age_param_data, predictor_data,
 
   cli::cli_process_start(
     msg = "Predicting gamma, scale, and shape parameters...",
-    msg_done = "Predicted gamma, scale, and shape parameters.")
+    msg_done = "Predicted gamma, scale, and shape parameters."
+  )
 
-  scale_pred <- exp(sapply(1:n_sim,
-                           function(i) mu1_pred + s_samples[, i]))
-  shape_pred <- exp(sapply(1:n_sim,
-                           function(i) mu2_pred + gamma * s_samples[, i]))
+  scale_pred <- exp(sapply(
+    1:n_sim,
+    function(i) mu1_pred + s_samples[, i]
+  ))
+  shape_pred <- exp(sapply(
+    1:n_sim,
+    function(i) mu2_pred + gamma * s_samples[, i]
+  ))
 
   cli::cli_process_done()
 
@@ -490,7 +539,6 @@ predict_gamma_params <- function(age_param_data, predictor_data,
 compute_cov <- function(gamma, sigma2, phi, u_dist,
                         n_x, tau2_1 = 1, tau2_2 = 1,
                         age_param_data) {
-
   sigma_s <- sigma2 * exp(-u_dist / phi)
   m <- matrix(NA, 2 * n_x, 2 * n_x)
 
@@ -570,12 +618,14 @@ log_lik <- function(par, p1, p2, d1, d2, y, u_dist, n_x, tau2_1 = 1, tau2_2 = 1,
   mu2 <- as.numeric(d2 %*% beta2)
   mu <- c(mu1, mu2)
 
-  m <- compute_cov(gamma, sigma2, phi, u_dist, n_x,
-                   tau2_1, tau2_2, age_param_data)
+  m <- compute_cov(
+    gamma, sigma2, phi, u_dist, n_x,
+    tau2_1, tau2_2, age_param_data
+  )
   m_inv <- chol2inv(chol(m))
 
   -0.5 * as.numeric(determinant(m)$modulus +
-                      t(y - mu) %*% m_inv %*% (y - mu))
+    t(y - mu) %*% m_inv %*% (y - mu))
 }
 
 #' Extract Beta Parameters from Model Output
@@ -598,14 +648,15 @@ log_lik <- function(par, p1, p2, d1, d2, y, u_dist, n_x, tau2_1 = 1, tau2_2 = 1,
 #' groups after removing the last 4 parameters.
 #' @export
 extract_betas <- function(params_result,
-                          params = c("gamma", "log_sigma2",
-                                     "log_phi", "log_tau1")) {
-
+                          params = c(
+                            "gamma", "log_sigma2",
+                            "log_phi", "log_tau1"
+                          )) {
   params_length <- length(params)
   par_start <- as.numeric(params_result$par)
   par_length <- length(par_start)
   beta_length <- par_length - 4
-  beta1_locend <- (beta_length/2)
+  beta1_locend <- (beta_length / 2)
   beta2_locstart <- beta1_locend + 1
   beta2_locend <- beta_length
 
@@ -794,7 +845,7 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
     dplyr::select(web_x, web_y, pop, urban) |>
     sf::st_join(
       sf::st_transform(dplyr::select(adm2_shape, -country_code),
-                       crs = 3857
+        crs = 3857
       ),
       join = sf::st_nearest_feature
     ) |>
@@ -802,7 +853,7 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
       predictors |>
         dplyr::filter(!is.na(country))
     ) |>
-    sf::st_drop_geometry()  |>
+    sf::st_drop_geometry() |>
     dplyr::mutate(
       country_code = toupper(country_code)
     )
@@ -870,8 +921,8 @@ generate_gamma_predictions <- function(country_code,
                                        ignore_cache = FALSE,
                                        save_file = FALSE,
                                        output_dir = here::here(
-                                         "03_outputs", "3a_model_outputs")) {
-
+                                         "03_outputs", "3a_model_outputs"
+                                       )) {
   # Create lowercase country code
   country_code <- tolower(country_code)
 
@@ -883,7 +934,6 @@ generate_gamma_predictions <- function(country_code,
 
   # Check if prediction file exists
   if (ignore_cache || !file.exists(gamma_prediction_path)) {
-
     # Generate gamma parameter predictions
     gamma_prediction <- predict_gamma_params(
       age_param_data = age_param_data,
@@ -895,15 +945,14 @@ generate_gamma_predictions <- function(country_code,
     )
 
     if (save_file) {
-
       # Save predictions
       saveRDS(gamma_prediction, file = gamma_prediction_path)
     }
 
     cli::cli_alert_success(
-      "Gamma predictions generated and saved at {gamma_prediction_path}")
+      "Gamma predictions generated and saved at {gamma_prediction_path}"
+    )
   } else {
-
     # Notify user about cached results
     cli::cli_process_start(
       msg = "Importing cached prediction results...",
@@ -1081,7 +1130,6 @@ run_full_workflow <- function(
     ),
     return_results = FALSE,
     ...) {
-
   # Define default output paths
   default_output_paths <- list(
     model = here::here("03_outputs", "3a_model_outputs"),
@@ -1112,7 +1160,7 @@ run_full_workflow <- function(
 
   # Merge user-provided parameters with defaults
   output_paths <- utils::modifyList(default_output_paths, output_paths)
-  model_params <-  utils::modifyList(default_model_params, model_params)
+  model_params <- utils::modifyList(default_model_params, model_params)
 
   # Logging --------------------------------------------------------------------
 
@@ -1288,7 +1336,8 @@ run_full_workflow <- function(
         )
 
         cli::cli_h1(
-          glue::glue("Compiling model parameter data for all countries"))
+          glue::glue("Compiling model parameter data for all countries")
+        )
 
         all_mod_params <- extract_age_param(
           dir_path = output_paths$model,

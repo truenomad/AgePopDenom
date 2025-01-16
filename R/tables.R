@@ -290,17 +290,16 @@ generate_age_pop_table <- function(predictor_data,
 
 #' Process Final Population Data
 #'
-#' Reads population and proportion data from RDS files in a specified directory,
-#' processes the data to generate age-group-based population summaries and
-#' proportions at different administrative levels (Country, Region, District),
-#' and writes the results to an Excel file with separate sheets for each level
-#' and metric.
+#' Reads population and proportion data from RDS files, processes the data to
+#' generate age-group-based population summaries and proportions at different
+#' administrative levels (Country, Region, District), and writes the results to
+#' an Excel file with separate sheets for each level and metric.
 #'
 #' @param input_dir A character string specifying the directory containing RDS
 #'   files. Default is "03_outputs/3c_table_outputs" in the project directory.
-#' @param excel_output_file A character string specifying the output Excel file path.
-#'   Default is "03_outputs/3d_compiled_results/age_pop_denom_2020.xlsx" in the
-#'   project directory.
+#' @param excel_output_file A character string specifying the output Excel file
+#'   path. Default is "03_outputs/3d_compiled_results/age_pop_denom_compiled.xlsx"
+#'   in the project directory.
 #' @return None. The function writes an Excel file to the specified output
 #'   location with six sheets containing population counts and proportions at
 #'   different administrative levels.
@@ -316,9 +315,11 @@ process_final_population_data <- function(
       "03_outputs", "3d_compiled_results",
       "age_pop_denom_compiled.xlsx"
     )) {
-
   # Ensure output directory exists
-  dir.create(dirname(excel_output_file), recursive = TRUE, showWarnings = FALSE)
+  dir.create(dirname(excel_output_file),
+             recursive = TRUE,
+             showWarnings = FALSE
+  )
 
   # Read and process all files
   files <- list.files(input_dir, pattern = "\\.rds$", full.names = TRUE)
@@ -350,7 +351,8 @@ process_final_population_data <- function(
       dplyr::summarise(
         value = if (
           any(
-            grepl("prop", age_group, ignore.case = TRUE))) {
+            grepl("prop", age_group, ignore.case = TRUE)
+          )) {
           mean(value, na.rm = TRUE) |> round(4)
         } else {
           sum(value, na.rm = TRUE) |> round(0)
@@ -375,35 +377,56 @@ process_final_population_data <- function(
     )
 
     summarized_df[, numeric_order] |>
-      dplyr::select(dplyr::all_of(setdiff(group_vars, "age_group")),
-                    dplyr::everything())
+      dplyr::select(
+        dplyr::all_of(setdiff(group_vars, "age_group")),
+        dplyr::contains("mean")
+      ) |>
+      dplyr::rename_with(
+        ~ stringr::str_replace_all(
+          ., c(
+            "_mean" = "", "_pop" = "", "_prop" = "",
+            "plus" = "+y"
+          )
+        ),
+        dplyr::contains("mean")
+      )
   }
 
   # Generate summaries for both population and proportions
   pop_adm0 <- summarize_by(pop_long, c("country", "age_group"))
   pop_adm1 <- summarize_by(pop_long, c("country", "region", "age_group"))
-  pop_adm2 <- summarize_by(pop_long, c("country", "region", "district", "age_group"))
+  pop_adm2 <- summarize_by(
+    pop_long,
+    c("country", "region", "district", "age_group")
+  )
 
   prop_adm0 <- summarize_by(prop_long, c("country", "age_group"))
   prop_adm1 <- summarize_by(prop_long, c("country", "region", "age_group"))
-  prop_adm2 <- summarize_by(prop_long, c("country", "region", "district", "age_group"))
-
+  prop_adm2 <- summarize_by(
+    prop_long,
+    c("country", "region", "district", "age_group")
+  )
 
   # Prepare named list of data frames
+  list_output <- list(
+    "Country (count)" = pop_adm0,
+    "Region (count)" = pop_adm1,
+    "District (count)" = pop_adm2,
+    "Country (proportion)" = prop_adm0,
+    "Region (proportion)" = prop_adm1,
+    "District (proportion)" = prop_adm2
+  )
+
   openxlsx2::write_xlsx(
-    x = list(
-      "Country (count)" = pop_adm0,
-      "Region (count)" = pop_adm1,
-      "District (count)" = pop_adm2,
-      "Country (proportion)" = prop_adm0,
-      "Region (proportion)" = prop_adm1,
-      "District (proportion)" = prop_adm2
-    ),
+    x = list_output,
     file = excel_output_file
   )
 
   cli::cli_alert_success(
-    "Final age-structured population and proportions saved to {excel_output_file}."
+    glue::glue(
+      "Final age-structured population and ",
+      "proportions saved to {excel_output_file}."
+    )
   )
 }
 

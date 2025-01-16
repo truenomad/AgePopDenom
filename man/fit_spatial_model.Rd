@@ -69,6 +69,15 @@ An object of class 'nlminb' containing:
     \item message - Convergence message
     \item iterations - Number of iterations
     \item evaluations - Number of function/gradient evaluations
+    \item scale_formula - Formula used for scale model
+    \item shape_formula - Formula used for shape model
+    \item variogram - Fitted variogram model from automap containing:
+      \itemize{
+        \item range - Spatial correlation range parameter
+        \item psill - Partial sill (structured variance)
+        \item nugget - Nugget effect (unstructured variance)
+        \item kappa - Smoothness parameter for Matern models
+      }
   }
 }
 \description{
@@ -81,16 +90,26 @@ tracked with clear status updates. Can optionally load from cache.
 The function performs the following steps with progress tracking:
 1. Fits initial linear models for scale and shape parameters
 2. Calculates spatial distance matrix from web coordinates
-3. Estimates optimal phi parameter using variogram
+3. Estimates optimal phi parameter using variogram:
+   - Computes empirical variogram using automap
+   - Automatically selects best theoretical variogram model
+   - Range parameter is used to initialize spatial correlation
+   - Default range of 100 used if estimation fails
 4. Compiles and loads the TMB C++ template
 5. Optimizes the joint likelihood using nlminb
+
+The spatial correlation is modeled using an exponential variogram with
+parameters estimated from the data. The distance matrix is computed from
+the web coordinates (web_x, web_y) and used in the spatial covariance
+structure.
 
 The C++ template should implement the joint spatial model for both
 parameters.
 }
 \note{
 Requires TMB package and a working C++ compiler. The C++ template must be
-properly structured for TMB.
+properly structured for TMB. The automap package is required for variogram
+fitting.
 }
 \examples{
 \dontrun{

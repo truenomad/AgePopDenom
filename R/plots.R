@@ -285,7 +285,7 @@ generate_age_pyramid_plot <- function(
           if (value_type == "count") {
             format(x, scientific = FALSE, big.mark = ",")
           } else {
-            scales::percent(x, accuracy = .1)
+            scales::percent(x, accuracy = 1)
           }
         }
       ) +

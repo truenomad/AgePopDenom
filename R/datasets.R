@@ -141,6 +141,7 @@ download_dhs_datasets <- function(
 #'                 lon, lat, web_x, web_y, log_scale, log_shape, urban,
 #'                 b1, c, b2, nsampled
 #'         }
+#' @export
 aggregate_and_extract_gamma <- function(data,
                                         lat_column = "lat",
                                         long_column = "long",

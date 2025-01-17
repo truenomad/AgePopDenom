@@ -28,6 +28,13 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      _R_INSTALL_TIME_PATCHES_: no
+      R_LIBS_USER: D:\a\_temp\Library
+      TZ: UTC
+      _R_CHECK_SYSTEM_CLOCK_: FALSE
+      NOT_CRAN: true
+      RSPM: https://packagemanager.posit.co/cran/latest
+      RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
 
     steps:
       - uses: actions/checkout@v4
@@ -44,11 +51,11 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           # Ensure RTools is properly configured
-          writeLines('PATH="${RTOOLS40_HOME}\\usr\\bin;${PATH}"', file("~/.Renviron", encoding="UTF-8"))
+          echo 'PATH="${RTOOLS40_HOME}\\usr\\bin;${PATH}"' >> ~/.Renviron
           
-          # Install system dependencies
+          # Install system dependencies using pacman
           pacman -S mingw-w64-x86_64-eigen3 --noconfirm
-        shell: bash
+        shell: C:\rtools44\usr\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:

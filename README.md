@@ -1,10 +1,8 @@
 # AgePopDenom  <img src="man/figures/logo.png" align="right" height="138"/>
 
 <!-- badges: start -->
+[![R build status](https://github.com/truenomad/agepopdenom/workflows/R-CMD-check/badge.svg)](https://github.com/truenomad/agepopdenom/actions)
 [![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom)
-
-[![R-CMD-check](https://github.com/truenomad/agepopdenom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/truenomad/agepopdenom/actions/workflows/R-CMD-check.yaml) 
-[![R-CMD-check](https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 ## What is AgePopDenom?
@@ -30,7 +28,7 @@ Before installing **AgePopDenom**, ensure your system meets the following requir
 
 1.  Install Rtools (matches your R version):
 
-``` r
+```r
 # Check if Rtools is installed and properly configured
 pkgbuild::has_build_tools()
 ```
@@ -67,20 +65,22 @@ Once the setup is complete, follow the instructions below to download **AgePopDe
 Note: **AgePopDenom** is currently under development. Once it is available on CRAN, you will be able to install it using the following command:
 
 
-```{r eval=FALSE, include=TRUE}
+```r
 # install.packages("AgePopDenom")
 ```
 
 To get the development version from GitHub, use:
 
-```{r eval=FALSE, include=TRUE}
+
+
+```r
 # install.packages("devtools")
 devtools::install_github("truenomad/AgePopDenom")
 ```
 
 Then load it in R:
 
-```{r eval=FALSE, include=TRUE}
+```r
 library(AgePopDenom)
 ```
 ------------------------------------------------------------------------
@@ -88,12 +88,12 @@ library(AgePopDenom)
 ## Core Functions
 
 1. Initialize project structure:
-```{r eval=FALSE, include=TRUE}
+```r
 AgePopDenom::init()
 ```
 
 2. Download required data:
-```{r eval=FALSE, include=TRUE}
+```r
 # Example for Kenya and Uganda
 countries <- c("KEN", "UGA")
 
@@ -106,7 +106,7 @@ AgePopDenom::download_pop_rasters(countries)
 ```
 
 3. Run full analysis:
-```{r eval=FALSE, include=TRUE}
+```r
 AgePopDenom::run_full_workflow(countries)
 ```
 

@@ -1,4 +1,6 @@
-# AgePopDenom: High-Resolution Age-Structured Population Denominators
+ <img src="man/figures/logo.png" align="right" height="139" alt="" />
+
+# AgePopDenom: Fine-scale Age-Structured Population Denominators
 
 ## What is the AgePopDenom Package?
 

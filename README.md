@@ -1,7 +1,11 @@
 # AgePopDenom <a><img src="man/figures/logo.png" align="right" height="138" /></a>
 
+<p> 
 
-## What is the AgePopDenom Package?
+
+</p>
+
+## What is AgePopDenom?
 
 **`AgePopDenom`** is an R package designed to facilitate the generation of fine-scale, age-structured population denominators for public health decision-making and service delivery. By combining census and household survey data with a novel parameter-based geostatistical modeling approach, the package produces high-resolution (5km x 5km) population estimates disaggregated by age.
 

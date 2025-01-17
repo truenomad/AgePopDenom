@@ -1,9 +1,4 @@
-# AgePopDenom <a><img src="man/figures/logo.png" align="right" height="138" /></a>
-
-<p> 
-
-
-</p>
+# AgePopDenom  <img src="man/figures/logo.png" align="right" height="128" style="float:right; height:110px;"/>
 
 ## What is AgePopDenom?
 

@@ -66,6 +66,12 @@ jobs:
           pacman -S mingw-w64-x86_64-eigen3 --noconfirm
         shell: C:\rtools44\usr\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
 
+      - name: Install system dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install pkg-config proj gdal
+
       - name: Install system dependencies (Ubuntu)
         if: runner.os == 'Linux'
         run: |
@@ -75,8 +81,22 @@ jobs:
       - name: Optimize dependency installation
         if: runner.os == 'Linux'
         run: |
+          # Install pak first
+          Rscript -e "install.packages('pak', repos = 'https://r-lib.github.io/p/pak/stable/')"
           # Use parallel cores and disable pak upgrades
           Rscript -e "options(Ncpus = parallel::detectCores(), pak.upgrade = FALSE); pak::pkg_install()"
+        shell: /usr/bin/bash -e {0}
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+          R_KEEP_PKG_SOURCE: yes
+          _R_INSTALL_TIME_PATCHES_: no
+          TZ: UTC
+          _R_CHECK_SYSTEM_CLOCK_: FALSE
+          NOT_CRAN: true
+          RSPM: https://packagemanager.posit.co/cran/latest
+          RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+          PAK_METADATA_CACHE: true
+          R_LIBS_USER: /home/runner/work/_temp/Library
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -88,7 +108,26 @@ jobs:
           upload-snapshots: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
 
-      - name: Upload coverage reports to Codecov
+  test-coverage:
+    name: Run tests and collect coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npx jest --coverage
+
+      - name: Upload results to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: truenomad/AgePopDenom

@@ -2,7 +2,7 @@
 
 <!-- badges: start -->
 
-[![R build status](https://github.com/truenomad/agepopdenom/workflows/R-CMD-check/badge.svg)](https://github.com/truenomad/agepopdenom/actions) [![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom)[![codecov](https://codecov.io/gh/truenomad/AgePopDenom/graph/badge.svg?token=UL9XKIIXTQ)](https://codecov.io/gh/truenomad/AgePopDenom)
+[![R build status](https://github.com/truenomad/agepopdenom/workflows/R-CMD-check/badge.svg)](https://github.com/truenomad/agepopdenom/actions) [![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom) [![codecov](https://codecov.io/gh/truenomad/AgePopDenom/graph/badge.svg?token=UL9XKIIXTQ)](https://codecov.io/gh/truenomad/AgePopDenom)
 
 <!-- badges: end -->
 

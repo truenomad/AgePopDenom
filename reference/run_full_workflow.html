@@ -73,6 +73,7 @@ with minimal adjustments.</p>
 <span>    shape_outcome <span class="op">=</span> <span class="st">"log_shape"</span>, covariates <span class="op">=</span> <span class="st">"urban"</span>, cpp_script <span class="op">=</span></span>
 <span>    <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="st">"02_scripts"</span>, <span class="st">"model"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  return_results <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  n_cores <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">2</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -160,6 +161,11 @@ Default: "afurextent.asc".</p></dd>
 
 <dt id="arg-return-results">return_results<a class="anchor" aria-label="anchor" href="#arg-return-results"></a></dt>
 <dd><p>Logical. Whether to return results. Default: FALSE.</p></dd>
+
+
+<dt id="arg-n-cores">n_cores<a class="anchor" aria-label="anchor" href="#arg-n-cores"></a></dt>
+<dd><p>Integer number of cores for parallel processing for age
+population table, default detectCores()-2</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

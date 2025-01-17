@@ -63,19 +63,27 @@
 </div>
 <!-- badges: start -->
 
+<!-- badges: end -->
 <div class="section level2">
 <h2 id="what-is-agepopdenom">What is AgePopDenom?<a class="anchor" aria-label="anchor" href="#what-is-agepopdenom"></a>
 </h2>
 <p><strong><code>AgePopDenom</code></strong> is an R package designed to facilitate the generation of fine-scale, age-structured population denominators for public health decision-making and service delivery. By combining census and household survey data with a novel parameter-based geostatistical modeling approach, the package produces high-resolution (5km x 5km) population estimates disaggregated by age.</p>
+<p><strong>Key features include</strong>:</p>
+<ul>
+<li><p>Automated data retrieval and processing</p></li>
+<li><p>Geostatistical modeling of age structures</p></li>
+<li><p>High-resolution population predictions</p></li>
+<li><p>Age-specific population denominators</p></li>
+<li><p>Visualization and diagnostic tools</p></li>
+</ul>
 <hr>
 </div>
-</div>
-<div class="section level1">
-<h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h1>
 <div class="section level2">
-<h2 id="system-requirements">System Requirements<a class="anchor" aria-label="anchor" href="#system-requirements"></a>
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
+<div class="section level3">
+<h3 id="system-requirements">System Requirements<a class="anchor" aria-label="anchor" href="#system-requirements"></a>
+</h3>
 <p>Before installing <strong>AgePopDenom</strong>, ensure your system meets the following requirements:</p>
 <ol style="list-style-type: decimal">
 <li>
@@ -85,12 +93,10 @@
 <li>
 <strong>TMB</strong> (Template Model Builder)</li>
 </ol>
-<div class="section level3">
-<h3 id="platform-specific-setup">Platform-Specific Setup<a class="anchor" aria-label="anchor" href="#platform-specific-setup"></a>
-</h3>
 <div class="section level4">
-<h4 id="windows">Windows<a class="anchor" aria-label="anchor" href="#windows"></a>
+<h4 id="platform-specific-setup">Platform-Specific Setup<a class="anchor" aria-label="anchor" href="#platform-specific-setup"></a>
 </h4>
+<p><strong>Windows</strong></p>
 <ol style="list-style-type: decimal">
 <li>Install Rtools (matches your R version):</li>
 </ol>
@@ -115,10 +121,9 @@
 sudo apt-get install build-essential libxml2-dev</code></pre>
 </div>
 </div>
-</div>
-<div class="section level2">
-<h2 id="agepopdenom-installation">AgePopDenom installation<a class="anchor" aria-label="anchor" href="#agepopdenom-installation"></a>
-</h2>
+<div class="section level3">
+<h3 id="agepopdenom-installation">AgePopDenom installation<a class="anchor" aria-label="anchor" href="#agepopdenom-installation"></a>
+</h3>
 <p>Once the setup is complete, follow the instructions below to download <strong>AgePopDenom</strong></p>
 <p>Note: <strong>AgePopDenom</strong> is currently under development. Once it is available on CRAN, you will be able to install it using the following command:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -132,9 +137,9 @@ sudo apt-get install build-essential libxml2-dev</code></pre>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://truenomad.github.io/AgePopDenom/">AgePopDenom</a></span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
-<div class="section level2">
-<h2 id="core-functions">Core Functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
-</h2>
+<div class="section level3">
+<h3 id="core-functions">Core Functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
+</h3>
 <ol style="list-style-type: decimal">
 <li>Initialize project structure:</li>
 </ol>
@@ -159,21 +164,11 @@ sudo apt-get install build-essential libxml2-dev</code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/run_full_workflow.html">run_full_workflow</a></span><span class="op">(</span><span class="va">countries</span><span class="op">)</span></span></code></pre></div>
 </div>
+</div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
 <p>For detailed documentation and examples, visit our <a href="https://truenomad.github.io/AgePopDenom/">package website</a>.</p>
-</div>
-<div class="section level2">
-<h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
-</h2>
-<ul>
-<li>Automated data retrieval and processing</li>
-<li>Geostatistical modeling of age structures</li>
-<li>High-resolution population predictions</li>
-<li>Age-specific population denominators</li>
-<li>Visualization and diagnostic tools</li>
-</ul>
 </div>
 <div class="section level2">
 <h2 id="support-and-contributions">Support and Contributions<a class="anchor" aria-label="anchor" href="#support-and-contributions"></a>
@@ -187,7 +182,6 @@ sudo apt-get install build-essential libxml2-dev</code></pre>
 <p>We welcome contributions from the community to improve <code>AgePopDenom</code>.</p>
 </div>
 </div>
-
   </main><aside class="col-md-3"><div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
@@ -219,6 +213,7 @@ sudo apt-get install build-essential libxml2-dev</code></pre>
 <ul class="list-unstyled">
 <li><a href="https://github.com/truenomad/agepopdenom/actions" class="external-link"><img src="https://github.com/truenomad/agepopdenom/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
 <li><a href="https://www.codefactor.io/repository/github/truenomad/agepopdenom" class="external-link"><img src="https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge" alt="CodeFactor"></a></li>
+<li><a href="https://codecov.io/gh/truenomad/AgePopDenom" class="external-link"><img src="https://codecov.io/gh/truenomad/AgePopDenom/graph/badge.svg?token=UL9XKIIXTQ" alt="codecov"></a></li>
 </ul>
 </div>
 

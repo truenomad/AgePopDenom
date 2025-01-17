@@ -1,0 +1,8 @@
+pandoc: 3.1.11
+pkgdown: 2.1.1
+pkgdown_sha: ~
+articles: {}
+last_built: 2025-01-17T08:03Z
+urls:
+  reference: https://truenomad.github.io/AgePopDenom/reference
+  article: https://truenomad.github.io/AgePopDenom/articles

@@ -40,6 +40,16 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Windows TMB setup
+        if: runner.os == 'Windows'
+        run: |
+          # Ensure RTools is properly configured
+          writeLines('PATH="${RTOOLS40_HOME}\\usr\\bin;${PATH}"', file("~/.Renviron", encoding="UTF-8"))
+          
+          # Install system dependencies
+          pacman -S mingw-w64-x86_64-eigen3 --noconfirm
+        shell: bash
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck

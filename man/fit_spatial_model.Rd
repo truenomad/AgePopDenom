@@ -123,5 +123,4 @@ fit <- fit_spatial_model(
 )
 
 }
-
 }

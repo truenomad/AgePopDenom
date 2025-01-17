@@ -103,7 +103,7 @@
 #   output_dir = "03_outputs/3a_model_outputs"
 # )
 #' }
-#'
+#' @importFrom RcppEigen fastLm
 #' @export
 fit_spatial_model <- function(data,
                               country_code = NULL,
@@ -275,14 +275,18 @@ fit_spatial_model <- function(data,
     msg = "Compiling TMB model",
     msg_done = "Compiled TMB model"
   )
-
+  # In fit_spatial_model function
   if (!verbose) {
     suppressWarnings(
       suppressMessages({
+        cpp_path <- normalizePath(paste0(cpp_script_name, ".cpp"),
+          winslash = "/",
+          mustWork = TRUE
+        )
         system2("R",
           args = c(
             "CMD", "SHLIB",
-            paste0(cpp_script_name, ".cpp"), "-O2"
+            shQuote(cpp_path), "-O2"
           ),
           stdout = FALSE, stderr = FALSE
         )
@@ -290,7 +294,11 @@ fit_spatial_model <- function(data,
       })
     )
   } else {
-    TMB::compile(paste0(cpp_script_name, ".cpp"))
+    cpp_path <- normalizePath(paste0(cpp_script_name, ".cpp"),
+      winslash = "/",
+      mustWork = TRUE
+    )
+    TMB::compile(cpp_path)
     dyn.load(TMB::dynlib(cpp_script_name))
   }
 

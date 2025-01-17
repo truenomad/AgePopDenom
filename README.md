@@ -88,12 +88,12 @@ library(AgePopDenom)
 ## Core Functions
 
 1. Initialize project structure:
-```r
+```{r eval=FALSE, include=TRUE}
 AgePopDenom::init()
 ```
 
 2. Download required data:
-```r
+```{r eval=FALSE, include=TRUE}
 # Example for Kenya and Uganda
 countries <- c("KEN", "UGA")
 
@@ -106,7 +106,7 @@ AgePopDenom::download_pop_rasters(countries)
 ```
 
 3. Run full analysis:
-```r
+```{r eval=FALSE, include=TRUE}
 AgePopDenom::run_full_workflow(countries)
 ```
 

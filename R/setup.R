@@ -40,7 +40,7 @@ install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
     "haven", "here", "matrixStats", "rstudioapi", "geodata",
     "pbmcapply", "remotes", "future", "future.apply",
     "testthat", "rdhs", "openxlsx2", "purrr", "rlang", "pak",
-    "sp", "automap", "esri2sf", "knitr", "rmarkdown"
+    "sp", "automap", "esri2sf", "knitr", "rmarkdown", "mockery"
   )
 
   missing_pkgs <- suggested_pkgs[!(

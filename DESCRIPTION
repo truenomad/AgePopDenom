@@ -63,7 +63,8 @@ Suggests:
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    matrixStats
+    matrixStats,
+    mockery
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Config/testthat/edition: 3

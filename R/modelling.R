@@ -1040,6 +1040,8 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'   Default: "01_data/1b_rasters/urban_extent".
 #' @param ur_raster_suffix Character. Suffix for urban-rural raster.
 #'   Default: "afurextent.asc".
+#' @param n_cores Integer number of cores for parallel processing for age
+#'   population table, default detectCores()-2
 #' @param output_paths List of output paths:
 #'   \itemize{
 #'     \item model: Path for model outputs.
@@ -1137,7 +1139,9 @@ run_full_workflow <- function(
       cpp_script = here::here("02_scripts", "model")
     ),
     return_results = FALSE,
+    n_cores = parallel::detectCores() - 2,
     ...) {
+
   # Define default output paths
   default_output_paths <- list(
     model = here::here("03_outputs", "3a_model_outputs"),
@@ -1325,6 +1329,7 @@ run_full_workflow <- function(
           age_interval = model_params$age_interval,
           ignore_cache = T,
           output_dir = output_paths$table,
+          n_cores = n_cores,
           ...
         )
 

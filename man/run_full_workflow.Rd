@@ -25,6 +25,7 @@ run_full_workflow(
     shape_outcome = "log_shape", covariates = "urban", cpp_script =
     here::here("02_scripts", "model")),
   return_results = FALSE,
+  n_cores = parallel::detectCores() - 2,
   ...
 )
 }
@@ -89,6 +90,9 @@ Default: "afurextent.asc".}
 }}
 
 \item{return_results}{Logical. Whether to return results. Default: FALSE.}
+
+\item{n_cores}{Integer number of cores for parallel processing for age
+population table, default detectCores()-2}
 
 \item{...}{Additional arguments passed to subfunctions.}
 }

@@ -12,24 +12,21 @@ permissions: read-all
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
-
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
-
     strategy:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest,   r: 'release'}
+          - {os: macos-latest, r: 'release'}
           - {os: windows-latest, r: 'release'}
-          - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
-          - {os: ubuntu-latest,   r: 'release'}
-          - {os: ubuntu-latest,   r: 'oldrel-1'}
+          - {os: ubuntu-latest, r: 'devel', http-user-agent: 'release'}
+          - {os: ubuntu-latest, r: 'release'}
+          - {os: ubuntu-latest, r: 'oldrel-1'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
       _R_INSTALL_TIME_PATCHES_: no
-      R_LIBS_USER: D:\a\_temp\Library
       TZ: UTC
       _R_CHECK_SYSTEM_CLOCK_: FALSE
       NOT_CRAN: true
@@ -47,15 +44,29 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Cache R packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/R
+          key: ${{ runner.os }}-r-${{ hashFiles('**/*.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-r-
+
       - name: Windows TMB setup
         if: runner.os == 'Windows'
         run: |
           # Ensure RTools is properly configured
           echo 'PATH="${RTOOLS40_HOME}\\usr\\bin;${PATH}"' >> ~/.Renviron
-          
+
           # Install system dependencies using pacman
           pacman -S mingw-w64-x86_64-eigen3 --noconfirm
         shell: C:\rtools44\usr\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+
+      - name: Install system dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libxml2-dev libssl-dev libcurl4-gnutls-dev
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -66,3 +77,12 @@ jobs:
         with:
           upload-snapshots: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+
+      - name: Extend timeout for dependency resolution
+        if: runner.os == 'Linux'
+        timeout-minutes: 30
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

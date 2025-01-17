@@ -1,20 +1,32 @@
-# AgePopDenom  <img src="man/figures/logo.png" align="right" height="138"/>
+# AgePopDenom <img src="man/figures/logo.png" align="right" height="138"/>
 
 <!-- badges: start -->
-[![R build status](https://github.com/truenomad/agepopdenom/workflows/R-CMD-check/badge.svg)](https://github.com/truenomad/agepopdenom/actions)
-[![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom)
+
+[![R build status](https://github.com/truenomad/agepopdenom/workflows/R-CMD-check/badge.svg)](https://github.com/truenomad/agepopdenom/actions) [![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom)[![codecov](https://codecov.io/gh/truenomad/AgePopDenom/graph/badge.svg?token=UL9XKIIXTQ)](https://codecov.io/gh/truenomad/AgePopDenom)
+
 <!-- badges: end -->
 
 ## What is AgePopDenom?
 
 **`AgePopDenom`** is an R package designed to facilitate the generation of fine-scale, age-structured population denominators for public health decision-making and service delivery. By combining census and household survey data with a novel parameter-based geostatistical modeling approach, the package produces high-resolution (5km x 5km) population estimates disaggregated by age.
 
+**Key features include**:
+
+-   Automated data retrieval and processing
+
+-   Geostatistical modeling of age structures
+
+-   High-resolution population predictions
+
+-   Age-specific population denominators
+
+-   Visualization and diagnostic tools
+
 ------------------------------------------------------------------------
 
+## Installation
 
-# Installation
-
-## System Requirements
+### System Requirements
 
 Before installing **AgePopDenom**, ensure your system meets the following requirements:
 
@@ -22,13 +34,13 @@ Before installing **AgePopDenom**, ensure your system meets the following requir
 2.  **C++ compiler**: C++17 compatible
 3.  **TMB** (Template Model Builder)
 
-### Platform-Specific Setup
+#### Platform-Specific Setup
 
-#### Windows
+**Windows**
 
 1.  Install Rtools (matches your R version):
 
-```r
+``` r
 # Check if Rtools is installed and properly configured
 pkgbuild::has_build_tools()
 ```
@@ -37,63 +49,63 @@ If FALSE, download and install Rtools from: [CRAN Rtools](https://cran.r-project
 
 **macOS**
 
-1.	Install Command Line Tools:
-	
-```
+1.  Install Command Line Tools:
+
+```         
 xcode-select --install
 ```
 
-2.	Alternatively, install gcc via Homebrew:
+2.  Alternatively, install gcc via Homebrew:
 
-```
+```         
 brew install gcc
 ```
 
 **Linux (Ubuntu/Debian)**
 
-1.	Update your system and install necessary packages:
+1.  Update your system and install necessary packages:
 
-```
+```         
 sudo apt-get update
 sudo apt-get install build-essential libxml2-dev
 ```
-	
-## AgePopDenom installation
+
+### AgePopDenom installation
 
 Once the setup is complete, follow the instructions below to download **AgePopDenom**
 
 Note: **AgePopDenom** is currently under development. Once it is available on CRAN, you will be able to install it using the following command:
 
-
-```r
+``` r
 # install.packages("AgePopDenom")
 ```
 
 To get the development version from GitHub, use:
 
-
-
-```r
+``` r
 # install.packages("devtools")
 devtools::install_github("truenomad/AgePopDenom")
 ```
 
 Then load it in R:
 
-```r
+``` r
 library(AgePopDenom)
 ```
+
 ------------------------------------------------------------------------
 
-## Core Functions
+### Core Functions
 
-1. Initialize project structure:
-```r
+1.  Initialize project structure:
+
+``` r
 AgePopDenom::init()
 ```
 
-2. Download required data:
-```r
+2.  Download required data:
+
+``` r
 # Example for Kenya and Uganda
 countries <- c("KEN", "UGA")
 
@@ -105,22 +117,15 @@ AgePopDenom::download_shapefile(countries)
 AgePopDenom::download_pop_rasters(countries)
 ```
 
-3. Run full analysis:
-```r
+3.  Run full analysis:
+
+``` r
 AgePopDenom::run_full_workflow(countries)
 ```
 
 ## Documentation
 
 For detailed documentation and examples, visit our [package website](https://truenomad.github.io/AgePopDenom/).
-
-## Features
-
-- Automated data retrieval and processing
-- Geostatistical modeling of age structures
-- High-resolution population predictions
-- Age-specific population denominators
-- Visualization and diagnostic tools
 
 ## Support and Contributions
 

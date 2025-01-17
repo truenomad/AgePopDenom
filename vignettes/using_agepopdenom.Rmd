@@ -1,5 +1,5 @@
 ---
-title: "AgePopDenom: A Quick Introduction"
+title: "AgePopDenom Workflow: A Step-by-Step Guide"
 output: rmarkdown::html_vignette
 vignette: >
   %\
@@ -21,7 +21,56 @@ A key advantage of **AgePopDenom** is its simplicity. The init() and run_full_wo
 
 # Installation
 
-The package is currently under development. Once available on CRAN, you could install it via:
+## System Requirements
+
+Before installing **AgePopDenom**, ensure your system meets the following requirements:
+
+1.  **R version**: \>= 4.1.0
+2.  **C++ compiler**: C++17 compatible
+3.  **TMB** (Template Model Builder)
+
+### Platform-Specific Setup
+
+#### Windows
+
+1.  Install Rtools (matches your R version):
+
+``` r
+# Check if Rtools is installed and properly configured
+pkgbuild::has_build_tools()
+```
+
+If FALSE, download and install Rtools from: [CRAN Rtools](https://cran.r-project.org/bin/windows/Rtools/)
+
+**macOS**
+
+1.	Install Command Line Tools:
+	
+```
+xcode-select --install
+```
+
+2.	Alternatively, install gcc via Homebrew:
+
+```
+brew install gcc
+```
+
+**Linux (Ubuntu/Debian)**
+
+1.	Update your system and install necessary packages:
+
+```
+sudo apt-get update
+sudo apt-get install build-essential libxml2-dev
+```
+	
+## AgePopDenom installation
+
+Once the setup is complete, follow the instructions below to download **AgePopDenom**
+
+Note: **AgePopDenom** is currently under development. Once it is available on CRAN, you will be able to install it using the following command:
+
 
 ```{r eval=FALSE, include=TRUE}
 # install.packages("AgePopDenom")
@@ -31,7 +80,7 @@ To get the development version from GitHub, use:
 
 ```{r eval=FALSE, include=TRUE}
 # install.packages("devtools")
-devtools::install_github("your-org/AgePopDenom")
+devtools::install_github("truenomad/AgePopDenom")
 ```
 
 Then load it in R:
@@ -42,11 +91,13 @@ library(AgePopDenom)
 
 # Workflow Overview
 
-AgePopDenom provides a streamlined workflow to generate age-specific population estimates at a 5 km x 5 km resolution (by default). The main steps are: 1. Initialize a project 2. Obtain and organize data (survey data, population rasters, shapefiles) 3. Run the geostatistical model 4. Generate spatial predictions 5. Export and visualize results
-
-Below is a typical usage pipeline
+AgePopDenom provides a streamlined workflow to generate age-specific population estimates at a 5 km x 5 km resolution (by default). The main steps are: 1. Initialize a project 2. Obtain and organize data (survey data, population rasters, shapefiles) 3. Run the geostatistical model 4. Generate spatial predictions 5. Export and visualize results. Below is a typical usage pipeline.
 
 ## 1. Initialize a Project
+
+Before starting, ensure you have an **RStudio project** set up. This will help organize your analysis and outputs into a single, self-contained directory. An RStudio project is essential for maintaining reproducibility and keeping your workflow organized.
+
+Once the RStudio project is created, initialize the project folder structure and create the key scripts by running:
 
 ```{r eval=FALSE, include=TRUE}
 AgePopDenom::init(
@@ -136,7 +187,7 @@ AgePopDenom::run_full_workflow("GMB")
 
 When you call `run_full_workflow("country_code")`, **AgePopDenom** executes the following sub-functions in sequence:
 
-### 3i.  `fit_spatial_model()`
+### 3i. `fit_spatial_model()`
 
 `fit_spatial_model()` fits a parameter-based geostatistical model using Template Model Builder (C++). It reads survey data, then estimates the Gamma shape (α) and scale (λ) parameters at each cluster, accounting for spatial correlation via a distance matrix.
 
@@ -197,14 +248,19 @@ If `manual_params` is not provided, the function derives these values using defa
 The parameters serve different modeling purposes:
 
 1.  **Fixed Effects Parameters** (`beta1`, `beta2`):
+
 -   Control the relationship between covariates and the gamma distribution parameters
 -   Length must match the number of covariates
 -   Typically estimated from initial linear models
+
 2.  **Spatial Parameters** (`log_sigma2`, `log_phi`):
+
 -   Control the spatial correlation structure
 -   `log_sigma2`: Determines strength of spatial effects
 -   `log_phi`: Controls the effective range of spatial correlation
+
 3.  **Error and Correlation Parameters** (`gamma`, `log_tau2_1`):
+
 -   `gamma`: Links shape and scale parameters
 -   `log_tau2_1`: Accounts for measurement uncertainty
 
@@ -263,20 +319,20 @@ create_prediction_data(
 )
 ```
 
-Creates a regular grid for predictions. Parameters: 
+Creates a regular grid for predictions. Parameters:
 
-- `country_code`: ISO3 country code 
-- `country_shape`: sf object of country boundary 
-- `pop_raster`: Population density raster 
-- `ur_raster`: Urban/rural classification raster 
-- `adm2_shape`: Administrative boundaries (sf object) 
-- `cell_size`: Grid resolution in meters 
-- `ignore_cache`: Whether to regenerate existing grids 
-- `output_dir`: Output directory for grid data
+-   `country_code`: ISO3 country code
+-   `country_shape`: sf object of country boundary
+-   `pop_raster`: Population density raster
+-   `ur_raster`: Urban/rural classification raster
+-   `adm2_shape`: Administrative boundaries (sf object)
+-   `cell_size`: Grid resolution in meters
+-   `ignore_cache`: Whether to regenerate existing grids
+-   `output_dir`: Output directory for grid data
 
 The grid includes: - Centroid coordinates - Population values - Urban/rural classification - Administrative unit IDs
 
-### 3iii `generate_gamma_predictions()` 
+### 3iii `generate_gamma_predictions()`
 
 This function uses the fitted model parameters to simulate Gamma distributions at unobserved locations. Produces shape and scale estimates plus uncertainties.
 
@@ -294,16 +350,7 @@ generate_gamma_predictions(
 )
 ```
 
-Parameters: 
-- `country_code`: ISO3 country code 
-- `age_param_data`: Fitted parameters at survey locations 
-- `model_params`: List of model parameters from fit_spatial_model() 
-- `predictor_data`: Grid cells for prediction 
-- `shapefile`: Administrative boundaries 
-- `cell_size`: Grid resolution 
-- `n_sim`: Number of Monte Carlo simulations 
-- `ignore_cache`: Whether to use cached predictions 
-- `output_dir`: Output directory
+Parameters: - `country_code`: ISO3 country code - `age_param_data`: Fitted parameters at survey locations - `model_params`: List of model parameters from fit_spatial_model() - `predictor_data`: Grid cells for prediction - `shapefile`: Administrative boundaries - `cell_size`: Grid resolution - `n_sim`: Number of Monte Carlo simulations - `ignore_cache`: Whether to use cached predictions - `output_dir`: Output directory
 
 Returns: - Predicted shape and scale parameters
 
@@ -321,16 +368,11 @@ generate_gamma_raster_plot(
 )
 ```
 
-Parameters: 
-- `predictor_data`: Grid cell data 
-- `pred_list`: Prediction results 
-- `country_code`: ISO3 country code 
-- `output_dir`: Output directory 
-- `save_raster`: Whether to save raster files
+Parameters: - `predictor_data`: Grid cell data - `pred_list`: Prediction results - `country_code`: ISO3 country code - `output_dir`: Output directory - `save_raster`: Whether to save raster files
 
 Produces: - Shape parameter raster - Scale parameter raster - Mean age raster
 
-### 3v.  `generate_age_pop_table()`
+### 3v. `generate_age_pop_table()`
 
 This function computes age-specific population counts by applying Gamma-based proportions to population rasters. Aggregates counts and proportions at selected administrative levels (e.g., district, region).
 
@@ -347,18 +389,9 @@ generate_age_pop_table(
 )
 ```
 
-Parameters: 
-- `predictor_data`: Grid cell data 
-- `scale_pred`, `shape_pred`: Predicted parameters 
-- `country_code`: ISO3 country code 
-- `age_range`: Vector of min/max ages 
-- `age_interval`: Age grouping interval 
-- `ignore_cache`: Whether to use cached results 
-- `output_dir`: Output directory
+Parameters: - `predictor_data`: Grid cell data - `scale_pred`, `shape_pred`: Predicted parameters - `country_code`: ISO3 country code - `age_range`: Vector of min/max ages - `age_interval`: Age grouping interval - `ignore_cache`: Whether to use cached results - `output_dir`: Output directory
 
-Produces two data frames: 
-- `prop_df`: Age proportions with uncertainty 
-- `pop_df`: Population counts with uncertainty
+Produces two data frames: - `prop_df`: Age proportions with uncertainty - `pop_df`: Population counts with uncertainty
 
 ### 3vi. `generate_age_pyramid_plot()`
 
@@ -372,18 +405,11 @@ generate_age_pyramid_plot(
 )
 ```
 
-Parameters: 
-- `dataset`: List containing prop_df and pop_df 
-- `country_code`: ISO3 country code 
-- `output_dir`: Output directory 
-- `fill_high`, `fill_low`: Color gradient endpoints 
-- `line_color`: Bar outline color 
-- `break_axis_by`: Age axis interval
+Parameters: - `dataset`: List containing prop_df and pop_df - `country_code`: ISO3 country code - `output_dir`: Output directory - `fill_high`, `fill_low`: Color gradient endpoints - `line_color`: Bar outline color - `break_axis_by`: Age axis interval
 
-Creates: 
-- A list containing both proportion and count plots.
+Creates: - A list containing both proportion and count plots.
 
-### 3vii. `process_final_population_data()` 
+### 3vii. `process_final_population_data()`
 
 This function summarizes final outputs into Excel or CSV files. Allows users to retrieve final aggregated counts, proportions, and uncertainties for reporting.
 
@@ -394,19 +420,15 @@ process_final_population_data(
 )
 ```
 
-Parameters: 
-- `input_dir`: Directory containing results 
-- `excel_output_file`: Path for Excel outpu
+Parameters: - `input_dir`: Directory containing results - `excel_output_file`: Path for Excel outpu
 
-Produces: 
-- The function writes an Excel spreadhseet with six sheets containing population counts and proportions at different administrative levels (country, region, district).
+Produces: - The function writes an Excel spreadhseet with six sheets containing population counts and proportions at different administrative levels (country, region, district).
 
 By allowing you to pass parameters to the underlying functions, `run_full_workflow()` offers both flexibility and efficiency in managing the geostatistical modeling process. Each sub-function within the workflow accepts a variety of parameters, enabling advanced users to tailor the workflow to their specific needs. These parameters support customization of datasets, modeling approaches (including initial model parameters and additional covariates), grid resolutions, output formats, and caching options. This level of control ensures that the workflow aligns with the specific analytical requirements of the user.
 
 ## Example: Gambia
 
 To demonstrate **AgePopDenom**, we provide an example workflow using simulated DHS-like data for Gambia. This enables users to replicate fine-scale age-structured population modeling locally without requiring restricted data access. The example covers directory setup, dummy data simulation, and running the full modeling workflow.
-
 
 ```{r eval=FALSE, include=TRUE}
 AgePopDenom::init(

@@ -8,7 +8,7 @@ navbar:
   - text: Articles
     href: articles/index.html
     menu:
-    - text: Introduction to AgePopDenom
+    - text: AgePopDenom Workflow: A Step-by-Step Guide
       href: articles/using_agepopdenom.html
   - text: Reference
     href: reference/index.html
@@ -17,6 +17,6 @@ navbar:
     href: https://github.com/truenomad/AgePopDenom
     aria-label: GitHub repository
 articles:
-- title: Introduction to AgePopDenom
+- title: AgePopDenom Workflow: A Step-by-Step Guide
   contents:
     - using_agepopdenom

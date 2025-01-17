@@ -37,7 +37,7 @@ Imports:
     tibble,
     terra,
     tidyr,
-    matrixStats
+    RcppEigen
 Suggests: 
     stats,
     stringr,
@@ -62,7 +62,8 @@ Suggests:
     automap,
     testthat (>= 3.0.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    matrixStats
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Config/testthat/edition: 3

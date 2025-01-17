@@ -1,4 +1,4 @@
-# AgePopDenom  <img src="man/figures/logo.png" align="right" height="132" style="float:right; height:110px;"/>
+# AgePopDenom  <img src="man/figures/logo.png" align="right" height="138"/>
 
 <!-- badges: start -->
 [![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom)

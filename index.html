@@ -63,7 +63,6 @@
 </div>
 <!-- badges: start -->
 
-<p><a href="https://github.com/truenomad/agepopdenom/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/truenomad/agepopdenom/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <!-- badges: end --></p>
 <div class="section level2">
 <h2 id="what-is-agepopdenom">What is AgePopDenom?<a class="anchor" aria-label="anchor" href="#what-is-agepopdenom"></a>
 </h2>
@@ -122,34 +121,44 @@ sudo apt-get install build-essential libxml2-dev</code></pre>
 </h2>
 <p>Once the setup is complete, follow the instructions below to download <strong>AgePopDenom</strong></p>
 <p>Note: <strong>AgePopDenom</strong> is currently under development. Once it is available on CRAN, you will be able to install it using the following command:</p>
-<p><code>{r eval=FALSE, include=TRUE} # install.packages("AgePopDenom")</code></p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("AgePopDenom")</span></span></code></pre></div>
 <p>To get the development version from GitHub, use:</p>
-<p><code>{r eval=FALSE, include=TRUE} # install.packages("devtools") devtools::install_github("truenomad/AgePopDenom")</code></p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"truenomad/AgePopDenom"</span><span class="op">)</span></span></code></pre></div>
 <p>Then load it in R:</p>
-<p><code>{r eval=FALSE, include=TRUE} library(AgePopDenom)</code> ————————————————————————</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://truenomad.github.io/AgePopDenom/">AgePopDenom</a></span><span class="op">)</span></span></code></pre></div>
+<hr>
 </div>
 <div class="section level2">
 <h2 id="core-functions">Core Functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
 </h2>
 <ol style="list-style-type: decimal">
-<li><p>Initialize project structure: <code>{r eval=FALSE, include=TRUE} AgePopDenom::init()</code></p></li>
-<li><p>Download required data: ```{r eval=FALSE, include=TRUE} # Example for Kenya and Uganda countries &lt;- c(“KEN”, “UGA”)</p></li>
+<li>Initialize project structure:</li>
 </ol>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/init.html">init</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<ol start="2" style="list-style-type: decimal">
+<li>Download required data:</li>
+</ol>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Example for Kenya and Uganda</span></span>
+<span><span class="va">countries</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"KEN"</span>, <span class="st">"UGA"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Get DHS data</span></span>
+<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/download_dhs_datasets.html">download_dhs_datasets</a></span><span class="op">(</span><span class="va">countries</span>, email <span class="op">=</span> <span class="st">"your_email@example.com"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Get spatial data</span></span>
+<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/download_shapefile.html">download_shapefile</a></span><span class="op">(</span><span class="va">countries</span><span class="op">)</span></span>
+<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/download_pop_rasters.html">download_pop_rasters</a></span><span class="op">(</span><span class="va">countries</span><span class="op">)</span></span></code></pre></div>
+<ol start="3" style="list-style-type: decimal">
+<li>Run full analysis:</li>
+</ol>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/run_full_workflow.html">run_full_workflow</a></span><span class="op">(</span><span class="va">countries</span><span class="op">)</span></span></code></pre></div>
 </div>
-</div>
-<div class="section level1">
-<h1 id="get-dhs-data">Get DHS data<a class="anchor" aria-label="anchor" href="#get-dhs-data"></a>
-</h1>
-<p>AgePopDenom::download_dhs_datasets(countries, email = “<a href="mailto:your_email@example.com" class="email">your_email@example.com</a>”)</p>
-</div>
-<div class="section level1">
-<h1 id="get-spatial-data">Get spatial data<a class="anchor" aria-label="anchor" href="#get-spatial-data"></a>
-</h1>
-<p>AgePopDenom::download_shapefile(countries) AgePopDenom::download_pop_rasters(countries)</p>
-<pre><code>
-3. Run full analysis:
-```{r eval=FALSE, include=TRUE}
-AgePopDenom::run_full_workflow(countries)</code></pre>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
@@ -208,6 +217,7 @@ AgePopDenom::run_full_workflow(countries)</code></pre>
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
+<li><a href="https://github.com/truenomad/agepopdenom/actions" class="external-link"><img src="https://github.com/truenomad/agepopdenom/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
 <li><a href="https://www.codefactor.io/repository/github/truenomad/agepopdenom" class="external-link"><img src="https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge" alt="CodeFactor"></a></li>
 </ul>
 </div>

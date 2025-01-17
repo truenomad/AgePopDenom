@@ -17,7 +17,8 @@ extracted raster file.}
 destination directory. Default is FALSE.}
 }
 \value{
-A character string representing the full path to the extracted raster file.
+A character string representing the full path to the extracted raster
+  file.
 }
 \description{
 Extracts the `afurextent.asc` raster file from the package's `inst/extdata`

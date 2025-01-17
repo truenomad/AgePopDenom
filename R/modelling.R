@@ -1000,11 +1000,11 @@ process_gamma_predictions <- function(gamma_prediction) {
   shape_hat <- rowMeans(shape_pred)
 
   # Return results as a list
-  return(list(
+  list(
     mean_age_pred = mean_age_pred,
     scale_hat = scale_hat,
     shape_hat = shape_hat
-  ))
+  )
 }
 #' Run Country-Specific Spatial Modeling Workflow with Logging
 #'

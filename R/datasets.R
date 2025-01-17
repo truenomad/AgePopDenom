@@ -593,7 +593,7 @@ download_pop_rasters <- function(
         url = final_url, destfile = df, quiet = quiet,
         handle = curl::new_handle(timeout = 600)
       )
-      return(df)
+      df
     } else {
       if (!quiet) {
         cli::cli_alert_warning(
@@ -603,7 +603,7 @@ download_pop_rasters <- function(
           )
         )
       }
-      return(NA_character_)
+      NA_character_
     }
   }, country_codes, dest_files, USE.NAMES = FALSE)
 

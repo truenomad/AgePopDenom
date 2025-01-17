@@ -18,21 +18,17 @@
 compute_age_proportions <- function(sim, scale, shape, run, limslow, limsup) {
   if (run == length(limslow)) {
     # For the last interval (open-ended)
-    return(
       1 - stats::pgamma(limslow[run],
                         scale = scale[, sim],
                         shape = shape[, sim])
-    )
   } else {
     # For regular intervals
-    return(
       stats::pgamma(limsup[run],
                     scale = scale[, sim],
                     shape = shape[, sim]) -
         stats::pgamma(limslow[run],
                       scale = scale[, sim],
                       shape = shape[, sim])
-    )
   }
 }
 

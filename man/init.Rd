@@ -8,7 +8,8 @@ init(
   r_script_name = "full_pipeline.R",
   cpp_script_name = "model.cpp",
   path = here::here(),
-  open_r_script = TRUE
+  open_r_script = TRUE,
+  setup_rscript = TRUE
 )
 }
 \arguments{
@@ -23,6 +24,9 @@ Defaults to `"."`.}
 
 \item{open_r_script}{Logical. Whether to open the R script automatically in
 RStudio (if available). Defaults to `TRUE`.}
+
+\item{setup_rscript}{Logical. Whether to setup the R script with example code.
+Defaults to `TRUE`.}
 }
 \value{
 A list of character strings with the file paths of the created

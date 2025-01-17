@@ -69,7 +69,7 @@ install_suggested_packages <- function(libname, pkgname) {
           cli::cli_alert_danger(paste0(
             "Failed to install 'remotes'. Error: ", e$message
           ))
-          return(invisible(NULL))
+          invisible(NULL)
         })
       }
 

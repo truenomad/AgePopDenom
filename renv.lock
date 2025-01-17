@@ -87,7 +87,7 @@
       "Package": "Rcpp",
       "Version": "1.0.13-1",
       "Source": "Repository",
-      "Repository": "https://cloud.r-project.org",
+      "Repository": "CRAN",
       "Requirements": [
         "methods",
         "utils"
@@ -156,7 +156,7 @@
       "Package": "cli",
       "Version": "3.6.3",
       "Source": "Repository",
-      "Repository": "repos",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "utils"

@@ -2,7 +2,12 @@
 
 <!-- badges: start -->
 [![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom)
+
+[![R-CMD-check](https://github.com/truenomad/agepopdenom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/truenomad/agepopdenom/actions/workflows/R-CMD-check.yaml) 
+
 <!-- badges: end -->
+
+
 
 ## What is AgePopDenom?
 

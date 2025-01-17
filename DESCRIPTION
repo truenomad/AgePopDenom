@@ -37,7 +37,7 @@ Imports:
     tibble,
     terra,
     tidyr,
-    pak
+    matrixStats
 Suggests: 
     stats,
     stringr,
@@ -57,7 +57,7 @@ Suggests:
     purrr,
     rdhs,
     rlang,
-    matrixStats,
+    pak,
     sp,
     automap,
     testthat (>= 3.0.0)

@@ -11,6 +11,9 @@ permissions: read-all
 
 jobs:
   R-CMD-check:
+    # Increase timeout if Ubuntu occasionally takes longer
+    timeout-minutes: 30
+
     runs-on: ${{ matrix.config.os }}
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
     strategy:
@@ -32,7 +35,7 @@ jobs:
       NOT_CRAN: true
       RSPM: https://packagemanager.posit.co/cran/latest
       RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
-      PAK_METADATA_CACHE: TRUE  # Disable metadata updates to save time
+      PAK_METADATA_CACHE: TRUE  # Reduce metadata updates by pak
 
     steps:
       - uses: actions/checkout@v4
@@ -47,8 +50,10 @@ jobs:
 
       - uses: actions/cache@v3
         with:
+          # Hash both .Rproj and DESCRIPTION so that when either changes,
+          # the cache is invalidated
           path: ~/.cache/R
-          key: ${{ runner.os }}-r-${{ hashFiles('**/*.lock') }}
+          key: ${{ runner.os }}-r-${{ hashFiles('DESCRIPTION', '**/*.Rproj') }}
           restore-keys: |
             ${{ runner.os }}-r-
 
@@ -67,10 +72,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libxml2-dev libssl-dev libcurl4-gnutls-dev
 
+      - name: Optimize dependency installation
+        if: runner.os == 'Linux'
+        run: |
+          # Use parallel cores and disable pak upgrades
+          Rscript -e "options(Ncpus = parallel::detectCores(), pak.upgrade = FALSE); pak::pkg_install()"
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
-          lockfile: ".github/pkg.lock"
+          needs: check
 
       - uses: r-lib/actions/check-r-package@v2
         with:

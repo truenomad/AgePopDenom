@@ -15,7 +15,7 @@ editor_options:
 
 **AgePopDenom** is an R package designed for geostatistical modeling of fine-scale population age structures. By combining nationally representative survey data (e.g., DHS), geospatial rasters (e.g., population density), and administrative shapefiles, it produces single-year age distributions at a high spatial resolution. This vignette walks you through installing **AgePopDenom**, setting up a project directory, running the modeling workflow, and creating outputs such as predictive rasters and age pyramids.
 
-A key advantage of **AgePopDenom** is its simplicity. The init() and run_full_workflow() functions handle everything from data retrieval to model fitting and result generation, making it much easier to produce fine-scale demographic maps for public health and development applications. Whether you need to incorporate custom covariates or use your own population rasters, the package is flexible and supports a wide range of user inputs.
+A key advantage of **AgePopDenom** is its simplicity. The `init()` and `run_full_workflow()` functions handle everything from data retrieval to model fitting and result generation, making it much easier to produce fine-scale demographic maps for public health and development applications. Whether you need to incorporate custom covariates or use your own population rasters, the package is flexible and supports a wide range of user inputs.
 
 ------------------------------------------------------------------------
 
@@ -100,7 +100,7 @@ Before starting, ensure you have an **RStudio project** set up. This will help o
 Once the RStudio project is created, initialize the project folder structure and create the key scripts by running:
 
 ```{r eval=FALSE, include=TRUE}
-AgePopDenom::init(
+init(
   r_script_name = "full_pipeline.R",
   cpp_script_name = "model.cpp",
   open_r_script = FALSE
@@ -150,31 +150,31 @@ You can download or place your own survey data into `01_data/1a_survey_data/proc
 To download DHS data, do:
 
 ```{r eval=FALSE, include=TRUE}
-AgePopDenom::download_dhs_datasets(
+download_dhs_datasets(
   country_codes = c("GMB"),
   email = "my_email@example.com",
   project = "Population project"
 )
 
-AgePopDenom::process_dhs_data()
+process_dhs_data()
 ```
 
 Next, retrieve shapefiles (e.g., WHO boundaries):
 
 ```{r eval=FALSE, include=TRUE}
-AgePopDenom::download_shapefile("GMB")
+download_shapefile("GMB")
 ```
 
 Obtain population rasters (e.g., WorldPop):
 
 ```{r eval=FALSE, include=TRUE}
-AgePopDenom::download_pop_rasters("GMB")
+download_pop_rasters("GMB")
 ```
 
 Extract urban extent (included with **AgePopDenom** or supply your own):
 
 ```{r eval=FALSE, include=TRUE}
-AgePopDenom::extract_afurextent()
+extract_afurextent()
 ```
 
 ## 3. Run the Full Workflow
@@ -182,7 +182,7 @@ AgePopDenom::extract_afurextent()
 Use `run_full_workflow()` to fit the spatial model, predict gamma parameters, and generate aggregated outputs:
 
 ```{r eval=FALSE, include=TRUE}
-AgePopDenom::run_full_workflow("GMB")
+run_full_workflow("GMB")
 ```
 
 When you call `run_full_workflow("country_code")`, **AgePopDenom** executes the following sub-functions in sequence:
@@ -431,7 +431,7 @@ By allowing you to pass parameters to the underlying functions, `run_full_workfl
 To demonstrate **AgePopDenom**, we provide an example workflow using simulated DHS-like data for Gambia. This enables users to replicate fine-scale age-structured population modeling locally without requiring restricted data access. The example covers directory setup, dummy data simulation, and running the full modeling workflow.
 
 ```{r eval=FALSE, include=TRUE}
-AgePopDenom::init(
+init(
   r_script_name = "full_pipeline.R",
   cpp_script_name = "model.cpp",
   open_r_script = FALSE
@@ -482,18 +482,18 @@ saveRDS(
     "dhs_pr_records_combined.rds"))
 
 # Download shapefiles
-AgePopDenom::download_shapefile(cntry_code)
+download_shapefile(cntry_code)
 
 # Download population rasters from worldpop
-AgePopDenom::download_pop_rasters(cntry_code)
+download_pop_rasters(cntry_code)
 
 # Extract urban extent raster
-AgePopDenom::extract_afurextent()
+extract_afurextent()
 
 # Run models and get outputs ------------------------------------------
 
 # Run the full model workflow
-AgePopDenom::run_full_workflow(cntry_code)
+run_full_workflow(cntry_code)
 ```
 
 For more detailed information on advanced usage (e.g., integrating additional covariates, applying user-supplied rasters), consult the function-specific help files. We hope this package empowers you to reliably estimate age-structured population counts in diverse contexts and at finer geographic scales than was previously feasible.

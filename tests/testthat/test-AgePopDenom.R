@@ -91,7 +91,7 @@ testthat::test_that("process_dhs_data correctly processes DHS survey data", {
 
     # Create spatial data frame with explicit CRS
     sf_data <- sf::st_as_sf(
-      data.frame(
+      dplyr::tibble(
         DHSCLUST = 1:n_clusters,
         URBAN_RURA = sample(c("R", "U"), n_clusters, replace = TRUE),
         LATNUM = runif(n_clusters, -10, 10),
@@ -104,9 +104,6 @@ testthat::test_that("process_dhs_data correctly processes DHS survey data", {
         LATNUM = runif(n_clusters, -10, 10),
         LONGNUM = runif(n_clusters, -10, 10)
       )
-
-    # Convert to regular data frame for saving
-    as.data.frame(sf_data)
   }
 
   # Save test data for two countries

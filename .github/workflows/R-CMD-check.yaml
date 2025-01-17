@@ -32,6 +32,7 @@ jobs:
       NOT_CRAN: true
       RSPM: https://packagemanager.posit.co/cran/latest
       RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+      PAK_METADATA_CACHE: TRUE  # Disable metadata updates to save time
 
     steps:
       - uses: actions/checkout@v4
@@ -69,7 +70,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
-          needs: check
+          lockfile: ".github/pkg.lock"
 
       - uses: r-lib/actions/check-r-package@v2
         with:

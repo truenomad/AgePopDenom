@@ -1,9 +1,9 @@
 url: https://truenomad.github.io/AgePopDenom/
 template:
-  params:
-    logo: man/figures/logo.png
-    favicon: man/figures/logo.png
   bootstrap: 5
+  includes:
+    in_header: |
+      <link rel="icon" type="image/png" href="man/figures/logo.png">
 navbar:
   left:
   - text: Get started

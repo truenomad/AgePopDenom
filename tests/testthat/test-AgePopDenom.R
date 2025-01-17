@@ -84,15 +84,29 @@ testthat::test_that("process_dhs_data correctly processes DHS survey data", {
   }
 
   # Create fake shapefile data
+  # Create fake shapefile data with explicit CRS
   create_fake_shapefile <- function(country_code) {
-    set.seed(123)  # For reproducibility
+    set.seed(123)
     n_clusters <- 20
-    data.frame(
-      DHSCLUST = 1:n_clusters,
-      URBAN_RURA = sample(c("R", "U"), n_clusters, replace = TRUE),
-      LATNUM = runif(n_clusters, -10, 10),
-      LONGNUM = runif(n_clusters, -10, 10)
-    )
+
+    # Create spatial data frame with explicit CRS
+    sf_data <- sf::st_as_sf(
+      data.frame(
+        DHSCLUST = 1:n_clusters,
+        URBAN_RURA = sample(c("R", "U"), n_clusters, replace = TRUE),
+        LATNUM = runif(n_clusters, -10, 10),
+        LONGNUM = runif(n_clusters, -10, 10)
+      ),
+      coords = c("LONGNUM", "LATNUM"),
+      crs = 4326  # WGS84
+    ) |>
+      dplyr::mutate(
+        LATNUM = runif(n_clusters, -10, 10),
+        LONGNUM = runif(n_clusters, -10, 10)
+      )
+
+    # Convert to regular data frame for saving
+    as.data.frame(sf_data)
   }
 
   # Save test data for two countries

@@ -1,5 +1,5 @@
 ---
-title: "AgePopDenom Workflow: A Step-by-Step Guide"
+title: "Using AgePopDenom"
 output: rmarkdown::html_vignette
 vignette: >
   %\

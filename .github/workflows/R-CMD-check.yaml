@@ -39,10 +39,11 @@ jobs:
       - name: Windows TMB setup
         if: runner.os == 'Windows'
         run: |
-          writeLines('PATH="${RTOOLS40_HOME}\\usr\\bin;${PATH}"',
-                    file("~/.Renviron", encoding="UTF-8"))
+          # Ensure RTools is properly configured
+          echo 'PATH="${RTOOLS40_HOME}\\usr\\bin;${PATH}"' >> ~/.Renviron
+          # Install system dependencies using pacman
           pacman -S mingw-w64-x86_64-eigen3 --noconfirm
-        shell: bash
+        shell: C:\rtools44\usr\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
 
       - name: Install system dependencies (macOS)
         if: runner.os == 'macOS'
@@ -59,27 +60,3 @@ jobs:
         with:
           upload-snapshots: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
-
-  test-coverage:
-    name: Run tests and collect coverage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npx jest --coverage
-
-      - name: Upload results to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: truenomad/AgePopDenom

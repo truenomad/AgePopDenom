@@ -66,6 +66,12 @@ jobs:
           pacman -S mingw-w64-x86_64-eigen3 --noconfirm
         shell: C:\rtools44\usr\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
 
+      - name: Install system dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install pkg-config proj gdal
+
       - name: Install system dependencies (Ubuntu)
         if: runner.os == 'Linux'
         run: |
@@ -88,7 +94,26 @@ jobs:
           upload-snapshots: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
 
-      - name: Upload coverage reports to Codecov
+  test-coverage:
+    name: Run tests and collect coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npx jest --coverage
+
+      - name: Upload results to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: truenomad/AgePopDenom

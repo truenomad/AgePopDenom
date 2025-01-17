@@ -42,7 +42,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/using_agepopdenom.html">Introduction to AgePopDenom</a></li>
+<li><a class="dropdown-item" href="articles/using_agepopdenom.html">Using AgePopDenom</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
@@ -70,132 +70,106 @@
 <p><strong><code>AgePopDenom</code></strong> is an R package designed to facilitate the generation of fine-scale, age-structured population denominators for public health decision-making and service delivery. By combining census and household survey data with a novel parameter-based geostatistical modeling approach, the package produces high-resolution (5km x 5km) population estimates disaggregated by age.</p>
 <hr>
 </div>
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
-<p>To install the package from GitHub, use the following commands:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Ensure you have the devtools package installed:</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Install AgePopDenom from GitHub</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"truenomad/AgePopDenom"</span><span class="op">)</span></span></code></pre></div>
-<hr>
 </div>
+<div class="section level1">
+<h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h1>
 <div class="section level2">
-<h2 id="setting-up-your-project">Setting Up Your Project<a class="anchor" aria-label="anchor" href="#setting-up-your-project"></a>
+<h2 id="system-requirements">System Requirements<a class="anchor" aria-label="anchor" href="#system-requirements"></a>
 </h2>
-<p>Before starting, ensure you have an <strong>RStudio project</strong> set up. This will help organize your analysis and outputs into a single, self-contained directory. An RStudio project is essential for maintaining reproducibility and keeping your workflow organized.</p>
-<p>Once the RStudio project is created, initialize the project folder structure and create the key scripts by running:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/init.html">init</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>This function: - Creates a standardized directory structure for managing data, scripts, and outputs systematically. - Generates two essential scripts in the <code>02_scripts/</code> directory:</p>
+<p>Before installing <strong>AgePopDenom</strong>, ensure your system meets the following requirements:</p>
 <ol style="list-style-type: decimal">
-<li><p><strong><code>full_pipeline.R</code></strong>: Contains the complete analytical workflow.</p></li>
-<li><p><strong><code>model.cpp</code></strong>: Provides the C++ code used to optimize the geostatistical models.</p></li>
+<li>
+<strong>R version</strong>: &gt;= 4.1.0</li>
+<li>
+<strong>C++ compiler</strong>: C++17 compatible</li>
+<li>
+<strong>TMB</strong> (Template Model Builder)</li>
 </ol>
 <div class="section level3">
-<h3 id="folder-structure">Folder Structure<a class="anchor" aria-label="anchor" href="#folder-structure"></a>
+<h3 id="platform-specific-setup">Platform-Specific Setup<a class="anchor" aria-label="anchor" href="#platform-specific-setup"></a>
 </h3>
-<p>The following directories will be created automatically:</p>
-<pre class="plaintext"><code>01_data/
-├── 1a_survey_data/
-│   ├── processed/
-│   └── raw/
-├── 1b_rasters/
-│   ├── urban_extent/
-│   └── pop_raster/
-├── 1c_shapefiles/
-02_scripts/
-03_outputs/
-├── 3a_model_outputs/
-├── 3b_visualizations/
-├── 3c_table_outputs/
-└── 3d_compiled_results/</code></pre>
-<hr>
+<div class="section level4">
+<h4 id="windows">Windows<a class="anchor" aria-label="anchor" href="#windows"></a>
+</h4>
+<ol style="list-style-type: decimal">
+<li>Install Rtools (matches your R version):</li>
+</ol>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Check if Rtools is installed and properly configured</span></span>
+<span><span class="fu">pkgbuild</span><span class="fu">::</span><span class="fu"><a href="https://pkgbuild.r-lib.org/reference/has_build_tools.html" class="external-link">has_build_tools</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>If FALSE, download and install Rtools from: <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">CRAN Rtools</a></p>
+<p><strong>macOS</strong></p>
+<ol style="list-style-type: decimal">
+<li>Install Command Line Tools:</li>
+</ol>
+<pre><code><span><span class="va">xcode</span><span class="op">-</span><span class="va">select</span> <span class="op">-</span><span class="op">-</span><span class="va">install</span></span></code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Alternatively, install gcc via Homebrew:</li>
+</ol>
+<pre><code>brew install gcc</code></pre>
+<p><strong>Linux (Ubuntu/Debian)</strong></p>
+<ol style="list-style-type: decimal">
+<li>Update your system and install necessary packages:</li>
+</ol>
+<pre><code>sudo apt-get update
+sudo apt-get install build-essential libxml2-dev</code></pre>
+</div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="running-the-pipeline">Running the Pipeline<a class="anchor" aria-label="anchor" href="#running-the-pipeline"></a>
+<h2 id="agepopdenom-installation">AgePopDenom installation<a class="anchor" aria-label="anchor" href="#agepopdenom-installation"></a>
 </h2>
-<p>The <strong><code>full_pipeline.R</code></strong> script automates the workflow. It performs the following steps:</p>
-<div class="section level3">
-<h3 id="data-downloads">Data Downloads<a class="anchor" aria-label="anchor" href="#data-downloads"></a>
-</h3>
-<ul>
-<li>
-<strong>DHS Datasets</strong>: Retrieves demographic and health data for the specified countries.</li>
-<li>
-<strong>WorldPop Rasters</strong>: Downloads 100m unconstrained population rasters.</li>
-<li>
-<strong>WHO Adm2 Shapefiles</strong>: Fetches WHO administrative boundary shapefiles.</li>
-<li>
-<strong>Urban-rural extent</strong>: Extracts Urban-rural raster file included in the package (this is the predictor data).</li>
-</ul>
-<p>If you prefer to use your own shapefiles, replace the file at <code>01_data/1c_shapefiles/district_shape.gpkg</code> with your custom file, ensuring it has the same name.</p>
-</div>
-<div class="section level3">
-<h3 id="model-execution">Model Execution<a class="anchor" aria-label="anchor" href="#model-execution"></a>
-</h3>
-<ul>
-<li>Runs geostatistical models for each country.</li>
-<li>Produces high-resolution prediction raster images and diagnostic outputs.</li>
-<li>Generates regional age-pyramids for visualizing population distributions.</li>
-<li>Computes population denominators disaggregated by age groups for each district.</li>
-</ul>
-<hr>
-</div>
+<p>Once the setup is complete, follow the instructions below to download <strong>AgePopDenom</strong></p>
+<p>Note: <strong>AgePopDenom</strong> is currently under development. Once it is available on CRAN, you will be able to install it using the following command:</p>
+<p><code>{r eval=FALSE, include=TRUE} # install.packages("AgePopDenom")</code></p>
+<p>To get the development version from GitHub, use:</p>
+<p><code>{r eval=FALSE, include=TRUE} # install.packages("devtools") devtools::install_github("truenomad/AgePopDenom")</code></p>
+<p>Then load it in R:</p>
+<p><code>{r eval=FALSE, include=TRUE} library(AgePopDenom)</code> ————————————————————————</p>
 </div>
 <div class="section level2">
-<h2 id="outputs">Outputs<a class="anchor" aria-label="anchor" href="#outputs"></a>
+<h2 id="core-functions">Core Functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
 </h2>
-<p>The results are saved in the <code>03_outputs/</code> directory, structured as follows:</p>
-<ul>
-<li>
-<strong><code>3a_model_outputs/</code></strong>: Model parameters and diagnostics.</li>
-<li>
-<strong><code>3b_visualizations/</code></strong>: Age-pyramid visualizations &amp; prediction raster plots.</li>
-<li>
-<strong><code>3c_table_outputs/</code></strong>: Grided age-population tables with confidence interval.</li>
-<li>
-<strong><code>3d_compiled_results/</code></strong>: Final aggregated age-population tables with model parameters.</li>
-</ul>
-<hr>
+<ol style="list-style-type: decimal">
+<li>Initialize project structure:</li>
+</ol>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/init.html">init</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<ol start="2" style="list-style-type: decimal">
+<li>Download required data:</li>
+</ol>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Example for Kenya and Uganda</span></span>
+<span><span class="va">countries</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"KEN"</span>, <span class="st">"UGA"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Get DHS data</span></span>
+<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/download_dhs_datasets.html">download_dhs_datasets</a></span><span class="op">(</span><span class="va">countries</span>, email <span class="op">=</span> <span class="st">"your_email@example.com"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Get spatial data</span></span>
+<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/download_shapefile.html">download_shapefile</a></span><span class="op">(</span><span class="va">countries</span><span class="op">)</span></span>
+<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/download_pop_rasters.html">download_pop_rasters</a></span><span class="op">(</span><span class="va">countries</span><span class="op">)</span></span></code></pre></div>
+<ol start="3" style="list-style-type: decimal">
+<li>Run full analysis:</li>
+</ol>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/run_full_workflow.html">run_full_workflow</a></span><span class="op">(</span><span class="va">countries</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="example-workflow">Example Workflow<a class="anchor" aria-label="anchor" href="#example-workflow"></a>
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
-<p>Below is an example workflow using the <strong><code>full_pipeline.R</code></strong> script:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Set up countries of interest</span></span>
-<span><span class="va">cntry_codes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"KEN"</span>, <span class="st">"UGA"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Gather and process datasets --------------------------------------------------</span></span>
-<span></span>
-<span><span class="co"># Download DHS datasets</span></span>
-<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/download_dhs_datasets.html">download_dhs_datasets</a></span><span class="op">(</span></span>
-<span>  country_codes <span class="op">=</span> <span class="va">cntry_codes</span>,</span>
-<span>  email <span class="op">=</span> <span class="st">"your_email@example.com"</span>,</span>
-<span>  project <span class="op">=</span> <span class="st">"My DHS Project"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Process DHS datasets</span></span>
-<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/process_dhs_data.html">process_dhs_data</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Download shapefiles</span></span>
-<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/download_shapefile.html">download_shapefile</a></span><span class="op">(</span><span class="va">cntry_codes</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Download population rasters from worldpop</span></span>
-<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/download_pop_rasters.html">download_pop_rasters</a></span><span class="op">(</span><span class="va">cntry_codes</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Extract urban extent raster</span></span>
-<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/extract_afurextent.html">extract_afurextent</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Run models and get outputs ---------------------------------------------------</span></span>
-<span></span>
-<span><span class="co"># Run the model</span></span>
-<span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="reference/run_full_workflow.html">run_full_workflow</a></span><span class="op">(</span><span class="va">cntry_codes</span><span class="op">)</span> </span></code></pre></div>
-<hr>
+<p>For detailed documentation and examples, visit our <a href="https://truenomad.github.io/AgePopDenom/">package website</a>.</p>
+</div>
+<div class="section level2">
+<h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
+</h2>
+<ul>
+<li>Automated data retrieval and processing</li>
+<li>Geostatistical modeling of age structures</li>
+<li>High-resolution population predictions</li>
+<li>Age-specific population denominators</li>
+<li>Visualization and diagnostic tools</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="support-and-contributions">Support and Contributions<a class="anchor" aria-label="anchor" href="#support-and-contributions"></a>
@@ -209,6 +183,7 @@
 <p>We welcome contributions from the community to improve <code>AgePopDenom</code>.</p>
 </div>
 </div>
+
   </main><aside class="col-md-3"><div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">

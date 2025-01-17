@@ -1,32 +1,40 @@
 #' Package Initialization and Dependency Check
 #'
 #' @description
-#' This function runs when the package is loaded and checks for suggested packages.
-#' It prompts the user to install any missing packages that are suggested for full
-#' functionality.
+#' This function checks for suggested packages and prompts the user to install
+#' any missing ones that are needed for full functionality. It handles both
+#' CRAN and GitHub packages.
 #'
-#' @param libname The library name where the package is installed
-#' @param pkgname The name of the package being loaded
+#' @param libname The library name where the package is installed (not used)
+#' @param pkgname The name of the package being loaded (not used)
 #'
 #' @details
-#' The function checks for a predefined list of suggested packages and prompts
-#' the user to install any that are missing. Special handling is included for
-#' packages from non-CRAN sources (e.g., esri2sf from GitHub).
+#' The function maintains a predefined list of suggested packages and checks if
+#' they are installed. For missing packages, it prompts the user for
+#' installation in interactive sessions. Special handling is included for
+#' GitHub packages like esri2sf'.
+#'
+#' The function uses 'cli' for user communication and handles errors gracefully
+#' during installation attempts. In non-interactive sessions, it skips
+#' installation and returns with a warning.
 #'
 #' @return
 #' Returns NULL invisibly. The function's main effects are:
 #' \itemize{
 #'   \item Checking for missing suggested packages
-#'   \item Prompting user for package installation
-#'   \item Installing packages based on user choice
+#'   \item Displaying missing packages to user
+#'   \item Installing packages if user agrees
+#'   \item Providing feedback on installation success/failure
 #' }
 #'
 #' @note
-#' Some functionality may be limited if suggested packages are not installed.
+#' - Function requires an interactive session for package installation
+#' - Some functionality may be limited if suggested packages are not installed
+#' - Installation errors are caught and reported but don't stop execution
 #'
 #' @keywords internal
 #' @export
-install_suggested_packages <- function(libname, pkgname) {
+install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
   suggested_pkgs <- c(
     "cli", "countrycode", "crayon", "scales", "glue",
     "haven", "here", "matrixStats", "rstudioapi", "geodata",
@@ -185,29 +193,41 @@ create_project_structure <- function(base_path = here::here()) {
 
 #' Initialize Full Pipeline Script and Model Script
 #'
-#' This function creates a full pipeline R script and a model C++ script,
-#' saving them to the appropriate folders within the project directory
-#' structure. The folder structure is created using
-#' `AgePopDenom::create_project_structure()`. The R script is automatically
-#' opened in RStudio after creation.
+#' @description
+#' Creates a full pipeline R script and a model C++ script, saving them to the
+#' appropriate folders within the project directory structure. The folder
+#' structure is created using `AgePopDenom::create_project_structure()`.
+#' The scripts contain example code for downloading and processing DHS data,
+#' shapefiles, and running models.
 #'
 #' @param r_script_name Character. The name of the R script file to be created.
 #' Defaults to `"full_pipeline.R"`.
 #' @param cpp_script_name Character. The name of the C++ script file to be
 #' created. Defaults to `"model.cpp"`.
 #' @param path Character. The directory in which to create the scripts.
-#'   Defaults to `"."`.
+#'   Defaults to `here::here()`.
 #' @param open_r_script Logical. Whether to open the R script automatically in
 #'   RStudio (if available). Defaults to `TRUE`.
-#' @param setup_rscript Logical. Whether to setup the R script with example code.
-#'   Defaults to `TRUE`.
+#' @param setup_rscript Logical. Whether to setup the R script with example
+#'  code. Defaults to `TRUE`.
 #'
-#' @return A list of character strings with the file paths of the created
-#' scripts. The function also generates success messages upon completion.
+#' @return Invisibly returns a list containing:
+#' \itemize{
+#'   \item r_script_path: Path to the created R script
+#'   \item cpp_script_path: Path to the created C++ script
+#' }
+#' The function also prints success messages upon script creation.
 #'
 #' @examples
-#' # Create the full pipeline script and model script
-#' # init()
+#' \dontrun{
+#' # Create scripts in current directory
+#' init()
+#'
+#' # Create scripts in custom directory with specific names
+#' init(r_script_name = "my_pipeline.R",
+#'      cpp_script_name = "my_model.cpp",
+#'      path = "project_dir")
+#' }
 #'
 #' @export
 init <- function(r_script_name = "full_pipeline.R",
@@ -231,7 +251,7 @@ init <- function(r_script_name = "full_pipeline.R",
   }
 
   # Define the R script content
-  r_script_content <- if(setup_rscript) {
+  r_script_content <- if (setup_rscript) {
     '
 # set up country of interest
 cntry_codes = c("GMB", "COM")
@@ -262,7 +282,7 @@ AgePopDenom::extract_afurextent()
 AgePopDenom::run_full_workflow(cntry_codes)
 '
   } else {
-    ''
+    ""
   }
 
   # Define the C++ script content
@@ -362,27 +382,30 @@ Type objective_function<Type>::operator() () {
 }
 "
 
-# Write the R script
-r_script_path <- file.path(r_script_dir, r_script_name)
-writeLines(r_script_content, r_script_path)
+# Write the R script if setup_rscript is TRUE
+if (setup_rscript) {
+  r_script_path <- file.path(r_script_dir, r_script_name)
+  writeLines(r_script_content, r_script_path)
+
+  # Open the R script in RStudio if available and requested
+  if (open_r_script && requireNamespace("rstudioapi", quietly = TRUE)) {
+    rstudioapi::navigateToFile(r_script_path)
+    cli::cli_alert_success(
+      "R script '{r_script_path}' successfully created and opened."
+    )
+  } else {
+    cli::cli_alert_info(
+      glue::glue(
+        "R script created but could not open automatically:",
+        " RStudio not available."
+      )
+    )
+  }
+}
 
 # Write the C++ script
 cpp_script_path <- file.path(cpp_script_dir, cpp_script_name)
 writeLines(cpp_script_content, cpp_script_path)
-
-# Open the R script in RStudio (if available)
-if (open_r_script && requireNamespace("rstudioapi", quietly = TRUE)) {
-  rstudioapi::navigateToFile(r_script_path)
-} else {
-  cli::cli_alert_info(
-    "Scripts created but could not open automatically: RStudio not available."
-  )
-}
-
-# Return success messages
-cli::cli_alert_success(
-  "R script '{r_script_path}' successfully created and opened."
-)
 cli::cli_alert_success(
   "C++ script '{cpp_script_path}' successfully created."
 )

@@ -1,4 +1,21 @@
 url: https://truenomad.github.io/AgePopDenom/
 template:
   bootstrap: 5
+navbar:
+  left:
+  - text: Get started
+    href: index.html
+  - text: Articles
+    href: articles/index.html
+    menu:
+    - text: Introduction to AgePopDenom
+      href: articles/using_agepopdenom.html
+  - text: Reference
+    href: reference/index.html
+  right:
+  - icon: fa-github fa-lg
+    href: https://github.com/truenomad/AgePopDenom
+articles:
+- title: Introduction to AgePopDenom
+  contents: vignettes/using_agepopdenom.Rmd
 

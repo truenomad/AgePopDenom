@@ -4,32 +4,40 @@
 \alias{install_suggested_packages}
 \title{Package Initialization and Dependency Check}
 \usage{
-install_suggested_packages(libname, pkgname)
+install_suggested_packages(libname = NULL, pkgname = NULL)
 }
 \arguments{
-\item{libname}{The library name where the package is installed}
+\item{libname}{The library name where the package is installed (not used)}
 
-\item{pkgname}{The name of the package being loaded}
+\item{pkgname}{The name of the package being loaded (not used)}
 }
 \value{
 Returns NULL invisibly. The function's main effects are:
 \itemize{
   \item Checking for missing suggested packages
-  \item Prompting user for package installation
-  \item Installing packages based on user choice
+  \item Displaying missing packages to user
+  \item Installing packages if user agrees
+  \item Providing feedback on installation success/failure
 }
 }
 \description{
-This function runs when the package is loaded and checks for suggested packages.
-It prompts the user to install any missing packages that are suggested for full
-functionality.
+This function checks for suggested packages and prompts the user to install
+any missing ones that are needed for full functionality. It handles both
+CRAN and GitHub packages.
 }
 \details{
-The function checks for a predefined list of suggested packages and prompts
-the user to install any that are missing. Special handling is included for
-packages from non-CRAN sources (e.g., esri2sf from GitHub).
+The function maintains a predefined list of suggested packages and checks if
+they are installed. For missing packages, it prompts the user for
+installation in interactive sessions. Special handling is included for
+GitHub packages like esri2sf'.
+
+The function uses 'cli' for user communication and handles errors gracefully
+during installation attempts. In non-interactive sessions, it skips
+installation and returns with a warning.
 }
 \note{
-Some functionality may be limited if suggested packages are not installed.
+- Function requires an interactive session for package installation
+- Some functionality may be limited if suggested packages are not installed
+- Installation errors are caught and reported but don't stop execution
 }
 \keyword{internal}

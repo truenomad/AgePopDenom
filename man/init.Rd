@@ -20,27 +20,38 @@ Defaults to `"full_pipeline.R"`.}
 created. Defaults to `"model.cpp"`.}
 
 \item{path}{Character. The directory in which to create the scripts.
-Defaults to `"."`.}
+Defaults to `here::here()`.}
 
 \item{open_r_script}{Logical. Whether to open the R script automatically in
 RStudio (if available). Defaults to `TRUE`.}
 
-\item{setup_rscript}{Logical. Whether to setup the R script with example code.
-Defaults to `TRUE`.}
+\item{setup_rscript}{Logical. Whether to setup the R script with example
+code. Defaults to `TRUE`.}
 }
 \value{
-A list of character strings with the file paths of the created
-scripts. The function also generates success messages upon completion.
+Invisibly returns a list containing:
+\itemize{
+  \item r_script_path: Path to the created R script
+  \item cpp_script_path: Path to the created C++ script
+}
+The function also prints success messages upon script creation.
 }
 \description{
-This function creates a full pipeline R script and a model C++ script,
-saving them to the appropriate folders within the project directory
-structure. The folder structure is created using
-`AgePopDenom::create_project_structure()`. The R script is automatically
-opened in RStudio after creation.
+Creates a full pipeline R script and a model C++ script, saving them to the
+appropriate folders within the project directory structure. The folder
+structure is created using `AgePopDenom::create_project_structure()`.
+The scripts contain example code for downloading and processing DHS data,
+shapefiles, and running models.
 }
 \examples{
-# Create the full pipeline script and model script
-# init()
+\dontrun{
+# Create scripts in current directory
+init()
+
+# Create scripts in custom directory with specific names
+init(r_script_name = "my_pipeline.R",
+     cpp_script_name = "my_model.cpp",
+     path = "project_dir")
+}
 
 }

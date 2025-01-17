@@ -621,7 +621,8 @@ download_pop_rasters <- function(
 #' @param overwrite Logical. Whether to overwrite an existing file in the
 #'   destination directory. Default is FALSE.
 #'
-#' @return A character string representing the full path to the extracted raster file.
+#' @return A character string representing the full path to the extracted raster
+#'   file.
 #' @details
 #' This function extracts the `afurextent.asc` file from the package's
 #' `extdata` directory, where it is stored as a compressed `.zip` file. It

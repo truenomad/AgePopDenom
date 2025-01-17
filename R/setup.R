@@ -199,6 +199,8 @@ create_project_structure <- function(base_path = here::here()) {
 #'   Defaults to `"."`.
 #' @param open_r_script Logical. Whether to open the R script automatically in
 #'   RStudio (if available). Defaults to `TRUE`.
+#' @param setup_rscript Logical. Whether to setup the R script with example code.
+#'   Defaults to `TRUE`.
 #'
 #' @return A list of character strings with the file paths of the created
 #' scripts. The function also generates success messages upon completion.
@@ -211,8 +213,8 @@ create_project_structure <- function(base_path = here::here()) {
 init <- function(r_script_name = "full_pipeline.R",
                  cpp_script_name = "model.cpp",
                  path = here::here(),
-                 open_r_script = TRUE) {
-
+                 open_r_script = TRUE,
+                 setup_rscript = TRUE) {
   # ensure sugegsted packages are installed
   AgePopDenom::install_suggested_packages()
 
@@ -229,7 +231,8 @@ init <- function(r_script_name = "full_pipeline.R",
   }
 
   # Define the R script content
-  r_script_content <- '
+  r_script_content <- if(setup_rscript) {
+    '
 # set up country of interest
 cntry_codes = c("GMB", "COM")
 
@@ -258,9 +261,12 @@ AgePopDenom::extract_afurextent()
 # Run the model
 AgePopDenom::run_full_workflow(cntry_codes)
 '
+  } else {
+    ''
+  }
 
   # Define the C++ script content
-  cpp_script_content <- '
+  cpp_script_content <- "
 #include <TMB.hpp>
 
 // Covariance computation function
@@ -354,7 +360,7 @@ Type objective_function<Type>::operator() () {
 
   return nll;  // Return the negative log-likelihood
 }
-'
+"
 
 # Write the R script
 r_script_path <- file.path(r_script_dir, r_script_name)
@@ -369,13 +375,15 @@ if (open_r_script && requireNamespace("rstudioapi", quietly = TRUE)) {
   rstudioapi::navigateToFile(r_script_path)
 } else {
   cli::cli_alert_info(
-    "Scripts created but could not open automatically: RStudio not available.")
+    "Scripts created but could not open automatically: RStudio not available."
+  )
 }
 
 # Return success messages
 cli::cli_alert_success(
-  "R script '{r_script_path}' successfully created and opened.")
+  "R script '{r_script_path}' successfully created and opened."
+)
 cli::cli_alert_success(
-  "C++ script '{cpp_script_path}' successfully created.")
-
+  "C++ script '{cpp_script_path}' successfully created."
+)
 }

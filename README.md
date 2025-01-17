@@ -7,136 +7,120 @@
 [![R-CMD-check](https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-
-
 ## What is AgePopDenom?
 
 **`AgePopDenom`** is an R package designed to facilitate the generation of fine-scale, age-structured population denominators for public health decision-making and service delivery. By combining census and household survey data with a novel parameter-based geostatistical modeling approach, the package produces high-resolution (5km x 5km) population estimates disaggregated by age.
 
 ------------------------------------------------------------------------
 
-## Installation
 
-To install the package from GitHub, use the following commands:
+# Installation
+
+## System Requirements
+
+Before installing **AgePopDenom**, ensure your system meets the following requirements:
+
+1.  **R version**: \>= 4.1.0
+2.  **C++ compiler**: C++17 compatible
+3.  **TMB** (Template Model Builder)
+
+### Platform-Specific Setup
+
+#### Windows
+
+1.  Install Rtools (matches your R version):
 
 ``` r
-# Ensure you have the devtools package installed:
-install.packages("devtools")
+# Check if Rtools is installed and properly configured
+pkgbuild::has_build_tools()
+```
 
-# Install AgePopDenom from GitHub
+If FALSE, download and install Rtools from: [CRAN Rtools](https://cran.r-project.org/bin/windows/Rtools/)
+
+**macOS**
+
+1.	Install Command Line Tools:
+	
+```
+xcode-select --install
+```
+
+2.	Alternatively, install gcc via Homebrew:
+
+```
+brew install gcc
+```
+
+**Linux (Ubuntu/Debian)**
+
+1.	Update your system and install necessary packages:
+
+```
+sudo apt-get update
+sudo apt-get install build-essential libxml2-dev
+```
+	
+## AgePopDenom installation
+
+Once the setup is complete, follow the instructions below to download **AgePopDenom**
+
+Note: **AgePopDenom** is currently under development. Once it is available on CRAN, you will be able to install it using the following command:
+
+
+```{r eval=FALSE, include=TRUE}
+# install.packages("AgePopDenom")
+```
+
+To get the development version from GitHub, use:
+
+```{r eval=FALSE, include=TRUE}
+# install.packages("devtools")
 devtools::install_github("truenomad/AgePopDenom")
 ```
 
+Then load it in R:
+
+```{r eval=FALSE, include=TRUE}
+library(AgePopDenom)
+```
 ------------------------------------------------------------------------
 
-## Setting Up Your Project
+## Core Functions
 
-Before starting, ensure you have an **RStudio project** set up. This will help organize your analysis and outputs into a single, self-contained directory. An RStudio project is essential for maintaining reproducibility and keeping your workflow organized.
-
-Once the RStudio project is created, initialize the project folder structure and create the key scripts by running:
-
-``` r
+1. Initialize project structure:
+```r
 AgePopDenom::init()
 ```
 
-This function: - Creates a standardized directory structure for managing data, scripts, and outputs systematically. - Generates two essential scripts in the `02_scripts/` directory:
+2. Download required data:
+```r
+# Example for Kenya and Uganda
+countries <- c("KEN", "UGA")
 
-1.  **`full_pipeline.R`**: Contains the complete analytical workflow.
+# Get DHS data
+AgePopDenom::download_dhs_datasets(countries, email = "your_email@example.com")
 
-2.  **`model.cpp`**: Provides the C++ code used to optimize the geostatistical models.
-
-### Folder Structure
-
-The following directories will be created automatically:
-
-``` plaintext
-01_data/
-├── 1a_survey_data/
-│   ├── processed/
-│   └── raw/
-├── 1b_rasters/
-│   ├── urban_extent/
-│   └── pop_raster/
-├── 1c_shapefiles/
-02_scripts/
-03_outputs/
-├── 3a_model_outputs/
-├── 3b_visualizations/
-├── 3c_table_outputs/
-└── 3d_compiled_results/
+# Get spatial data
+AgePopDenom::download_shapefile(countries)
+AgePopDenom::download_pop_rasters(countries)
 ```
 
-------------------------------------------------------------------------
-
-## Running the Pipeline
-
-The **`full_pipeline.R`** script automates the workflow. It performs the following steps:
-
-### Data Downloads
-
--   **DHS Datasets**: Retrieves demographic and health data for the specified countries.
--   **WorldPop Rasters**: Downloads 100m unconstrained population rasters.
--   **WHO Adm2 Shapefiles**: Fetches WHO administrative boundary shapefiles.
--   **Urban-rural extent**: Extracts Urban-rural raster file included in the package (this is the predictor data).
-
-If you prefer to use your own shapefiles, replace the file at `01_data/1c_shapefiles/district_shape.gpkg` with your custom file, ensuring it has the same name.
-
-### Model Execution
-
--   Runs geostatistical models for each country.
--   Produces high-resolution prediction raster images and diagnostic outputs.
--   Generates regional age-pyramids for visualizing population distributions.
--   Computes population denominators disaggregated by age groups for each district.
-
-------------------------------------------------------------------------
-
-## Outputs
-
-The results are saved in the `03_outputs/` directory, structured as follows:
-
--   **`3a_model_outputs/`**: Model parameters and diagnostics.
--   **`3b_visualizations/`**: Age-pyramid visualizations & prediction raster plots.
--   **`3c_table_outputs/`**: Grided age-population tables with confidence interval.
--   **`3d_compiled_results/`**: Final aggregated age-population tables with model parameters.
-
-------------------------------------------------------------------------
-
-## Example Workflow
-
-Below is an example workflow using the **`full_pipeline.R`** script:
-
-``` r
-# Set up countries of interest
-cntry_codes <- c("KEN", "UGA")
-
-# Gather and process datasets --------------------------------------------------
-
-# Download DHS datasets
-AgePopDenom::download_dhs_datasets(
-  country_codes = cntry_codes,
-  email = "your_email@example.com",
-  project = "My DHS Project"
-)
-
-# Process DHS datasets
-AgePopDenom::process_dhs_data()
-
-# Download shapefiles
-AgePopDenom::download_shapefile(cntry_codes)
-
-# Download population rasters from worldpop
-AgePopDenom::download_pop_rasters(cntry_codes)
-
-# Extract urban extent raster
-AgePopDenom::extract_afurextent()
-
-# Run models and get outputs ---------------------------------------------------
-
-# Run the model
-AgePopDenom::run_full_workflow(cntry_codes) 
+3. Run full analysis:
+```r
+AgePopDenom::run_full_workflow(countries)
 ```
 
-------------------------------------------------------------------------
+## Documentation
+
+For detailed documentation and examples, visit our [package website](https://truenomad.github.io/AgePopDenom/).
+
+## Features
+
+- Automated data retrieval and processing
+- Geostatistical modeling of age structures
+- High-resolution population predictions
+- Age-specific population denominators
+- Visualization and diagnostic tools
 
 ## Support and Contributions
 

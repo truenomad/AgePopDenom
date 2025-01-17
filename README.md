@@ -1,4 +1,5 @@
-# AgePopDenom <img src="man/figures/logo.png" align="right" height="139" alt="" />
+# AgePopDenom <a><img src="man/figures/logo.png" align="right" height="138" /></a>
+
 
 ## What is the AgePopDenom Package?
 

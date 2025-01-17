@@ -5,7 +5,7 @@ on:
     branches: [main, master]
   pull_request:
 
-name: R-CMD-check.yaml
+name: R-CMD-check
 
 permissions: read-all
 
@@ -44,8 +44,7 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Cache R packages
-        uses: actions/cache@v3
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/R
           key: ${{ runner.os }}-r-${{ hashFiles('**/*.lock') }}
@@ -57,7 +56,6 @@ jobs:
         run: |
           # Ensure RTools is properly configured
           echo 'PATH="${RTOOLS40_HOME}\\usr\\bin;${PATH}"' >> ~/.Renviron
-
           # Install system dependencies using pacman
           pacman -S mingw-w64-x86_64-eigen3 --noconfirm
         shell: C:\rtools44\usr\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
@@ -77,10 +75,6 @@ jobs:
         with:
           upload-snapshots: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
-
-      - name: Extend timeout for dependency resolution
-        if: runner.os == 'Linux'
-        timeout-minutes: 30
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

@@ -312,7 +312,44 @@ fit_spatial_model(
 )
 ```
 
-### 3ii. `create_prediction_data()`
+### 3ii. `generate_variogram_plot()`
+
+This function creates empirical and fitted variograms to assess spatial correlation structure in the data. It visualizes how similarity (in terms of age) between the different cluster locations changes with distance.
+
+```{r eval=FALSE, include=TRUE}
+generate_variogram_plot(
+  age_param_data,
+  fit_vario,
+  country_code,
+  scale_outcome = "log_scale",
+  output_dir = "03_outputs/3b_visualizations",
+  width = 12,
+  height = 9,
+  png_resolution = 300
+)
+```
+
+Parameters:
+
+- `age_param_data`: Data frame containing survey locations and parameters
+- `fit_vario`: Fitted variogram object from spatial model
+- `country_code`: ISO3 country code
+- `scale_outcome`: Column name for outcome variable ("log_scale" or "log_shape")
+- `output_dir`: Directory for saving plots
+- `width`, `height`: Plot dimensions in inches
+- `png_resolution`: Resolution of saved PNG file in DPI
+
+The function:
+- Computes empirical variogram from data points
+- Overlays fitted theoretical variogram
+- Creates diagnostic plot showing spatial correlation decay
+- Saves plot as PNG file in specified output directory
+
+Returns:
+- ggplot2 object of variogram plot
+- Saved PNG file in output directory
+
+### 3iii. `create_prediction_data()`
 
 This function builds a gridded dataset at \~5 km resolution, merging population rasters, urban-rural classification, and admin boundaries. Ensures each cell is linked to the proper covariates.
 
@@ -342,7 +379,7 @@ Creates a regular grid for predictions. Parameters:
 
 The grid includes: - Centroid coordinates - Population values - Urban/rural classification - Administrative unit IDs
 
-### 3iii `generate_gamma_predictions()`
+### 3iv `generate_gamma_predictions()`
 
 This function uses the fitted model parameters to simulate Gamma distributions at unobserved locations. Produces shape and scale estimates plus uncertainties.
 
@@ -360,11 +397,31 @@ generate_gamma_predictions(
 )
 ```
 
-Parameters: - `country_code`: ISO3 country code - `age_param_data`: Fitted parameters at survey locations - `model_params`: List of model parameters from fit_spatial_model() - `predictor_data`: Grid cells for prediction - `shapefile`: Administrative boundaries - `cell_size`: Grid resolution - `n_sim`: Number of Monte Carlo simulations - `ignore_cache`: Whether to use cached predictions - `output_dir`: Output directory
+Parameters:
 
-Returns: - Predicted shape and scale parameters
+-   `country_code`: ISO3 country code
 
-### 3iv. `generate_gamma_raster_plot()`
+-   `age_param_data`: Fitted parameters at survey locations
+
+-   `model_params`: List of model parameters from fit_spatial_model()
+
+-   `predictor_data`: Grid cells for prediction
+
+-   `shapefile`: Administrative boundaries
+
+-   `cell_size`: Grid resolution
+
+-   `n_sim`: Number of Monte Carlo simulations
+
+-   `ignore_cache`: Whether to use cached predictions
+
+-   `output_dir`: Output directory
+
+Returns:
+
+-   Predicted shape and scale parameters
+
+### 3v. `generate_gamma_raster_plot()`
 
 This function converts shape, scale, and derived mean-age predictions into rasters. Creates exploratory maps for validation or visual inspection.
 
@@ -378,11 +435,27 @@ generate_gamma_raster_plot(
 )
 ```
 
-Parameters: - `predictor_data`: Grid cell data - `pred_list`: Prediction results - `country_code`: ISO3 country code - `output_dir`: Output directory - `save_raster`: Whether to save raster files
+Parameters:
 
-Produces: - Shape parameter raster - Scale parameter raster - Mean age raster
+-   `predictor_data`: Grid cell data
 
-### 3v. `generate_age_pop_table()`
+-   `pred_list`: Prediction results
+
+-   `country_code`: ISO3 country code
+
+-   `output_dir`: Output directory
+
+-   `save_raster`: Whether to save raster files
+
+Produces:
+
+-   Shape parameter raster
+
+-   Scale parameter raster
+
+-   Mean age raster
+
+### 3vi. `generate_age_pop_table()`
 
 This function computes age-specific population counts by applying Gamma-based proportions to population rasters. Aggregates counts and proportions at selected administrative levels (e.g., district, region).
 
@@ -399,11 +472,29 @@ generate_age_pop_table(
 )
 ```
 
-Parameters: - `predictor_data`: Grid cell data - `scale_pred`, `shape_pred`: Predicted parameters - `country_code`: ISO3 country code - `age_range`: Vector of min/max ages - `age_interval`: Age grouping interval - `ignore_cache`: Whether to use cached results - `output_dir`: Output directory
+Parameters:
 
-Produces two data frames: - `prop_df`: Age proportions with uncertainty - `pop_df`: Population counts with uncertainty
+-   `predictor_data`: Grid cell data
 
-### 3vi. `generate_age_pyramid_plot()`
+-   `scale_pred`, `shape_pred`: Predicted parameters
+
+-   `country_code`: ISO3 country code
+
+-   `age_range`: Vector of min/max ages
+
+-   `age_interval`: Age grouping interval
+
+-   `ignore_cache`: Whether to use cached results
+
+-   `output_dir`: Output directory
+
+Produces two data frames:
+
+-   `prop_df`: Age proportions with uncertainty
+
+-   `pop_df`: Population counts with uncertainty
+
+### 3vii. `generate_age_pyramid_plot()`
 
 This function creates population pyramids (either counts or proportions) for visualizing demographic structures across user-defined geographic units.
 
@@ -415,11 +506,25 @@ generate_age_pyramid_plot(
 )
 ```
 
-Parameters: - `dataset`: List containing prop_df and pop_df - `country_code`: ISO3 country code - `output_dir`: Output directory - `fill_high`, `fill_low`: Color gradient endpoints - `line_color`: Bar outline color - `break_axis_by`: Age axis interval
+Parameters:
 
-Creates: - A list containing both proportion and count plots.
+-   `dataset`: List containing prop_df and pop_df
 
-### 3vii. `process_final_population_data()`
+-   `country_code`: ISO3 country code
+
+-   `output_dir`: Output directory
+
+-   `fill_high`, `fill_low`: Color gradient endpoints
+
+-   `line_color`: Bar outline color
+
+-   `break_axis_by`: Age axis interval
+
+Creates:
+
+-   A list containing both proportion and count plots.
+
+### 3viii. `process_final_population_data()`
 
 This function summarizes final outputs into Excel or CSV files. Allows users to retrieve final aggregated counts, proportions, and uncertainties for reporting.
 

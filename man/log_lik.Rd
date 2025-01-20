@@ -41,7 +41,8 @@ mean structure.}
 \item{d2}{A numeric matrix. Design matrix for dataset 2 used to model the
 mean structure.}
 
-\item{y}{A numeric vector. Observed response variable, including both datasets.}
+\item{y}{A numeric vector. Observed response variable, including both
+datasets.}
 
 \item{u_dist}{A numeric matrix. Distance matrix for spatial locations.}
 

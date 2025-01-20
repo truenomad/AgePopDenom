@@ -113,14 +113,15 @@ fitting.
 }
 \examples{
 \dontrun{
-# Basic usage
+# Basic usage with caching
 fit <- fit_spatial_model(
   data = my_data,
-  scale_outcome = "scale_param",
-  shape_outcome = "shape_param",
-  covariates = c("elevation", "temperature"),
-  cpp_script_name = "spatial_model"
+  scale_outcome = "log_scale",
+  shape_outcome = "log_shape",
+  covariates = c("elevation", "temperature", "urban"),
+  cpp_script_name = "02_scripts/model",
+  country_code = "KEN",
+  output_dir = "03_outputs/3a_model_outputs"
 )
-
 }
 }

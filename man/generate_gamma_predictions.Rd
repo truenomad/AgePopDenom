@@ -2,7 +2,7 @@
 % Please edit documentation in R/modelling.R
 \name{generate_gamma_predictions}
 \alias{generate_gamma_predictions}
-\title{Generate or Load Cached Gamma Predictions}
+\title{Predict Gamma Distribution Parameters for Spatial Grid}
 \usage{
 generate_gamma_predictions(
   country_code,
@@ -11,7 +11,7 @@ generate_gamma_predictions(
   predictor_data,
   shapefile,
   cell_size = 5000,
-  n_sim = 10000,
+  n_sim = 5000,
   ignore_cache = FALSE,
   save_file = FALSE,
   output_dir = here::here("03_outputs", "3a_model_outputs")
@@ -20,51 +20,46 @@ generate_gamma_predictions(
 \arguments{
 \item{country_code}{A string representing the country code (e.g., "KEN").}
 
-\item{age_param_data}{A data frame or tibble containing the age parameter data.}
+\item{age_param_data}{A data frame containing:
+\itemize{
+  \item web_x, web_y: Spatial coordinates
+  \item urban: Urban/rural indicator
+  \item log_scale: Log of scale parameter at observed locations
+  \item log_shape: Log of shape parameter at observed locations
+}}
 
-\item{model_params}{The fitted spatial model object (e.g.,
-`spat_model_param`).}
+\item{model_params}{A list containing model parameters:
+\itemize{
+  \item par: Named vector with gamma, log_sigma2, log_phi, log_tau1
+  \item Additional parameters for extracting beta coefficients
+}}
 
 \item{predictor_data}{A data object containing the predictors data.}
 
-\item{shapefile}{An `sf` object representing the country shape.}
+\item{shapefile}{An sf object defining the boundary for predictions}
 
-\item{cell_size}{An integer specifying the cell size for prediction in
-meters (default is 5000).}
+\item{cell_size}{Numeric. Grid cell size in meters (default: 5000)}
 
-\item{n_sim}{An integer specifying the number of simulations for predictions
-(default is 10000).}
+\item{n_sim}{Integer. Number of simulations for prediction (default: 5000)}
 
 \item{ignore_cache}{A boolean input which is set to determine whether
 to ignore the existing cache and write over it. Default is set to FALSE.}
 
-\item{save_file}{A boolean to determine whetehr to save prediction or not.
-Default is FALSE as this will requre lots of space.}
+\item{save_file}{A boolean to determine whether to save prediction or not.
+Default is FALSE as this will require lots of space.}
 
 \item{output_dir}{A string specifying the directory where the predictions
 file should be saved (default is "03_outputs/3a_model_outputs").}
 }
 \value{
-A data object (`gamma_prediction`) containing the gamma parameter
-  predictions.
+A list containing:
+  \itemize{
+    \item scale_pred: Matrix of simulated scale parameters
+    \item shape_pred: Matrix of simulated shape parameters
+  }
 }
 \description{
-This function generates gamma parameter predictions using spatial model
-parameters and predictors data, or loads cached predictions if the file
-already exists. It saves the predictions to a specified directory and
-provides progress updates.
-}
-\examples{
-
-# gamma_results <- generate_gamma_predictions(
-#  country_code = "KEN",
-#  age_param_data = age_param_data,
-#  model_params = spat_model_param,
-#  predictor_data = predictor_data,
-#  shapefile = country_sf,
-#  cell_size = 5000,
-#  n_sim = 10000,
-# output_dir = "03_outputs/3a_model_outputs"
-#  )
-
+This function predicts the scale and shape parameters of a Gamma distribution
+across a spatial grid using a bivariate spatial model. It can either generate
+new predictions or load cached results if available.
 }

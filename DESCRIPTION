@@ -64,7 +64,8 @@ Suggests:
     knitr,
     rmarkdown,
     matrixStats,
-    mockery
+    mockery,
+    gstat
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Config/testthat/edition: 3

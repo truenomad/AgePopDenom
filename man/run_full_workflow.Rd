@@ -14,16 +14,18 @@ run_full_workflow(
   pop_raster_suffix = "_ppp_2020_constrained.tif",
   ur_raster_path = here::here("01_data", "1b_rasters", "urban_extent"),
   ur_raster_suffix = "afurextent.asc",
-  output_paths = list(model = here::here("03_outputs", "3a_model_outputs"), plot =
-    here::here("03_outputs", "3b_visualizations"), raster = here::here("03_outputs",
-    "3c_raster_outputs"), table = here::here("03_outputs", "3c_table_outputs"), compiled
-    = here::here("03_outputs", "3d_compiled_results"), excel = here::here("03_outputs",
-    "3d_compiled_results", "age_pop_denom_compiled.xlsx"), log = here::here("03_outputs",
-    "3a_model_outputs", "modelling_log.rds")),
-  model_params = list(cell_size = 5000, n_sim = 5000, ignore_cache = FALSE, age_range =
-    c(0, 99), age_interval = 1, return_prop = TRUE, scale_outcome = "log_scale",
-    shape_outcome = "log_shape", covariates = "urban", cpp_script =
-    here::here("02_scripts", "model")),
+  pred_save_file = FALSE,
+  raster_width = 2500,
+  raster_height = 2000,
+  raster_resolution = 300,
+  save_raster = TRUE,
+  pyramid_line_color = "#67000d",
+  pyramid_fill_high = "#fee0d2",
+  pyramid_fill_low = "#a50f15",
+  pyramid_caption = paste0("Note: Total population includes ",
+    "ages 99+, pyramid shows ages 0-99"),
+  output_paths = list(),
+  model_params = list(),
   return_results = FALSE,
   n_cores = parallel::detectCores() - 2,
   ...
@@ -56,6 +58,34 @@ Default: "01_data/1b_rasters/urban_extent".}
 \item{ur_raster_suffix}{Character. Suffix for urban-rural raster.
 Default: "afurextent.asc".}
 
+\item{pred_save_file}{Logical. Whether to save prediction files.
+Default: FALSE}
+
+\item{raster_width}{Integer. Width of raster plots in pixels.
+Default: 2500}
+
+\item{raster_height}{Integer. Height of raster plots in pixels.
+Default: 2000}
+
+\item{raster_resolution}{Integer. Resolution of PNG outputs.
+Default: 300}
+
+\item{save_raster}{Logical. Whether to save raster outputs to disk.
+Default: TRUE}
+
+\item{pyramid_line_color}{Character. Hex color code for the age pyramid's
+outline. Default: "#67000d"}
+
+\item{pyramid_fill_high}{Character. Hex color code for the age pyramid's
+higher values fill. Default: "#fee0d2"}
+
+\item{pyramid_fill_low}{Character. Hex color code for the age pyramid's
+lower values fill. Default: "#a50f15"}
+
+\item{pyramid_caption}{Character. Caption text for the age pyramid plot.
+  Default:
+"Note: Total population includes ages 99+, pyramid shows ages 0-99"}
+
 \item{output_paths}{List of output paths:
 \itemize{
   \item model: Path for model outputs.
@@ -87,6 +117,9 @@ Default: "afurextent.asc".}
   \item shape_outcome: Shape outcome variable. Default: "log_shape"
   \item covariates: Model covariates. Default: "urban"
   \item cpp_script: C++ script path. Default: "02_scripts/model"
+  \item control_params: Control parameters. Default: list(trace = 2)
+  \item manual_params: Manual parameters. Default: NULL
+  \item verbose: Verbose output. Default: TRUE
 }}
 
 \item{return_results}{Logical. Whether to return results. Default: FALSE.}
@@ -107,6 +140,8 @@ If return_results is TRUE, a list containing:
     \item final_pop: Compiled population data
     \item all_mod_params: Compiled model parameters
   }
+  If return_results is FALSE, the function saves all outputs to disk and
+  returns NULL invisibly.
 }
 \description{
 This function runs the entire spatial modeling workflow for a given country
@@ -130,5 +165,26 @@ results <- run_full_workflow(
   )
 )
 }
-
+}
+\seealso{
+\itemize{
+  \item \code{\link{fit_spatial_model}}: Fits the spatial model for age
+    parameters
+  \item \code{\link{create_prediction_data}}: Creates predictor dataset from
+    spatial inputs
+  \item \code{\link{generate_gamma_predictions}}: Generates predictions using
+    fitted model
+  \item \code{\link{process_gamma_predictions}}: Processes gamma prediction
+    results
+  \item \code{\link{generate_gamma_raster_plot}}: Creates prediction raster
+    plots
+  \item \code{\link{generate_age_pop_table}}: Generates age-population tables
+  \item \code{\link{generate_age_pyramid_plot}}: Creates age pyramid plots
+  \item \code{\link{extract_age_param}}: Extracts and compiles model
+    parameters
+  \item \code{\link{process_final_population_data}}: Processes final
+    population data
+  \item \code{\link{generate_variogram_plot}}: Creates variogram plots showing
+    spatial dependence structure
+}
 }

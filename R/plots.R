@@ -1,3 +1,126 @@
+#' Generate Variogram Plot
+#'
+#' Creates a variogram plot showing the spatial dependence structure of the
+#' data. The plot includes both the empirical variogram points and the fitted
+#' theoretical variogram line. The empirical variogram points show the actual
+#' semivariance values at different distances, while the red line shows the
+#' fitted exponential
+#' variogram model.
+#'
+#' @param age_param_data Data frame containing the age parameter data. Must
+#'   include columns 'web_x' and 'web_y' for spatial coordinates and the
+#'   response variable specified in scale_outcome.
+#' @param fit_vario Fitted variogram object from automap package. Should contain
+#'   components $psill (partial sill) and $range (range parameter) for the
+#'   exponential variogram model.
+#' @param country_code Character string of the country code (e.g. "TZA") used
+#'   for plot title and output filename.
+#' @param scale_outcome Character string specifying the column name for the
+#'   scale parameter response variable (default: "log_scale"). This is the
+#'   variable for which the variogram is computed.
+#' @param output_dir Character string specifying the directory path where the
+#'   plot will be saved as a PNG file.
+#' @param width Plot width in pixels (default: 2000). Controls the output image
+#'   width.
+#' @param height Plot height in pixels (default: 1500). Controls the output
+#'   image height.
+#' @param png_resolution PNG resolution in DPI (dots per inch, default: 300).
+#'   Higher values create larger, higher quality images.
+#'
+#' @return Invisibly returns the ggplot object containing the variogram plot.
+#'   The plot is also saved as a PNG file in the specified output directory.
+#'
+#' @details
+#' The function creates a variogram plot with the following elements:
+#' - Points showing empirical semivariance values at different distances
+#' - A red line showing the fitted exponential variogram model
+#' - Clear axis labels and title
+#' - Comma-formatted distance values on x-axis
+#' - Clean theme with black and white style
+#'
+#' The output filename is constructed as lowercase country
+#'   code + "_variogram.png"
+#'
+#' @examples
+#' \dontrun{
+#' # Generate variogram plot for Tanzania
+#' vario_plot <- generate_variogram_plot(
+#'   age_param_data = my_data,
+#'   fit_vario = fitted_variogram,
+#'   country_code = "TZA",
+#'   output_dir = "path/to/output"
+#' )
+#' }
+#'
+#' @export
+generate_variogram_plot <- function(age_param_data, fit_vario, country_code,
+                                    scale_outcome = "log_scale",
+                                    output_dir, width = 12,
+                                    height = 9,
+                                    png_resolution = 300) {
+  vgm_data <- age_param_data
+  sp::coordinates(vgm_data) <- ~ web_x + web_y
+
+  emp_vario <- gstat::variogram(
+    stats::formula(paste0(scale_outcome, "~1")),
+    vgm_data
+  )
+
+  # Create plot
+  vario_plot <- ggplot2::ggplot() +
+    ggplot2::geom_point(
+      data = as.data.frame(emp_vario),
+      ggplot2::aes(x = dist, y = gamma),
+      size = 1.2
+    ) +
+    ggplot2::geom_line(
+      data = data.frame(
+        dist = seq(0, max(emp_vario$dist), length.out = 100),
+        gamma = fit_vario$psill[1] +
+          fit_vario$psill[2] * (1 - exp(
+            -3 * seq(0, max(emp_vario$dist),
+              length.out = 100
+            ) / fit_vario$range[2]
+          ))
+      ),
+      ggplot2::aes(x = dist, y = gamma),
+      color = "red"
+    ) +
+    ggplot2::labs(
+      title =
+        paste(toupper(country_code), "Variogram"),
+      x = "\nDistance",
+      y = "Semivariance \n "
+    ) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(hjust = 0.5, size = 14),
+      axis.title = ggplot2::element_text(size = 12),
+      axis.text = ggplot2::element_text(size = 10)
+    ) +
+    ggplot2::scale_x_continuous(labels = scales::comma)
+
+  # set up save path
+  save_path <- file.path(
+    output_dir,
+    glue::glue("{tolower(country_code)}_variogram.png")
+  )
+
+  # Save plot
+  ggplot2::ggsave(
+    filename = save_path,
+    plot = vario_plot,
+    width = width,
+    height = height, units = "cm",
+    dpi = png_resolution
+  )
+
+  cli::cli_alert_success("Variogram saved to {save_path}")
+
+  invisible(vario_plot)
+}
+
+
 #' Rasterize Spatial Data
 #'
 #' This function converts spatial data with x, y coordinates and a value field
@@ -28,7 +151,7 @@ rasterize_data <- function(x_coords, y_coords, values,
 
   # Create a raster template with the correct extent and resolution
   raster_template <- terra::rast(spat_vector,
-                                 resolution = cell_size, crs = crs
+    resolution = cell_size, crs = crs
   )
 
   # Rasterize the data
@@ -132,18 +255,18 @@ generate_gamma_raster_plot <- function(predictor_data,
 
     # Plot each raster with clear labeling
     terra::plot(rast_scale,
-                main = "Scale Parameter", cex.main = 1.2,
-                cex.axis = 0.8, cex.lab = 1.2
+      main = "Scale Parameter", cex.main = 1.2,
+      cex.axis = 0.8, cex.lab = 1.2
     )
     terra::plot(rast_shape,
-                main = "Shape Parameter", cex.main = 1.2,
-                cex.axis = 0.8, cex.lab = 1.2
+      main = "Shape Parameter", cex.main = 1.2,
+      cex.axis = 0.8, cex.lab = 1.2
     )
     # Skip the third position (top right) by plotting in fourth position
     graphics::par(mfg = c(2, 1)) # Move to bottom left position
     terra::plot(rast_mean_age,
-                main = "Mean Age Prediction", cex.main = 1.2,
-                cex.axis = 0.8, cex.lab = 1.2
+      main = "Mean Age Prediction", cex.main = 1.2,
+      cex.axis = 0.8, cex.lab = 1.2
     )
 
     dev.off()
@@ -194,9 +317,10 @@ generate_age_pyramid_plot <- function(
     fill_low = "#a50f15",
     break_axis_by = 10,
     caption =
-      paste0("Note: Total population includes ",
-             "ages 99+, pyramid shows ages 0-99")) {
-
+      paste0(
+        "Note: Total population includes ",
+        "ages 99+, pyramid shows ages 0-99"
+      )) {
   # Validate inputs ------------------------------------------------------------
   if (!all(c("prop_df", "pop_df") %in% names(dataset))) {
     stop("Dataset must be a list containing 'prop_df' and 'pop_df'")
@@ -205,8 +329,10 @@ generate_age_pyramid_plot <- function(
   required_cols <- c("country", "region", "popsize")
   for (df in list(dataset$prop_df, dataset$pop_df)) {
     if (!all(required_cols %in% names(df))) {
-      stop("Each dataset must contain: ",
-           paste(required_cols, collapse = ", "))
+      stop(
+        "Each dataset must contain: ",
+        paste(required_cols, collapse = ", ")
+      )
     }
   }
 
@@ -219,8 +345,10 @@ generate_age_pyramid_plot <- function(
       ) |>
       dplyr::rename_with(
         ~ stringr::str_replace_all(
-          ., c("_mean" = "", "_pop" = "", "_prop" = "",
-               "plus" = "+y")
+          ., c(
+            "_mean" = "", "_pop" = "", "_prop" = "",
+            "plus" = "+y"
+          )
         ),
         dplyr::contains("mean")
       ) |>
@@ -232,11 +360,11 @@ generate_age_pyramid_plot <- function(
       dplyr::mutate(
         age_group = stringr::str_remove(age_group, "_mean"),
         age_group = stringr::str_replace_all(
-          age_group, c("_" = "-", "to" = "-", " " = "")),
+          age_group, c("_" = "-", "to" = "-", " " = "")
+        ),
         region = stringr::str_to_title(region),
-        region = stringr::str_remove(region, " County"))
-
-
+        region = stringr::str_remove(region, " County")
+      )
   }
 
   age_struct_pop <- process_age_data(dataset$pop_df, "count")
@@ -251,7 +379,7 @@ generate_age_pyramid_plot <- function(
       dplyr::group_by(country, region, age_group) |>
       dplyr::summarise(
         total = sum(.data[[value_col]], na.rm = TRUE),
-        .groups = 'drop'
+        .groups = "drop"
       ) |>
       dplyr::filter(!is.na(age_group)) |>
       dplyr::mutate(
@@ -264,9 +392,9 @@ generate_age_pyramid_plot <- function(
 
   # Generate plots
   create_pyramid <- function(data, value_type, total_label) {
-
     x_break_labels <- levels(data$age_group)[
-      seq(1, length(levels(data$age_group)), by = break_axis_by)]
+      seq(1, length(levels(data$age_group)), by = break_axis_by)
+    ]
 
     data |>
       dplyr::filter(age_group != "99+y") |>
@@ -302,8 +430,9 @@ generate_age_pyramid_plot <- function(
         ),
         x = "Age Group \n",
         y = ifelse(value_type == "count",
-                   "\n Population",
-                   "\n Proportion of Population"),
+          "\n Population",
+          "\n Proportion of Population"
+        ),
         fill = "Region",
         caption = caption
       ) +
@@ -322,16 +451,18 @@ generate_age_pyramid_plot <- function(
         ),
         plot.margin = ggplot2::margin(t = 10, r = 10, b = 10, l = 10)
       )
-
   }
 
   # Calculate totals for labels
   total_pop <- sum(pop_by_region$total, na.rm = TRUE) |>
-    round() |> format(big.mark = ",")
+    round() |>
+    format(big.mark = ",")
 
   # Create both plots
-  pop_plot <- create_pyramid(pop_by_region, "count",
-                             glue::glue("(N = {total_pop})"))
+  pop_plot <- create_pyramid(
+    pop_by_region, "count",
+    glue::glue("(N = {total_pop})")
+  )
   prop_plot <- create_pyramid(prop_by_region, "proportion", "")
 
   # Save plots
@@ -341,7 +472,7 @@ generate_age_pyramid_plot <- function(
       glue::glue("{country_code}_age_pyramid_{plot_type}.png")
     )
 
-    plot_to_save <- if(plot_type == "count") pop_plot else prop_plot
+    plot_to_save <- if (plot_type == "count") pop_plot else prop_plot
 
     ggplot2::ggsave(
       output_file,
@@ -361,5 +492,3 @@ generate_age_pyramid_plot <- function(
     prop_plot = prop_plot
   ))
 }
-
-

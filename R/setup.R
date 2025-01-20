@@ -36,7 +36,7 @@
 #' @export
 install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
   suggested_pkgs <- c(
-    "cli", "countrycode", "crayon", "scales", "glue",
+    "cli", "countrycode", "crayon", "scales", "glue", "gstat",
     "haven", "here", "matrixStats", "rstudioapi", "geodata",
     "pbmcapply", "remotes", "future", "future.apply",
     "testthat", "rdhs", "openxlsx2", "purrr", "rlang", "pak",

@@ -83,25 +83,16 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Basic usage
+#' # Basic usage with caching
 #' fit <- fit_spatial_model(
 #'   data = my_data,
-#'   scale_outcome = "scale_param",
-#'   shape_outcome = "shape_param",
-#'   covariates = c("elevation", "temperature"),
-#'   cpp_script_name = "spatial_model"
+#'   scale_outcome = "log_scale",
+#'   shape_outcome = "log_shape",
+#'   covariates = c("elevation", "temperature", "urban"),
+#'   cpp_script_name = "02_scripts/model",
+#'   country_code = "KEN",
+#'   output_dir = "03_outputs/3a_model_outputs"
 #' )
-#'
-# # With caching
-# fit <- fit_spatial_model(
-#   data = my_data,
-#   scale_outcome = "log_scale",
-#   shape_outcome = "log_shape",
-#   covariates = "urban",
-#   cpp_script_name = "02_scripts/model",
-#   country_code = "KEN",
-#   output_dir = "03_outputs/3a_model_outputs"
-# )
 #' }
 #' @importFrom RcppEigen fastLm
 #' @export
@@ -337,8 +328,9 @@ fit_spatial_model <- function(data,
   cli::cli_process_done()
 
   # include formula to output
-  opt$scale_formula <- scale_formula
-  opt$shape_formula <- shape_formula
+  # Convert formulas to character strings before storing
+  opt$scale_formula <- deparse(scale_formula)
+  opt$shape_formula <- deparse(shape_formula)
   opt$variogram <- fit_vario
 
   # Save if country code provided
@@ -348,178 +340,6 @@ fit_spatial_model <- function(data,
   }
 
   return(opt)
-}
-
-#' Predict Gamma Distribution Parameters for Spatial Grid
-#'
-#' This function predicts the scale and shape parameters of a Gamma distribution
-#' across a spatial grid using a bivariate spatial model.
-#'
-#' @param age_param_data A data frame containing:
-#'   \itemize{
-#'     \item web_x, web_y: Spatial coordinates
-#'     \item urban: Urban/rural indicator
-#'     \item log_scale: Log of scale parameter at observed locations
-#'     \item log_shape: Log of shape parameter at observed locations
-#'   }
-#' @param model_params A list containing model parameters:
-#'   \itemize{
-#'     \item par: Named vector with gamma, log_sigma2, log_phi, log_tau1
-#'     \item Additional parameters for extracting beta coefficients
-#'   }
-#' @param shapefile An sf object defining the boundary for predictions
-#' @param cell_size Numeric. Grid cell size in meters (default: 5000)
-#' @param n_sim Integer. Number of simulations for prediction (default: 5000)
-#' @param predictor_data A data object containing the predictors data.
-#' @return A list containing:
-#'   \itemize{
-#'     \item country_grid: Data frame with prediction grid coordinates
-#'     \item scale_pred: Matrix of simulated scale parameters
-#'     \item shape_pred: Matrix of simulated shape parameters
-#'   }
-#'
-#' @export
-predict_gamma_params <- function(age_param_data, predictor_data,
-                                 model_params, shapefile,
-                                 cell_size = 5000, n_sim = 5000) {
-  # Make grid ----------------------------------------------------------------
-
-  cli::cli_process_start(
-    msg = "Making a prediction grid...",
-    msg_done = "Prediction grid successfully made."
-  )
-
-  country_grid <- predictor_data |> dplyr::select(web_x, web_y)
-
-  cli::cli_process_done()
-
-  # Set parameters from models -------------------------------------------------
-
-  predictor_data <- predictor_data |>
-    dplyr::mutate(log_scale = 1, log_shape = 1)
-
-  cli::cli_process_start(
-    msg = "Setting model parameters...",
-    msg_done = "Model parameters set successfully."
-  )
-
-  gamma <- model_params$par["gamma"]
-  sigma2 <- exp(model_params$par["log_sigma2"])
-  phi <- exp(model_params$par["log_phi"])
-  tau <- exp(model_params$par["log_tau1"])
-  beta1 <- extract_betas(model_params)$beta1
-  beta2 <- extract_betas(model_params)$beta2
-  y <- c(age_param_data$log_scale, age_param_data$log_shape)
-  d1 <- d2 <- model.matrix(model_params$scale_formula,
-    data = age_param_data
-  )
-  mu1 <- as.numeric(d1 %*% beta1)
-  mu2 <- as.numeric(d2 %*% beta2)
-  mu <- c(mu1, mu2)
-
-  # Predict the gamma parameters
-  d_pred <- model.matrix(model_params$scale_formula,
-    data = predictor_data
-  )
-
-  mu1_pred <- as.numeric(d_pred %*% beta1)
-  mu2_pred <- as.numeric(d_pred %*% beta2)
-
-  u_dist <- as.matrix(dist(age_param_data[, c("web_x", "web_y")]))
-  n_x <- nrow(u_dist)
-
-  cli::cli_process_done()
-
-  # Predict the random effects ----------------------------------------------
-
-  cli::cli_process_start(
-    msg = "Calculating pairwise distances for prediction grid...",
-    msg_done = "Computed pairwise distances for prediction grid."
-  )
-
-  u_pred <- pdist::pdist(
-    country_grid,
-    age_param_data[, c("web_x", "web_y")]
-  ) |>
-    as.matrix()
-
-  n_pred <- nrow(country_grid)
-
-  cli::cli_process_done()
-
-  cli::cli_process_start(
-    msg = "Computing and inverting covariance matrix...",
-    msg_done = "Computed and inverted covariance matrix."
-  )
-
-  c_s_star <- cbind(
-    sigma2 * exp(-u_pred / phi),
-    gamma * sigma2 * exp(-u_pred / phi)
-  )
-
-  matrix_inv <- compute_cov(
-    gamma = gamma,
-    phi = phi,
-    sigma2 = sigma2,
-    u_dist = u_dist,
-    n_x = n_x,
-    tau2_1 = tau,
-    age_param_data = age_param_data
-  ) |>
-    chol() |>
-    chol2inv()
-
-  cli::cli_process_done()
-
-  cli::cli_process_start(
-    msg = "Computing mean and standard deviation of predictions...",
-    msg_done = "Computed mean and standard deviation of predictions."
-  )
-
-  a <- c_s_star %*% matrix_inv
-  mean_s_pred <- a %*% (y - mu)
-  sd_s_pred <- sqrt(sigma2 - apply(a * c_s_star, 1, sum))
-
-  cli::cli_process_done()
-
-  # Simulate random effects ----------------------------------------------------
-
-  cli::cli_process_start(
-    msg = "Simulating random effects...",
-    msg_done = "Simulated random effects."
-  )
-
-  s_samples <- sapply(
-    1:n_sim,
-    function(i) rnorm(n_pred, mean_s_pred, sd_s_pred)
-  )
-
-  cli::cli_process_done()
-
-  # Predict the gamma parameters -----------------------------------------------
-
-  cli::cli_process_start(
-    msg = "Predicting gamma, scale, and shape parameters...",
-    msg_done = "Predicted gamma, scale, and shape parameters."
-  )
-
-  scale_pred <- exp(sapply(
-    1:n_sim,
-    function(i) mu1_pred + s_samples[, i]
-  ))
-  shape_pred <- exp(sapply(
-    1:n_sim,
-    function(i) mu2_pred + gamma * s_samples[, i]
-  ))
-
-  cli::cli_process_done()
-
-  # Return results -------------------------------------------------------------
-
-  list(
-    scale_pred = scale_pred,
-    shape_pred = shape_pred
-  )
 }
 
 #' Compute Covariance Matrix for Spatial Model
@@ -584,7 +404,8 @@ compute_cov <- function(gamma, sigma2, phi, u_dist,
 #'    mean structure.
 #' @param d2 A numeric matrix. Design matrix for dataset 2 used to model the
 #'    mean structure.
-#' @param y A numeric vector. Observed response variable, including both datasets.
+#' @param y A numeric vector. Observed response variable, including both
+#'    datasets.
 #' @param u_dist A numeric matrix. Distance matrix for spatial locations.
 #' @param n_x An integer. The number of unique spatial locations.
 #' @param age_param_data A numeric matrix or vector. Additional parameters
@@ -878,46 +699,41 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
   return(predictor_data)
 }
 
-#' Generate or Load Cached Gamma Predictions
+#' Predict Gamma Distribution Parameters for Spatial Grid
 #'
-#' This function generates gamma parameter predictions using spatial model
-#' parameters and predictors data, or loads cached predictions if the file
-#' already exists. It saves the predictions to a specified directory and
-#' provides progress updates.
+#' This function predicts the scale and shape parameters of a Gamma distribution
+#' across a spatial grid using a bivariate spatial model. It can either generate
+#' new predictions or load cached results if available.
 #'
 #' @param country_code A string representing the country code (e.g., "KEN").
-#' @param age_param_data A data frame or tibble containing the age parameter data.
-#' @param model_params The fitted spatial model object (e.g.,
-#'    `spat_model_param`).
+#' @param age_param_data A data frame containing:
+#'   \itemize{
+#'     \item web_x, web_y: Spatial coordinates
+#'     \item urban: Urban/rural indicator
+#'     \item log_scale: Log of scale parameter at observed locations
+#'     \item log_shape: Log of shape parameter at observed locations
+#'   }
+#' @param model_params A list containing model parameters:
+#'   \itemize{
+#'     \item par: Named vector with gamma, log_sigma2, log_phi, log_tau1
+#'     \item Additional parameters for extracting beta coefficients
+#'   }
 #' @param predictor_data A data object containing the predictors data.
-#' @param shapefile An `sf` object representing the country shape.
-#' @param cell_size An integer specifying the cell size for prediction in
-#'    meters (default is 5000).
-#' @param n_sim An integer specifying the number of simulations for predictions
-#'   (default is 10000).
+#' @param shapefile An sf object defining the boundary for predictions
+#' @param cell_size Numeric. Grid cell size in meters (default: 5000)
+#' @param n_sim Integer. Number of simulations for prediction (default: 5000)
 #' @param ignore_cache A boolean input which is set to determine whether
 #'  to ignore the existing cache and write over it. Default is set to FALSE.
+#' @param save_file A boolean to determine whether to save prediction or not.
+#'   Default is FALSE as this will require lots of space.
 #' @param output_dir A string specifying the directory where the predictions
 #'   file should be saved (default is "03_outputs/3a_model_outputs").
-#' @param save_file A boolean to determine whetehr to save prediction or not.
-#'   Default is FALSE as this will requre lots of space.
-#'
-#' @return A data object (`gamma_prediction`) containing the gamma parameter
-#'   predictions.
-#'
-#' @examples
-#'
-#' # gamma_results <- generate_gamma_predictions(
-#' #  country_code = "KEN",
-#' #  age_param_data = age_param_data,
-#' #  model_params = spat_model_param,
-#' #  predictor_data = predictor_data,
-#' #  shapefile = country_sf,
-#' #  cell_size = 5000,
-#' #  n_sim = 10000,
-#' # output_dir = "03_outputs/3a_model_outputs"
-#' #  )
-#'
+#' @return A list containing:
+#'   \itemize{
+#'     \item scale_pred: Matrix of simulated scale parameters
+#'     \item shape_pred: Matrix of simulated shape parameters
+#'   }
+#' @importFrom stats as.formula
 #' @export
 generate_gamma_predictions <- function(country_code,
                                        age_param_data,
@@ -925,56 +741,170 @@ generate_gamma_predictions <- function(country_code,
                                        predictor_data,
                                        shapefile,
                                        cell_size = 5000,
-                                       n_sim = 10000,
+                                       n_sim = 5000,
                                        ignore_cache = FALSE,
                                        save_file = FALSE,
                                        output_dir = here::here(
                                          "03_outputs", "3a_model_outputs"
                                        )) {
-  # Create lowercase country code
+  # Create lowercase country code and prediction path
   country_code <- tolower(country_code)
-
-  # Construct the gamma prediction path
   gamma_prediction_path <- file.path(
     output_dir,
     glue::glue("{country_code}_gamma_prediction.rds")
   )
 
-  # Check if prediction file exists
-  if (ignore_cache || !file.exists(gamma_prediction_path)) {
-    # Generate gamma parameter predictions
-    gamma_prediction <- predict_gamma_params(
-      age_param_data = age_param_data,
-      model_params = model_params,
-      predictor_data = predictor_data,
-      shapefile = shapefile,
-      cell_size = cell_size,
-      n_sim = n_sim
-    )
-
-    if (save_file) {
-      # Save predictions
-      saveRDS(gamma_prediction, file = gamma_prediction_path)
-    }
-
-    cli::cli_alert_success(
-      "Gamma predictions generated and saved at {gamma_prediction_path}"
-    )
-  } else {
-    # Notify user about cached results
+  # Check if prediction file exists and should be used
+  if (!ignore_cache && file.exists(gamma_prediction_path)) {
     cli::cli_process_start(
       msg = "Importing cached prediction results...",
       msg_done = "Successfully imported cached prediction results."
     )
+    return(readRDS(gamma_prediction_path))
+  }
 
-    # Load cached prediction results
-    gamma_prediction <- readRDS(gamma_prediction_path)
+  # Make grid ----------------------------------------------------------------
+  cli::cli_process_start(
+    msg = "Making a prediction grid...",
+    msg_done = "Prediction grid successfully made."
+  )
 
-    cli::cli_process_done()
+  country_grid <- predictor_data |> dplyr::select(web_x, web_y)
+  cli::cli_process_done()
+
+  # Set parameters from models ------------------------------------------------
+  predictor_data <- predictor_data |>
+    dplyr::mutate(log_scale = 1, log_shape = 1)
+
+  cli::cli_process_start(
+    msg = "Setting model parameters...",
+    msg_done = "Model parameters set successfully."
+  )
+
+  gamma <- model_params$par["gamma"]
+  sigma2 <- exp(model_params$par["log_sigma2"])
+  phi <- exp(model_params$par["log_phi"])
+  tau <- exp(model_params$par["log_tau1"])
+  beta1 <- extract_betas(model_params)$beta1
+  beta2 <- extract_betas(model_params)$beta2
+  y <- c(age_param_data$log_scale, age_param_data$log_shape)
+  d1 <- d2 <- model.matrix(as.formula(model_params$scale_formula),
+    data = age_param_data
+  )
+  mu1 <- as.numeric(d1 %*% beta1)
+  mu2 <- as.numeric(d2 %*% beta2)
+  mu <- c(mu1, mu2)
+
+  # Predict the gamma parameters
+  d_pred <- model.matrix(as.formula(model_params$scale_formula),
+    data = predictor_data
+  )
+
+  mu1_pred <- as.numeric(d_pred %*% beta1)
+  mu2_pred <- as.numeric(d_pred %*% beta2)
+
+  u_dist <- as.matrix(dist(age_param_data[, c("web_x", "web_y")]))
+  n_x <- nrow(u_dist)
+
+  cli::cli_process_done()
+
+  # Predict the random effects ----------------------------------------------
+  cli::cli_process_start(
+    msg = "Calculating pairwise distances for prediction grid...",
+    msg_done = "Computed pairwise distances for prediction grid."
+  )
+
+  u_pred <- pdist::pdist(
+    country_grid,
+    age_param_data[, c("web_x", "web_y")]
+  ) |>
+    as.matrix()
+
+  n_pred <- nrow(country_grid)
+  cli::cli_process_done()
+
+  cli::cli_process_start(
+    msg = "Computing and inverting covariance matrix...",
+    msg_done = "Computed and inverted covariance matrix."
+  )
+
+  c_s_star <- cbind(
+    sigma2 * exp(-u_pred / phi),
+    gamma * sigma2 * exp(-u_pred / phi)
+  )
+
+  matrix_inv <- compute_cov(
+    gamma = gamma,
+    phi = phi,
+    sigma2 = sigma2,
+    u_dist = u_dist,
+    n_x = n_x,
+    tau2_1 = tau,
+    age_param_data = age_param_data
+  ) |>
+    chol() |>
+    chol2inv()
+
+  cli::cli_process_done()
+
+  cli::cli_process_start(
+    msg = "Computing mean and standard deviation of predictions...",
+    msg_done = "Computed mean and standard deviation of predictions."
+  )
+
+  a <- c_s_star %*% matrix_inv
+  mean_s_pred <- a %*% (y - mu)
+  sd_s_pred <- sqrt(sigma2 - apply(a * c_s_star, 1, sum))
+
+  cli::cli_process_done()
+
+  # Simulate random effects ----------------------------------------------------
+  cli::cli_process_start(
+    msg = "Simulating random effects...",
+    msg_done = "Simulated random effects."
+  )
+
+  s_samples <- sapply(
+    1:n_sim,
+    function(i) rnorm(n_pred, mean_s_pred, sd_s_pred)
+  )
+
+  cli::cli_process_done()
+
+  # Predict the gamma parameters -----------------------------------------------
+  cli::cli_process_start(
+    msg = "Predicting gamma, scale, and shape parameters...",
+    msg_done = "Predicted gamma, scale, and shape parameters."
+  )
+
+  scale_pred <- exp(sapply(
+    1:n_sim,
+    function(i) mu1_pred + s_samples[, i]
+  ))
+  shape_pred <- exp(sapply(
+    1:n_sim,
+    function(i) mu2_pred + gamma * s_samples[, i]
+  ))
+
+  cli::cli_process_done()
+
+  # Create results list
+  gamma_prediction <- list(
+    scale_pred = scale_pred,
+    shape_pred = shape_pred
+  )
+
+  # Save predictions if requested
+  if (save_file) {
+    saveRDS(gamma_prediction, file = gamma_prediction_path)
+    cli::cli_alert_success(
+      "Gamma predictions generated and saved at {gamma_prediction_path}"
+    )
   }
 
   return(gamma_prediction)
 }
+
 
 #' Process Gamma Prediction Results
 #'
@@ -1014,6 +944,7 @@ process_gamma_predictions <- function(gamma_prediction) {
     shape_hat = shape_hat
   )
 }
+
 #' Run Country-Specific Spatial Modeling Workflow with Logging
 #'
 #' @description
@@ -1042,6 +973,25 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'   Default: "afurextent.asc".
 #' @param n_cores Integer number of cores for parallel processing for age
 #'   population table, default detectCores()-2
+#' @param pred_save_file Logical. Whether to save prediction files.
+#'   Default: FALSE
+#' @param raster_width Integer. Width of raster plots in pixels.
+#'   Default: 2500
+#' @param raster_height Integer. Height of raster plots in pixels.
+#'   Default: 2000
+#' @param raster_resolution Integer. Resolution of PNG outputs.
+#'   Default: 300
+#' @param save_raster Logical. Whether to save raster outputs to disk.
+#'   Default: TRUE
+#' @param pyramid_line_color Character. Hex color code for the age pyramid's
+#'   outline. Default: "#67000d"
+#' @param pyramid_fill_high Character. Hex color code for the age pyramid's
+#'   higher values fill. Default: "#fee0d2"
+#' @param pyramid_fill_low Character. Hex color code for the age pyramid's
+#'   lower values fill. Default: "#a50f15"
+#' @param pyramid_caption Character. Caption text for the age pyramid plot.
+#'   Default:
+#' "Note: Total population includes ages 99+, pyramid shows ages 0-99"
 #' @param output_paths List of output paths:
 #'   \itemize{
 #'     \item model: Path for model outputs.
@@ -1072,6 +1022,9 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'     \item shape_outcome: Shape outcome variable. Default: "log_shape"
 #'     \item covariates: Model covariates. Default: "urban"
 #'     \item cpp_script: C++ script path. Default: "02_scripts/model"
+#'     \item control_params: Control parameters. Default: list(trace = 2)
+#'     \item manual_params: Manual parameters. Default: NULL
+#'     \item verbose: Verbose output. Default: TRUE
 #'   }
 #' @param return_results Logical. Whether to return results. Default: FALSE.
 #' @param ... Additional arguments passed to subfunctions.
@@ -1086,6 +1039,8 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'     \item final_pop: Compiled population data
 #'     \item all_mod_params: Compiled model parameters
 #'   }
+#'   If return_results is FALSE, the function saves all outputs to disk and
+#'   returns NULL invisibly.
 #'
 #' @examples
 #' \dontrun{
@@ -1102,7 +1057,27 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'   )
 #' )
 #' }
-#'
+#' @seealso
+#' \itemize{
+#'   \item \code{\link{fit_spatial_model}}: Fits the spatial model for age
+#'     parameters
+#'   \item \code{\link{create_prediction_data}}: Creates predictor dataset from
+#'     spatial inputs
+#'   \item \code{\link{generate_gamma_predictions}}: Generates predictions using
+#'     fitted model
+#'   \item \code{\link{process_gamma_predictions}}: Processes gamma prediction
+#'     results
+#'   \item \code{\link{generate_gamma_raster_plot}}: Creates prediction raster
+#'     plots
+#'   \item \code{\link{generate_age_pop_table}}: Generates age-population tables
+#'   \item \code{\link{generate_age_pyramid_plot}}: Creates age pyramid plots
+#'   \item \code{\link{extract_age_param}}: Extracts and compiles model
+#'     parameters
+#'   \item \code{\link{process_final_population_data}}: Processes final
+#'     population data
+#'   \item \code{\link{generate_variogram_plot}}: Creates variogram plots showing
+#'     spatial dependence structure
+#' }
 #' @export
 run_full_workflow <- function(
     country_code,
@@ -1114,34 +1089,22 @@ run_full_workflow <- function(
     pop_raster_suffix = "_ppp_2020_constrained.tif",
     ur_raster_path = here::here("01_data", "1b_rasters", "urban_extent"),
     ur_raster_suffix = "afurextent.asc",
-    output_paths = list(
-      model = here::here("03_outputs", "3a_model_outputs"),
-      plot = here::here("03_outputs", "3b_visualizations"),
-      raster = here::here("03_outputs", "3c_raster_outputs"),
-      table = here::here("03_outputs", "3c_table_outputs"),
-      compiled = here::here("03_outputs", "3d_compiled_results"),
-      excel = here::here(
-        "03_outputs", "3d_compiled_results",
-        "age_pop_denom_compiled.xlsx"
-      ),
-      log = here::here("03_outputs", "3a_model_outputs", "modelling_log.rds")
+    pred_save_file = FALSE,
+    raster_width = 2500,
+    raster_height = 2000,
+    raster_resolution = 300,
+    save_raster = TRUE,
+    pyramid_line_color = "#67000d",
+    pyramid_fill_high = "#fee0d2",
+    pyramid_fill_low = "#a50f15",
+    pyramid_caption = paste0(
+      "Note: Total population includes ",
+      "ages 99+, pyramid shows ages 0-99"
     ),
-    model_params = list(
-      cell_size = 5000,
-      n_sim = 5000,
-      ignore_cache = FALSE,
-      age_range = c(0, 99),
-      age_interval = 1,
-      return_prop = TRUE,
-      scale_outcome = "log_scale",
-      shape_outcome = "log_shape",
-      covariates = "urban",
-      cpp_script = here::here("02_scripts", "model")
-    ),
+    output_paths = list(),
+    model_params = list(),
     return_results = FALSE,
-    n_cores = parallel::detectCores() - 2,
-    ...) {
-
+    n_cores = parallel::detectCores() - 2, ...) {
   # Define default output paths
   default_output_paths <- list(
     model = here::here("03_outputs", "3a_model_outputs"),
@@ -1167,7 +1130,10 @@ run_full_workflow <- function(
     scale_outcome = "log_scale",
     shape_outcome = "log_shape",
     covariates = "urban",
-    cpp_script = here::here("02_scripts", "model")
+    cpp_script = here::here("02_scripts", "model"),
+    control_params = list(trace = 2),
+    manual_params = NULL,
+    verbose = TRUE
   )
 
   # Merge user-provided parameters with defaults
@@ -1257,9 +1223,23 @@ run_full_workflow <- function(
           shape_outcome = model_params$shape_outcome,
           covariates = model_params$covariates,
           cpp_script_name = model_params$cpp_script,
+          verbose = model_params$verbose,
+          control_params = model_params$control_params,
+          manual_params = model_params$manual_params,
           output_dir = output_paths$model,
-          ignore_cache = model_params$ignore_cache,
-          ...
+          ignore_cache = model_params$ignore_cache
+        )
+
+        cli::cli_h2(
+          "Generating variogram plot for {country_name_clr}"
+        )
+
+        generate_variogram_plot(
+          age_param_data = age_param_data,
+          fit_vario = spat_model_param$variogram,
+          country_code = country_code,
+          output_dir = output_paths$plot,
+          scale_outcome = model_params$scale_outcome
         )
 
         cli::cli_h1(glue::glue(
@@ -1273,7 +1253,7 @@ run_full_workflow <- function(
           ur_raster = ur_raster,
           adm2_shape = adm2_shape,
           cell_size = model_params$cell_size,
-          ignore_cache = T,
+          ignore_cache = model_params$ignore_cache,
           output_dir = output_paths$model
         )
 
@@ -1290,8 +1270,8 @@ run_full_workflow <- function(
           cell_size = model_params$cell_size,
           n_sim = model_params$n_sim,
           ignore_cache = model_params$ignore_cache,
-          output_dir = output_paths$model,
-          ...
+          save_file = pred_save_file,
+          output_dir = output_paths$model
         )
 
         # Create outputs -------------------------------------------------------
@@ -1307,8 +1287,11 @@ run_full_workflow <- function(
           pred_list = pred_list,
           country_code = country_code_lw,
           output_dir = output_paths$plot,
-          save_raster = TRUE,
-          ...
+          save_raster = save_raster,
+          file_name_suffix = "gamma_prediction_rasters",
+          width = raster_width,
+          height = raster_height,
+          png_resolution = raster_resolution
         )
 
         cli::cli_h1(glue::glue(
@@ -1327,10 +1310,9 @@ run_full_workflow <- function(
           country_code = country_code_lw,
           age_range = model_params$age_range,
           age_interval = model_params$age_interval,
-          ignore_cache = T,
+          ignore_cache = model_params$ignore_cache,
           output_dir = output_paths$table,
-          n_cores = n_cores,
-          ...
+          n_cores = n_cores
         )
 
         cli::cli_h1(glue::glue(
@@ -1345,7 +1327,10 @@ run_full_workflow <- function(
           country_code = country_code_lw,
           output_dir = output_paths$plot,
           break_axis_by = axis_by,
-          ...
+          line_color = pyramid_line_color,
+          fill_high = pyramid_fill_high,
+          fill_low = pyramid_fill_low,
+          caption = pyramid_caption
         )
 
         cli::cli_h1(

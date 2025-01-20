@@ -3,24 +3,12 @@
 <!-- badges: start -->
 
 [![R build status](https://github.com/truenomad/agepopdenom/workflows/R-CMD-check/badge.svg)](https://github.com/truenomad/agepopdenom/actions) [![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom) [![codecov](https://codecov.io/gh/truenomad/AgePopDenom/graph/badge.svg?token=UL9XKIIXTQ)](https://codecov.io/gh/truenomad/AgePopDenom)
-
+[![Codecov test coverage](https://codecov.io/gh/truenomad/AgePopDenom/graph/badge.svg)](https://app.codecov.io/gh/truenomad/AgePopDenom)
 <!-- badges: end -->
 
 ## What is AgePopDenom?
 
 **`AgePopDenom`** is an R package designed to facilitate the generation of fine-scale, age-structured population denominators for public health decision-making and service delivery. By combining census and household survey data with a novel parameter-based geostatistical modeling approach, the package produces high-resolution (5km x 5km) population estimates disaggregated by age.
-
-**Key features include**:
-
--   Automated data retrieval and processing
-
--   Geostatistical modeling of age structures
-
--   High-resolution population predictions
-
--   Age-specific population denominators
-
--   Visualization and diagnostic tools
 
 ------------------------------------------------------------------------
 
@@ -100,7 +88,7 @@ library(AgePopDenom)
 1.  Initialize project structure:
 
 ``` r
-AgePopDenom::init()
+init()
 ```
 
 2.  Download required data:
@@ -110,17 +98,17 @@ AgePopDenom::init()
 countries <- c("KEN", "UGA")
 
 # Get DHS data
-AgePopDenom::download_dhs_datasets(countries, email = "your_email@example.com")
+download_dhs_datasets(countries, email = "your_email@example.com")
 
 # Get spatial data
-AgePopDenom::download_shapefile(countries)
-AgePopDenom::download_pop_rasters(countries)
+download_shapefile(countries)
+download_pop_rasters(countries)
 ```
 
 3.  Run full analysis:
 
 ``` r
-AgePopDenom::run_full_workflow(countries)
+run_full_workflow(countries)
 ```
 
 ## Documentation

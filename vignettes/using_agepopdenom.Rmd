@@ -44,33 +44,32 @@ If FALSE, download and install Rtools from: [CRAN Rtools](https://cran.r-project
 
 **macOS**
 
-1.	Install Command Line Tools:
-	
-```
+1.  Install Command Line Tools:
+
+```         
 xcode-select --install
 ```
 
-2.	Alternatively, install gcc via Homebrew:
+2.  Alternatively, install gcc via Homebrew:
 
-```
+```         
 brew install gcc
 ```
 
 **Linux (Ubuntu/Debian)**
 
-1.	Update your system and install necessary packages:
+1.  Update your system and install necessary packages:
 
-```
+```         
 sudo apt-get update
 sudo apt-get install build-essential libxml2-dev
 ```
-	
+
 ## AgePopDenom installation
 
 Once the setup is complete, follow the instructions below to download **AgePopDenom**
 
 Note: **AgePopDenom** is currently under development. Once it is available on CRAN, you will be able to install it using the following command:
-
 
 ```{r eval=FALSE, include=TRUE}
 # install.packages("AgePopDenom")
@@ -102,8 +101,7 @@ Once the RStudio project is created, initialize the project folder structure and
 ```{r eval=FALSE, include=TRUE}
 init(
   r_script_name = "full_pipeline.R",
-  cpp_script_name = "model.cpp",
-  open_r_script = FALSE
+  cpp_script_name = "model.cpp"
 )
 ```
 
@@ -241,7 +239,19 @@ The function returns a list containing:
 
 The `manual_params` input in the `fit_spatial_model()` function allows users to provide their own initial parameter estimates, offering greater control over the model optimization process. This is especially useful when default estimates from the linear regression or variogram fitting might not suit specific use cases or when prior knowledge of the data suggests alternative starting values.
 
-When using `manual_params`, the user must supply a list containing the following required parameters: - `beta1`: Coefficients for the scale parameter linear model - `beta2`: Coefficients for the shape parameter linear model - `gamma`: Coefficient regulating the relationship between the shape and scale parameters - `log_sigma2`: Log-transformed variance of the Gaussian process - `log_phi`: Log-transformed spatial range parameter, derived from variogram fitting or user input - `log_tau2_1`: Log-transformed nugget effect for the Gaussian process
+When using `manual_params`, the user must supply a list containing the following required parameters:
+
+-   `beta1`: Coefficients for the scale parameter linear model
+
+-   `beta2`: Coefficients for the shape parameter linear model
+
+-   `gamma`: Coefficient regulating the relationship between the shape and scale parameters
+
+-   `log_sigma2`: Log-transformed variance of the Gaussian process
+
+-   `log_phi`: Log-transformed spatial range parameter, derived from variogram fitting or user input
+
+-   `log_tau2_1`: Log-transformed nugget effect for the Gaussian process
 
 If `manual_params` is not provided, the function derives these values using default methods, including linear regression for beta1 and beta2 and an empirical variogram for log_phi. However, when `manual_params` is supplied, it overrides these defaults, enabling advanced users to refine model initialization or replicate earlier analyses with exact parameter values.
 
@@ -268,12 +278,12 @@ When specifying manual parameters, consider: - Parameter scales (some are log-tr
 
 The `control_params` can be adjusted alongside `manual_params` to fine-tune the optimization process:
 
-``` r
+```{r eval=FALSE, include=TRUE}
 control_params = list(
-trace = 3,        # Higher values show more optimization details
-maxit = 2000,     # Increase for complex spatial structures
-abs.tol = 1e-10,  # Stricter convergence criteria
-rel.tol = 1e-8    # Relative convergence tolerance
+  trace = 3,        # Higher values show more optimization details
+  maxit = 2000,     # Increase for complex spatial structures
+  abs.tol = 1e-10,  # Stricter convergence criteria
+  rel.tol = 1e-8    # Relative convergence tolerance
 )
 ```
 

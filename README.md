@@ -1,8 +1,7 @@
 # AgePopDenom <img src="man/figures/logo.png" align="right" height="138"/>
 
 <!-- badges: start -->
-
-[![R build status](https://github.com/truenomad/agepopdenom/workflows/R-CMD-check/badge.svg)](https://github.com/truenomad/agepopdenom/actions) [![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom) [![codecov](https://codecov.io/gh/truenomad/AgePopDenom/graph/badge.svg?token=UL9XKIIXTQ)](https://codecov.io/gh/truenomad/AgePopDenom)
+[![R-CMD-check](https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml) [![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom) [![codecov](https://codecov.io/gh/truenomad/AgePopDenom/graph/badge.svg?token=UL9XKIIXTQ)](https://codecov.io/gh/truenomad/AgePopDenom)
 <!-- badges: end -->
 
 ## What is AgePopDenom?
@@ -119,7 +118,7 @@ For detailed documentation and examples, visit our [package website](https://tru
 For support, bug reports, or feature requests, please contact:
 
 -   **Mo Yusuf** (Package Developer)\
-    **Email**: [moyusuf\@who.int](mailto:moyusuf@who.int){.email}\
+    **Email**: [moyusuf\@who.int](mailto:moyusuf@who.int)\
     **Affiliation**: World Health Organization Regional Office for Africa, P.O. Box 06, Cite du Djoue, Brazzaville, Congo
 
 Alternatively, open an issue on the [GitHub repository](https://github.com/trunomad/AgePopDenom).

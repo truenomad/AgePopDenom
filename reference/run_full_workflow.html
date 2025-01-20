@@ -62,16 +62,18 @@ with minimal adjustments.</p>
 <span>  pop_raster_suffix <span class="op">=</span> <span class="st">"_ppp_2020_constrained.tif"</span>,</span>
 <span>  ur_raster_path <span class="op">=</span> <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="st">"01_data"</span>, <span class="st">"1b_rasters"</span>, <span class="st">"urban_extent"</span><span class="op">)</span>,</span>
 <span>  ur_raster_suffix <span class="op">=</span> <span class="st">"afurextent.asc"</span>,</span>
-<span>  output_paths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model <span class="op">=</span> <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="st">"03_outputs"</span>, <span class="st">"3a_model_outputs"</span><span class="op">)</span>, plot <span class="op">=</span></span>
-<span>    <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="st">"03_outputs"</span>, <span class="st">"3b_visualizations"</span><span class="op">)</span>, raster <span class="op">=</span> <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="st">"03_outputs"</span>,</span>
-<span>    <span class="st">"3c_raster_outputs"</span><span class="op">)</span>, table <span class="op">=</span> <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="st">"03_outputs"</span>, <span class="st">"3c_table_outputs"</span><span class="op">)</span>, compiled</span>
-<span>    <span class="op">=</span> <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="st">"03_outputs"</span>, <span class="st">"3d_compiled_results"</span><span class="op">)</span>, excel <span class="op">=</span> <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="st">"03_outputs"</span>,</span>
-<span>    <span class="st">"3d_compiled_results"</span>, <span class="st">"age_pop_denom_compiled.xlsx"</span><span class="op">)</span>, log <span class="op">=</span> <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="st">"03_outputs"</span>,</span>
-<span>    <span class="st">"3a_model_outputs"</span>, <span class="st">"modelling_log.rds"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  model_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cell_size <span class="op">=</span> <span class="fl">5000</span>, n_sim <span class="op">=</span> <span class="fl">5000</span>, ignore_cache <span class="op">=</span> <span class="cn">FALSE</span>, age_range <span class="op">=</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">99</span><span class="op">)</span>, age_interval <span class="op">=</span> <span class="fl">1</span>, return_prop <span class="op">=</span> <span class="cn">TRUE</span>, scale_outcome <span class="op">=</span> <span class="st">"log_scale"</span>,</span>
-<span>    shape_outcome <span class="op">=</span> <span class="st">"log_shape"</span>, covariates <span class="op">=</span> <span class="st">"urban"</span>, cpp_script <span class="op">=</span></span>
-<span>    <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="st">"02_scripts"</span>, <span class="st">"model"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  pred_save_file <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  raster_width <span class="op">=</span> <span class="fl">2500</span>,</span>
+<span>  raster_height <span class="op">=</span> <span class="fl">2000</span>,</span>
+<span>  raster_resolution <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>  save_raster <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  pyramid_line_color <span class="op">=</span> <span class="st">"#67000d"</span>,</span>
+<span>  pyramid_fill_high <span class="op">=</span> <span class="st">"#fee0d2"</span>,</span>
+<span>  pyramid_fill_low <span class="op">=</span> <span class="st">"#a50f15"</span>,</span>
+<span>  pyramid_caption <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Note: Total population includes "</span>,</span>
+<span>    <span class="st">"ages 99+, pyramid shows ages 0-99"</span><span class="op">)</span>,</span>
+<span>  output_paths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  model_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  return_results <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  n_cores <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">2</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -126,6 +128,52 @@ Default: "01_data/1b_rasters/urban_extent".</p></dd>
 Default: "afurextent.asc".</p></dd>
 
 
+<dt id="arg-pred-save-file">pred_save_file<a class="anchor" aria-label="anchor" href="#arg-pred-save-file"></a></dt>
+<dd><p>Logical. Whether to save prediction files.
+Default: FALSE</p></dd>
+
+
+<dt id="arg-raster-width">raster_width<a class="anchor" aria-label="anchor" href="#arg-raster-width"></a></dt>
+<dd><p>Integer. Width of raster plots in pixels.
+Default: 2500</p></dd>
+
+
+<dt id="arg-raster-height">raster_height<a class="anchor" aria-label="anchor" href="#arg-raster-height"></a></dt>
+<dd><p>Integer. Height of raster plots in pixels.
+Default: 2000</p></dd>
+
+
+<dt id="arg-raster-resolution">raster_resolution<a class="anchor" aria-label="anchor" href="#arg-raster-resolution"></a></dt>
+<dd><p>Integer. Resolution of PNG outputs.
+Default: 300</p></dd>
+
+
+<dt id="arg-save-raster">save_raster<a class="anchor" aria-label="anchor" href="#arg-save-raster"></a></dt>
+<dd><p>Logical. Whether to save raster outputs to disk.
+Default: TRUE</p></dd>
+
+
+<dt id="arg-pyramid-line-color">pyramid_line_color<a class="anchor" aria-label="anchor" href="#arg-pyramid-line-color"></a></dt>
+<dd><p>Character. Hex color code for the age pyramid's
+outline. Default: "#67000d"</p></dd>
+
+
+<dt id="arg-pyramid-fill-high">pyramid_fill_high<a class="anchor" aria-label="anchor" href="#arg-pyramid-fill-high"></a></dt>
+<dd><p>Character. Hex color code for the age pyramid's
+higher values fill. Default: "#fee0d2"</p></dd>
+
+
+<dt id="arg-pyramid-fill-low">pyramid_fill_low<a class="anchor" aria-label="anchor" href="#arg-pyramid-fill-low"></a></dt>
+<dd><p>Character. Hex color code for the age pyramid's
+lower values fill. Default: "#a50f15"</p></dd>
+
+
+<dt id="arg-pyramid-caption">pyramid_caption<a class="anchor" aria-label="anchor" href="#arg-pyramid-caption"></a></dt>
+<dd><p>Character. Caption text for the age pyramid plot.
+  Default:
+"Note: Total population includes ages 99+, pyramid shows ages 0-99"</p></dd>
+
+
 <dt id="arg-output-paths">output_paths<a class="anchor" aria-label="anchor" href="#arg-output-paths"></a></dt>
 <dd><p>List of output paths:</p><ul><li><p>model: Path for model outputs.
        Default: "03_outputs/3a_model_outputs"</p></li>
@@ -156,6 +204,9 @@ Default: "afurextent.asc".</p></dd>
 <li><p>shape_outcome: Shape outcome variable. Default: "log_shape"</p></li>
 <li><p>covariates: Model covariates. Default: "urban"</p></li>
 <li><p>cpp_script: C++ script path. Default: "02_scripts/model"</p></li>
+<li><p>control_params: Control parameters. Default: list(trace = 2)</p></li>
+<li><p>manual_params: Manual parameters. Default: NULL</p></li>
+<li><p>verbose: Verbose output. Default: TRUE</p></li>
 </ul></dd>
 
 
@@ -181,7 +232,32 @@ population table, default detectCores()-2</p></dd>
 <li><p>final_age_pop_table: Age-population table data</p></li>
 <li><p>final_pop: Compiled population data</p></li>
 <li><p>all_mod_params: Compiled model parameters</p></li>
+</ul><p>If return_results is FALSE, the function saves all outputs to disk and
+  returns NULL invisibly.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index">
+<ul><li><p><code><a href="fit_spatial_model.html">fit_spatial_model</a></code>: Fits the spatial model for age
+    parameters</p></li>
+<li><p><code><a href="create_prediction_data.html">create_prediction_data</a></code>: Creates predictor dataset from
+    spatial inputs</p></li>
+<li><p><code><a href="generate_gamma_predictions.html">generate_gamma_predictions</a></code>: Generates predictions using
+    fitted model</p></li>
+<li><p><code><a href="process_gamma_predictions.html">process_gamma_predictions</a></code>: Processes gamma prediction
+    results</p></li>
+<li><p><code><a href="generate_gamma_raster_plot.html">generate_gamma_raster_plot</a></code>: Creates prediction raster
+    plots</p></li>
+<li><p><code><a href="generate_age_pop_table.html">generate_age_pop_table</a></code>: Generates age-population tables</p></li>
+<li><p><code><a href="generate_age_pyramid_plot.html">generate_age_pyramid_plot</a></code>: Creates age pyramid plots</p></li>
+<li><p><code><a href="extract_age_param.html">extract_age_param</a></code>: Extracts and compiles model
+    parameters</p></li>
+<li><p><code><a href="process_final_population_data.html">process_final_population_data</a></code>: Processes final
+    population data</p></li>
+<li><p><code><a href="generate_variogram_plot.html">generate_variogram_plot</a></code>: Creates variogram plots showing
+    spatial dependence structure</p></li>
 </ul></div>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -199,7 +275,6 @@ population table, default detectCores()-2</p></dd>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

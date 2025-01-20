@@ -438,12 +438,59 @@ model fits</p>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
-<h4 id="ii--create_prediction_data">3ii. <code>create_prediction_data()</code><a class="anchor" aria-label="anchor" href="#ii--create_prediction_data"></a>
+<h4 id="ii--generate_variogram_plot">3ii. <code>generate_variogram_plot()</code><a class="anchor" aria-label="anchor" href="#ii--generate_variogram_plot"></a>
+</h4>
+<p>This function creates empirical and fitted variograms to assess
+spatial correlation structure in the data. It visualizes how similarity
+(in terms of age) between the different cluster locations changes with
+distance.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/generate_variogram_plot.html">generate_variogram_plot</a></span><span class="op">(</span></span>
+<span>  <span class="va">age_param_data</span>,</span>
+<span>  <span class="va">fit_vario</span>,</span>
+<span>  <span class="va">country_code</span>,</span>
+<span>  scale_outcome <span class="op">=</span> <span class="st">"log_scale"</span>,</span>
+<span>  output_dir <span class="op">=</span> <span class="st">"03_outputs/3b_visualizations"</span>,</span>
+<span>  width <span class="op">=</span> <span class="fl">12</span>,</span>
+<span>  height <span class="op">=</span> <span class="fl">9</span>,</span>
+<span>  png_resolution <span class="op">=</span> <span class="fl">300</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Parameters:</p>
+<ul>
+<li>
+<code>age_param_data</code>: Data frame containing survey locations
+and parameters</li>
+<li>
+<code>fit_vario</code>: Fitted variogram object from spatial
+model</li>
+<li>
+<code>country_code</code>: ISO3 country code</li>
+<li>
+<code>scale_outcome</code>: Column name for outcome variable
+(“log_scale” or “log_shape”)</li>
+<li>
+<code>output_dir</code>: Directory for saving plots</li>
+<li>
+<code>width</code>, <code>height</code>: Plot dimensions in
+inches</li>
+<li>
+<code>png_resolution</code>: Resolution of saved PNG file in
+DPI</li>
+</ul>
+<p>The function: - Computes empirical variogram from data points -
+Overlays fitted theoretical variogram - Creates diagnostic plot showing
+spatial correlation decay - Saves plot as PNG file in specified output
+directory</p>
+<p>Returns: - ggplot2 object of variogram plot - Saved PNG file in
+output directory</p>
+</div>
+<div class="section level4">
+<h4 id="iii--create_prediction_data">3iii. <code>create_prediction_data()</code><a class="anchor" aria-label="anchor" href="#iii--create_prediction_data"></a>
 </h4>
 <p>This function builds a gridded dataset at ~5 km resolution, merging
 population rasters, urban-rural classification, and admin boundaries.
 Ensures each cell is linked to the proper covariates.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/create_prediction_data.html">create_prediction_data</a></span><span class="op">(</span></span>
 <span>  <span class="va">country_code</span>,</span>
 <span>  <span class="va">country_shape</span>,</span>
@@ -477,12 +524,12 @@ Ensures each cell is linked to the proper covariates.</p>
 Urban/rural classification - Administrative unit IDs</p>
 </div>
 <div class="section level4">
-<h4 id="iii-generate_gamma_predictions">3iii <code>generate_gamma_predictions()</code><a class="anchor" aria-label="anchor" href="#iii-generate_gamma_predictions"></a>
+<h4 id="iv-generate_gamma_predictions">3iv <code>generate_gamma_predictions()</code><a class="anchor" aria-label="anchor" href="#iv-generate_gamma_predictions"></a>
 </h4>
 <p>This function uses the fitted model parameters to simulate Gamma
 distributions at unobserved locations. Produces shape and scale
 estimates plus uncertainties.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/generate_gamma_predictions.html">generate_gamma_predictions</a></span><span class="op">(</span></span>
 <span>  <span class="va">country_code</span>,</span>
 <span>  <span class="va">age_param_data</span>,</span>
@@ -494,23 +541,33 @@ estimates plus uncertainties.</p>
 <span>  ignore_cache <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  output_dir <span class="op">=</span> <span class="st">"03_outputs/3a_model_outputs"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Parameters: - <code>country_code</code>: ISO3 country code -
-<code>age_param_data</code>: Fitted parameters at survey locations -
-<code>model_params</code>: List of model parameters from
-fit_spatial_model() - <code>predictor_data</code>: Grid cells for
-prediction - <code>shapefile</code>: Administrative boundaries -
-<code>cell_size</code>: Grid resolution - <code>n_sim</code>: Number of
-Monte Carlo simulations - <code>ignore_cache</code>: Whether to use
-cached predictions - <code>output_dir</code>: Output directory</p>
-<p>Returns: - Predicted shape and scale parameters</p>
+<p>Parameters:</p>
+<ul>
+<li><p><code>country_code</code>: ISO3 country code</p></li>
+<li><p><code>age_param_data</code>: Fitted parameters at survey
+locations</p></li>
+<li><p><code>model_params</code>: List of model parameters from
+fit_spatial_model()</p></li>
+<li><p><code>predictor_data</code>: Grid cells for prediction</p></li>
+<li><p><code>shapefile</code>: Administrative boundaries</p></li>
+<li><p><code>cell_size</code>: Grid resolution</p></li>
+<li><p><code>n_sim</code>: Number of Monte Carlo simulations</p></li>
+<li><p><code>ignore_cache</code>: Whether to use cached
+predictions</p></li>
+<li><p><code>output_dir</code>: Output directory</p></li>
+</ul>
+<p>Returns:</p>
+<ul>
+<li>Predicted shape and scale parameters</li>
+</ul>
 </div>
 <div class="section level4">
-<h4 id="iv--generate_gamma_raster_plot">3iv. <code>generate_gamma_raster_plot()</code><a class="anchor" aria-label="anchor" href="#iv--generate_gamma_raster_plot"></a>
+<h4 id="v--generate_gamma_raster_plot">3v. <code>generate_gamma_raster_plot()</code><a class="anchor" aria-label="anchor" href="#v--generate_gamma_raster_plot"></a>
 </h4>
 <p>This function converts shape, scale, and derived mean-age predictions
 into rasters. Creates exploratory maps for validation or visual
 inspection.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/generate_gamma_raster_plot.html">generate_gamma_raster_plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">predictor_data</span>,</span>
 <span>  <span class="va">pred_list</span>,</span>
@@ -518,21 +575,29 @@ inspection.</p>
 <span>  output_dir <span class="op">=</span> <span class="st">"03_outputs/3b_visualizations"</span>,</span>
 <span>  save_raster <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Parameters: - <code>predictor_data</code>: Grid cell data -
-<code>pred_list</code>: Prediction results - <code>country_code</code>:
-ISO3 country code - <code>output_dir</code>: Output directory -
-<code>save_raster</code>: Whether to save raster files</p>
-<p>Produces: - Shape parameter raster - Scale parameter raster - Mean
-age raster</p>
+<p>Parameters:</p>
+<ul>
+<li><p><code>predictor_data</code>: Grid cell data</p></li>
+<li><p><code>pred_list</code>: Prediction results</p></li>
+<li><p><code>country_code</code>: ISO3 country code</p></li>
+<li><p><code>output_dir</code>: Output directory</p></li>
+<li><p><code>save_raster</code>: Whether to save raster files</p></li>
+</ul>
+<p>Produces:</p>
+<ul>
+<li><p>Shape parameter raster</p></li>
+<li><p>Scale parameter raster</p></li>
+<li><p>Mean age raster</p></li>
+</ul>
 </div>
 <div class="section level4">
-<h4 id="v--generate_age_pop_table">3v. <code>generate_age_pop_table()</code><a class="anchor" aria-label="anchor" href="#v--generate_age_pop_table"></a>
+<h4 id="vi--generate_age_pop_table">3vi. <code>generate_age_pop_table()</code><a class="anchor" aria-label="anchor" href="#vi--generate_age_pop_table"></a>
 </h4>
 <p>This function computes age-specific population counts by applying
 Gamma-based proportions to population rasters. Aggregates counts and
 proportions at selected administrative levels (e.g., district,
 region).</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/generate_age_pop_table.html">generate_age_pop_table</a></span><span class="op">(</span></span>
 <span>  <span class="va">predictor_data</span>,</span>
 <span>  <span class="va">scale_pred</span>,</span>
@@ -543,43 +608,57 @@ region).</p>
 <span>  ignore_cache <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  output_dir <span class="op">=</span> <span class="st">"03_outputs/3c_table_outputs"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Parameters: - <code>predictor_data</code>: Grid cell data -
-<code>scale_pred</code>, <code>shape_pred</code>: Predicted parameters -
-<code>country_code</code>: ISO3 country code - <code>age_range</code>:
-Vector of min/max ages - <code>age_interval</code>: Age grouping
-interval - <code>ignore_cache</code>: Whether to use cached results -
-<code>output_dir</code>: Output directory</p>
-<p>Produces two data frames: - <code>prop_df</code>: Age proportions
-with uncertainty - <code>pop_df</code>: Population counts with
-uncertainty</p>
+<p>Parameters:</p>
+<ul>
+<li><p><code>predictor_data</code>: Grid cell data</p></li>
+<li><p><code>scale_pred</code>, <code>shape_pred</code>: Predicted
+parameters</p></li>
+<li><p><code>country_code</code>: ISO3 country code</p></li>
+<li><p><code>age_range</code>: Vector of min/max ages</p></li>
+<li><p><code>age_interval</code>: Age grouping interval</p></li>
+<li><p><code>ignore_cache</code>: Whether to use cached results</p></li>
+<li><p><code>output_dir</code>: Output directory</p></li>
+</ul>
+<p>Produces two data frames:</p>
+<ul>
+<li><p><code>prop_df</code>: Age proportions with uncertainty</p></li>
+<li><p><code>pop_df</code>: Population counts with uncertainty</p></li>
+</ul>
 </div>
 <div class="section level4">
-<h4 id="vi--generate_age_pyramid_plot">3vi. <code>generate_age_pyramid_plot()</code><a class="anchor" aria-label="anchor" href="#vi--generate_age_pyramid_plot"></a>
+<h4 id="vii--generate_age_pyramid_plot">3vii. <code>generate_age_pyramid_plot()</code><a class="anchor" aria-label="anchor" href="#vii--generate_age_pyramid_plot"></a>
 </h4>
 <p>This function creates population pyramids (either counts or
 proportions) for visualizing demographic structures across user-defined
 geographic units.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/generate_age_pyramid_plot.html">generate_age_pyramid_plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">dataset</span>,</span>
 <span>  <span class="va">country_code</span>,</span>
 <span>  output_dir <span class="op">=</span> <span class="st">"03_outputs/3b_visualizations"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Parameters: - <code>dataset</code>: List containing prop_df and
-pop_df - <code>country_code</code>: ISO3 country code -
-<code>output_dir</code>: Output directory - <code>fill_high</code>,
-<code>fill_low</code>: Color gradient endpoints -
-<code>line_color</code>: Bar outline color - <code>break_axis_by</code>:
-Age axis interval</p>
-<p>Creates: - A list containing both proportion and count plots.</p>
+<p>Parameters:</p>
+<ul>
+<li><p><code>dataset</code>: List containing prop_df and pop_df</p></li>
+<li><p><code>country_code</code>: ISO3 country code</p></li>
+<li><p><code>output_dir</code>: Output directory</p></li>
+<li><p><code>fill_high</code>, <code>fill_low</code>: Color gradient
+endpoints</p></li>
+<li><p><code>line_color</code>: Bar outline color</p></li>
+<li><p><code>break_axis_by</code>: Age axis interval</p></li>
+</ul>
+<p>Creates:</p>
+<ul>
+<li>A list containing both proportion and count plots.</li>
+</ul>
 </div>
 <div class="section level4">
-<h4 id="vii--process_final_population_data">3vii. <code>process_final_population_data()</code><a class="anchor" aria-label="anchor" href="#vii--process_final_population_data"></a>
+<h4 id="viii--process_final_population_data">3viii. <code>process_final_population_data()</code><a class="anchor" aria-label="anchor" href="#viii--process_final_population_data"></a>
 </h4>
 <p>This function summarizes final outputs into Excel or CSV files.
 Allows users to retrieve final aggregated counts, proportions, and
 uncertainties for reporting.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/process_final_population_data.html">process_final_population_data</a></span><span class="op">(</span></span>
 <span>  input_dir <span class="op">=</span> <span class="st">"03_outputs/3c_table_outputs"</span>,</span>
 <span>  excel_output_file <span class="op">=</span> <span class="st">"03_outputs/3d_compiled_results/age_pop_denom_compiled.xlsx"</span></span>
@@ -609,7 +688,7 @@ workflow using simulated DHS-like data for Gambia. This enables users to
 replicate fine-scale age-structured population modeling locally without
 requiring restricted data access. The example covers directory setup,
 dummy data simulation, and running the full modeling workflow.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/init.html">init</a></span><span class="op">(</span></span>
 <span>  r_script_name <span class="op">=</span> <span class="st">"full_pipeline.R"</span>,</span>
 <span>  cpp_script_name <span class="op">=</span> <span class="st">"model.cpp"</span>,</span>

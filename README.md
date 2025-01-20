@@ -96,11 +96,21 @@ init()
 countries <- c("KEN", "UGA")
 
 # Get DHS data
-download_dhs_datasets(countries, email = "your_email@example.com")
+download_dhs_datasets(countries, 
+                      email = "my_email@example.com",
+                      project = "Population denominator project")
 
-# Get spatial data
+# Process DHS data
+process_dhs_data()
+
+# Download shapefiles
 download_shapefile(countries)
+
+# Download population rasters from worldpop
 download_pop_rasters(countries)
+
+# Extract urban extent raster
+extract_afurextent()
 ```
 
 3.  Run full analysis:

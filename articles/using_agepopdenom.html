@@ -176,8 +176,7 @@ structure and create the key scripts by running:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/init.html">init</a></span><span class="op">(</span></span>
 <span>  r_script_name <span class="op">=</span> <span class="st">"full_pipeline.R"</span>,</span>
-<span>  cpp_script_name <span class="op">=</span> <span class="st">"model.cpp"</span>,</span>
-<span>  open_r_script <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  cpp_script_name <span class="op">=</span> <span class="st">"model.cpp"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>The <code><a href="../reference/init.html">init()</a></code> function sets up your project’s directory
 structure and creates necessary script templates. When executed, it
@@ -345,15 +344,21 @@ from the linear regression or variogram fitting might not suit specific
 use cases or when prior knowledge of the data suggests alternative
 starting values.</p>
 <p>When using <code>manual_params</code>, the user must supply a list
-containing the following required parameters: - <code>beta1</code>:
-Coefficients for the scale parameter linear model - <code>beta2</code>:
-Coefficients for the shape parameter linear model - <code>gamma</code>:
-Coefficient regulating the relationship between the shape and scale
-parameters - <code>log_sigma2</code>: Log-transformed variance of the
-Gaussian process - <code>log_phi</code>: Log-transformed spatial range
-parameter, derived from variogram fitting or user input -
-<code>log_tau2_1</code>: Log-transformed nugget effect for the Gaussian
-process</p>
+containing the following required parameters:</p>
+<ul>
+<li><p><code>beta1</code>: Coefficients for the scale parameter linear
+model</p></li>
+<li><p><code>beta2</code>: Coefficients for the shape parameter linear
+model</p></li>
+<li><p><code>gamma</code>: Coefficient regulating the relationship
+between the shape and scale parameters</p></li>
+<li><p><code>log_sigma2</code>: Log-transformed variance of the Gaussian
+process</p></li>
+<li><p><code>log_phi</code>: Log-transformed spatial range parameter,
+derived from variogram fitting or user input</p></li>
+<li><p><code>log_tau2_1</code>: Log-transformed nugget effect for the
+Gaussian process</p></li>
+</ul>
 <p>If <code>manual_params</code> is not provided, the function derives
 these values using default methods, including linear regression for
 beta1 and beta2 and an empirical variogram for log_phi. However, when
@@ -404,10 +409,10 @@ model fits</p>
 <code>manual_params</code> to fine-tune the optimization process:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">control_params</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>trace <span class="op">=</span> <span class="fl">3</span>,        <span class="co"># Higher values show more optimization details</span></span>
-<span>maxit <span class="op">=</span> <span class="fl">2000</span>,     <span class="co"># Increase for complex spatial structures</span></span>
-<span>abs.tol <span class="op">=</span> <span class="fl">1e-10</span>,  <span class="co"># Stricter convergence criteria</span></span>
-<span>rel.tol <span class="op">=</span> <span class="fl">1e-8</span>    <span class="co"># Relative convergence tolerance</span></span>
+<span>  trace <span class="op">=</span> <span class="fl">3</span>,        <span class="co"># Higher values show more optimization details</span></span>
+<span>  maxit <span class="op">=</span> <span class="fl">2000</span>,     <span class="co"># Increase for complex spatial structures</span></span>
+<span>  abs.tol <span class="op">=</span> <span class="fl">1e-10</span>,  <span class="co"># Stricter convergence criteria</span></span>
+<span>  rel.tol <span class="op">=</span> <span class="fl">1e-8</span>    <span class="co"># Relative convergence tolerance</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Here’s the technical implementation:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">

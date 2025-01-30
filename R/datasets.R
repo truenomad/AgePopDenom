@@ -1,69 +1,18 @@
-
-#' Download DHS Datasets for Specified Countries
-#'
-#' Downloads DHS datasets of a specified survey type and file type for given
-#' countries.
-#'
-#' @param country_codes A character vector of ISO3 country codes.
-#' @param survey_type A character string. Type of DHS survey (e.g., "DHS").
-#' @param file_type A character string. Type of file (e.g., "PR" or "GE").
-#' @param file_format A character string. Format of the file (e.g., "DT",
-#'    "FLAT").
-#' @param output_dir A character string specifying the directory to save
-#'    downloaded datasets.
-#' @param clear_cache Logical. Whether to clear the cache after downloading.
-#'    Default is TRUE.
-#'
-#' @return Invisibly returns a vector of downloaded dataset filenames.
-#' @export
-download_dhs_datasets_by_type <- function(country_codes, survey_type, file_type,
-                                          file_format, output_dir,
-                                          clear_cache = TRUE) {
-
-  cli::cli_h1("Downloading {file_type} datasets for {survey_type} survey...")
-
-  # Retrieve dataset filenames
-  datasets <- rdhs::dhs_datasets(
-    countryIds = country_codes,
-    surveyType = survey_type,
-    fileFormat = file_format,
-    fileType = file_type
-  ) |>
-    dplyr::group_by(DatasetType, CountryName) |>
-    dplyr::slice_max(SurveyYear) |>
-    dplyr::distinct() |>
-    dplyr::pull(FileName)
-
-  if (length(datasets) == 0) {
-    cli::cli_alert_warning("No datasets found for {survey_type} - {file_type}.")
-    return(invisible(character(0)))
-  }
-
-  # Download datasets
-  rdhs::get_datasets(
-    datasets,
-    download_option = "rds",
-    output_dir_root = output_dir,
-    clear_cache = clear_cache
-  )
-
-  cli::cli_alert_success("Datasets successfully downloaded to: {output_dir}")
-  invisible(datasets)
-}
-
 #' Main Function to Download DHS Datasets
 #'
 #' Downloads the latest PR (household) and GE (geographic) DHS datasets for
-#'  specified countries.
+#' specified countries.
 #'
 #' @param country_codes A character vector of ISO3 country codes.
 #' @param cache_path A character string specifying the cache path for RDHS.
 #' @param output_dir_root A character string specifying the root directory for
 #'    output.
+#' @param survey_id A character vector of survey IDs. If NULL, uses latest
+#'    survey.
 #' @param email A character string. Email registered with DHS.
 #' @param project A character string. Project name as registered with DHS.
-#' @param verbose Logical for rdhs setup and messages to be printed and dataset
-#'    download progress bars to be shown.
+#' @param verbose Logical for rdhs setup and messages to be printed.
+#' @param clear_cache Logical whether to clear cache before downloading.
 #'
 #' @return Invisibly returns a list of downloaded dataset filenames.
 #' @export
@@ -71,10 +20,13 @@ download_dhs_datasets <- function(
     country_codes,
     cache_path = here::here("01_data", "1a_survey_data", "raw"),
     output_dir_root = here::here("01_data", "1a_survey_data", "raw"),
-    email, project,
-    verbose = TRUE) {
+    survey_id = NULL,
+    email,
+    project,
+    verbose = TRUE,
+    clear_cache = TRUE) {
 
-  # ´get the dhs country codes
+  # Get DHS country codes
   dhs_country_code <- countrycode::codelist |>
     dplyr::filter(iso3c %in% country_codes) |>
     dplyr::pull(dhs)
@@ -96,29 +48,86 @@ download_dhs_datasets <- function(
 
   cli::cli_alert_success("RDHS configuration complete.")
 
-  # Download PR (household) datasets
+  # Get PR datasets
+  pr_available_data <- rdhs::dhs_datasets(
+    countryIds = dhs_country_code,
+    surveyType = "DHS",
+    fileFormat = "DT",
+    fileType = "PR"
+  )
+
+  # Check if provided survey_id exists
+  if (!is.null(survey_id)) {
+    valid_surveys <- survey_id %in% pr_available_data$SurveyId
+    if (!all(valid_surveys)) {
+      invalid_ids <- survey_id[!valid_surveys]
+      cli::cli_alert_warning(
+        "Invalid survey IDs provided: {paste(invalid_ids, collapse = ', ')}"
+      )
+      return(invisible(character(0)))
+    }
+  }
+
+  # Get PR filenames based on survey_id
+  pr_filename <- if (is.null(survey_id)) {
+    survey_id <- dplyr::pull(pr_available_data, SurveyId)
+    pr_available_data |>
+      dplyr::group_by(DatasetType, CountryName) |>
+      dplyr::slice_max(SurveyYear) |>
+      dplyr::distinct() |>
+      dplyr::pull(FileName)
+  } else {
+    pr_available_data |>
+      dplyr::filter(SurveyId %in% survey_id) |>
+      dplyr::pull(FileName)
+  }
+
+  # Download PR datasets
   pr_output_dir <- file.path(output_dir_root, "pr_records")
-  pr_datasets <- download_dhs_datasets_by_type(
-    country_codes = dhs_country_code,
-    survey_type = "DHS",
-    file_type = "PR",
-    file_format = "DT",
-    output_dir = pr_output_dir
+
+  if (length(pr_filename) == 0) {
+    cli::cli_alert_warning(
+      "No PR datasets found for survey IDs: {survey_id}."
+    )
+    return(invisible(character(0)))
+  }
+
+  pr_datasets <- rdhs::get_datasets(
+    pr_filename,
+    download_option = "rds",
+    output_dir_root = pr_output_dir,
+    clear_cache = clear_cache
   )
 
-  # Download GE (geographic) datasets
+  # Get and download GE datasets
+  ge_filename <- rdhs::dhs_datasets(
+    surveyIds = survey_id,
+    surveyType = "DHS",
+    fileFormat = "FLAT",
+    fileType = "GE"
+  ) |>
+    dplyr::pull(FileName)
+
   ge_output_dir <- file.path(output_dir_root, "shapefiles")
-  ge_datasets <- download_dhs_datasets_by_type(
-    country_codes = dhs_country_code,
-    survey_type = "DHS",
-    file_type = "GE",
-    file_format = "FLAT",
-    output_dir = ge_output_dir
+
+  if (length(ge_filename) == 0) {
+    cli::cli_alert_warning(
+      "No GE datasets found for survey IDs: {survey_id}."
+    )
+    return(invisible(character(0)))
+  }
+
+  ge_datasets <- rdhs::get_datasets(
+    ge_filename,
+    download_option = "rds",
+    output_dir_root = ge_output_dir,
+    clear_cache = clear_cache
   )
 
-  cli::cli_alert_success("All datasets successfully Downloaded and saved.")
+  cli::cli_alert_success("All datasets successfully downloaded and saved.")
   invisible(list(PR = pr_datasets, GE = ge_datasets))
 }
+
 
 #' Aggregate Individual Survey Data and Extract Gamma Parameters by Location
 #'

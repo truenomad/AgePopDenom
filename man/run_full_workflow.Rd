@@ -19,6 +19,7 @@ run_full_workflow(
   raster_height = 2000,
   raster_resolution = 300,
   save_raster = TRUE,
+  generate_pop_raster = FALSE,
   pyramid_line_color = "#67000d",
   pyramid_fill_high = "#fee0d2",
   pyramid_fill_low = "#a50f15",
@@ -73,6 +74,9 @@ Default: 300}
 \item{save_raster}{Logical. Whether to save raster outputs to disk.
 Default: TRUE}
 
+\item{generate_pop_raster}{Logical. Whether to generate population raster.
+Default: FALSE}
+
 \item{pyramid_line_color}{Character. Hex color code for the age pyramid's
 outline. Default: "#67000d"}
 
@@ -120,6 +124,8 @@ lower values fill. Default: "#a50f15"}
   \item control_params: Control parameters. Default: list(trace = 2)
   \item manual_params: Manual parameters. Default: NULL
   \item verbose: Verbose output. Default: TRUE
+  \item age_range_raster: Age range for raster output. Default: c(0, 10)
+  \item age_interval_raster: Age interval for raster output. Default: 1
 }}
 
 \item{return_results}{Logical. Whether to return results. Default: FALSE.}
@@ -184,7 +190,7 @@ results <- run_full_workflow(
     parameters
   \item \code{\link{process_final_population_data}}: Processes final
     population data
-  \item \code{\link{generate_variogram_plot}}: Creates variogram plots showing
-    spatial dependence structure
+  \item \code{\link{generate_variogram_plot}}: Creates variogram plots
+    showing spatial dependence structure
 }
 }

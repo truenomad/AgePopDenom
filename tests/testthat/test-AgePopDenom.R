@@ -46,6 +46,7 @@ testthat::test_that("install_suggested_packages handles scenarios correctly", {
 })
 
 testthat::test_that("process_dhs_data correctly processes DHS survey data", {
+
   # Setup temporary test environment
   # Create temp directory with normalized path
   tf <- normalizePath(tempfile(), winslash = "/", mustWork = FALSE)
@@ -312,6 +313,7 @@ testthat::test_that(
           "Note: Total population includes ",
           "ages 99+, pyramid shows ages 0-99"
         ),
+        generate_pop_raster = TRUE,
         output_paths = list(
           model = file.path(tf, "03_outputs", "3a_model_outputs"),
           plot = file.path(tf, "03_outputs", "3b_visualizations"),
@@ -444,7 +446,7 @@ testthat::test_that(
       age_tables <- readRDS(table_path)
       testthat::expect_type(age_tables, "list")
       testthat::expect_true(all(c("prop_df", "pop_df") %in%
-        names(age_tables)))
+                                  names(age_tables)))
 
       testthat::expect_true(all(c(
         "country", "region", "district",
@@ -454,6 +456,18 @@ testthat::test_that(
           names(age_tables$prop_df),
           names(age_tables$pop_df)
         )))
+
+      # Raster outputs test
+      rast_path <- file.path(
+        tf, "03_outputs", "3b_visualizations",
+        "gmb_age_pop_grid_0_10_yrs_by_1yrs.tif"
+      )
+      testthat::expect_true(file.exists(table_path))
+
+      # Check if output is raster
+      rast <- terra::rast(rast_path)
+      testthat::expect_equal(class(rast)[1], "SpatRaster")
+
 
       # Compiled results test
       excel_path <- file.path(

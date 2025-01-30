@@ -484,11 +484,183 @@ generate_age_pyramid_plot <- function(
       device = "png"
     )
 
-    cli::cli_alert_success("Age pyramid {plot_type} plot saved to {output_file}")
+    cli::cli_alert_success(
+      "Age pyramid {plot_type} plot saved to {output_file}"
+    )
   }
 
   return(list(
     count_plot = pop_plot,
     prop_plot = prop_plot
   ))
+}
+
+#' Generate Age Population Raster
+#'
+#' @description
+#' Creates age-stratified population raster layers from predictor data and gamma
+#' distribution parameters. Supports parallel processing and caching of results.
+#' The output is a multi-layer raster stack with each layer representing the
+#' population proportion for a specific age interval.
+#'
+#' @param predictor_data Data frame containing population and spatial data with
+#'    columns: country, region, district, pop, web_x, web_y
+#' @param scale_pred Matrix of scale parameters for gamma distribution
+#'    predictions
+#' @param shape_pred Matrix of shape parameters for gamma distribution
+#'    predictions
+#' @param age_range Numeric vector of length 2 specifying min and max ages,
+#'    default c(0,99)
+#' @param age_interval Numeric interval size between age groups in years,
+#'    default 1
+#' @param country_code Character ISO3 country code
+#' @param ignore_cache Logical whether to ignore cached results, default FALSE
+#' @param output_dir Character path to output directory
+#' @param n_cores Integer number of cores for parallel processing, default
+#'    detectCores()-2
+#'
+#' @return SpatRaster object (terra package) containing multiple layers, where
+#'    each layer represents the population proportion for an age interval.
+#'    Layer names indicate the age range (e.g., "Age 0 to 1 years").
+#'    The raster uses EPSG:3857 projection with 5000m resolution.
+#'
+#' @details
+#' The function processes age intervals sequentially, computing population
+#' proportions using parallel processing. Results are cached as a GeoTIFF file
+#' for future use. The output raster maintains spatial properties of the input
+#' data and is suitable for GIS analysis and visualization.
+#'
+#' @export
+generate_age_pop_raster <- function(predictor_data,
+                                    scale_pred,
+                                    shape_pred,
+                                    age_range = c(0, 10),
+                                    age_interval = 1,
+                                    country_code,
+                                    ignore_cache = FALSE,
+                                    output_dir,
+                                    n_cores = parallel::detectCores() - 2) {
+  # Construct output path
+  output_path <- file.path(
+    output_dir,
+    glue::glue(
+      "{tolower(country_code)}_age_pop_grid_",
+      "{age_range[1]}_{age_range[2]}_yrs_by_{age_interval}yrs.tif"
+    )
+  )
+
+  # Check cache
+  if (!ignore_cache && file.exists(output_path)) {
+    cli::cli_process_start(
+      msg = "Importing cached age population raster...",
+      msg_done = "Successfully imported cached age population raster."
+    )
+    raster_stack <- terra::rast(output_path)
+    cli::cli_process_done()
+    return(raster_stack)
+  }
+
+  # Ensure output directory exists
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
+  # Define age intervals
+  limslow <- seq(age_range[1], age_range[2], age_interval)
+  limsup <- seq(
+    age_range[1] + age_interval, age_range[2] + age_interval,
+    age_interval
+  )
+
+  n_sim <- ncol(shape_pred)
+  raster_layers <- list()
+
+  # Validate inputs
+  if (!identical(dim(scale_pred), dim(shape_pred))) {
+    stop("scale_pred and shape_pred must have the same dimensions")
+  }
+
+  if (nrow(scale_pred) != nrow(predictor_data)) {
+    stop("Number of rows in predictions must match predictor_data")
+  }
+
+  # Processing loop
+  for (runnum in seq_along(limslow)) {
+    cli::cli_process_start(
+      msg = glue::glue("Processing interval {runnum}/{length(limslow)}..."),
+      msg_done = glue::glue("Completed interval {runnum}/{length(limslow)}.")
+    )
+
+    # Run parallel computation based on OS
+    if (Sys.info()["sysname"] == "Darwin") {
+      # For MacOS
+      prop_age_pred <- pbmcapply::pbmclapply(
+        1:n_sim,
+        function(sim) {
+          compute_age_proportions(
+            sim = sim, scale = scale_pred, shape = shape_pred,
+            run = runnum, limslow = limslow, limsup = limsup
+          )
+        },
+        mc.cores = n_cores
+      )
+    } else {
+      # For Linux/Windows
+      future::plan(future::multisession, workers = n_cores)
+      prop_age_pred <- future.apply::future_lapply(
+        1:n_sim,
+        function(sim) {
+          compute_age_proportions(
+            sim = sim, scale = scale_pred, shape = shape_pred,
+            run = runnum, limslow = limslow, limsup = limsup
+          )
+        }
+      )
+    }
+
+    # Combine simulation results
+    prop_age_pred <- base::do.call(base::cbind, prop_age_pred)
+    mean_prop_age <- base::rowMeans(prop_age_pred, na.rm = TRUE)
+
+    # Create spatial data for rasterization
+    spatial_data <- data.frame(
+      x = predictor_data$web_x,
+      y = predictor_data$web_y,
+      proportion = mean_prop_age
+    )
+
+    # Convert to SpatVector
+    spat_vector <- terra::vect(spatial_data,
+      geom = c("x", "y"),
+      crs = "EPSG:3857"
+    )
+
+    # Create raster template
+    raster_template <- terra::rast(
+      spat_vector,
+      resolution = 5000,
+      crs = "EPSG:3857"
+    )
+
+    # Rasterize proportions
+    raster_layer <- terra::rasterize(
+      spat_vector,
+      raster_template,
+      field = "proportion",
+      fun = mean
+    )
+
+    # Store raster layer
+    raster_layers[[runnum]] <- raster_layer
+
+    cli::cli_process_done()
+  }
+
+  # Combine into raster stack
+  raster_stack <- terra::rast(raster_layers)
+  names(raster_stack) <- paste0("Age ", limslow, " to ", limsup, " years")
+
+  # Save results
+  terra::writeRaster(raster_stack, output_path, overwrite = TRUE)
+  cli::cli_alert_success("Raster stack saved to {output_path}")
+
+  return(raster_stack)
 }

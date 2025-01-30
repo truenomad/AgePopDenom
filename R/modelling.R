@@ -983,6 +983,8 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'   Default: 300
 #' @param save_raster Logical. Whether to save raster outputs to disk.
 #'   Default: TRUE
+#' @param generate_pop_raster Logical. Whether to generate population raster.
+#'   Default: FALSE
 #' @param pyramid_line_color Character. Hex color code for the age pyramid's
 #'   outline. Default: "#67000d"
 #' @param pyramid_fill_high Character. Hex color code for the age pyramid's
@@ -1025,6 +1027,8 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'     \item control_params: Control parameters. Default: list(trace = 2)
 #'     \item manual_params: Manual parameters. Default: NULL
 #'     \item verbose: Verbose output. Default: TRUE
+#'     \item age_range_raster: Age range for raster output. Default: c(0, 10)
+#'     \item age_interval_raster: Age interval for raster output. Default: 1
 #'   }
 #' @param return_results Logical. Whether to return results. Default: FALSE.
 #' @param ... Additional arguments passed to subfunctions.
@@ -1075,8 +1079,8 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'     parameters
 #'   \item \code{\link{process_final_population_data}}: Processes final
 #'     population data
-#'   \item \code{\link{generate_variogram_plot}}: Creates variogram plots showing
-#'     spatial dependence structure
+#'   \item \code{\link{generate_variogram_plot}}: Creates variogram plots
+#'     showing spatial dependence structure
 #' }
 #' @export
 run_full_workflow <- function(
@@ -1094,6 +1098,7 @@ run_full_workflow <- function(
     raster_height = 2000,
     raster_resolution = 300,
     save_raster = TRUE,
+    generate_pop_raster = FALSE,
     pyramid_line_color = "#67000d",
     pyramid_fill_high = "#fee0d2",
     pyramid_fill_low = "#a50f15",
@@ -1109,7 +1114,6 @@ run_full_workflow <- function(
   default_output_paths <- list(
     model = here::here("03_outputs", "3a_model_outputs"),
     plot = here::here("03_outputs", "3b_visualizations"),
-    raster = here::here("03_outputs", "3c_raster_outputs"),
     table = here::here("03_outputs", "3c_table_outputs"),
     compiled = here::here("03_outputs", "3d_compiled_results"),
     excel = here::here(
@@ -1126,6 +1130,8 @@ run_full_workflow <- function(
     ignore_cache = FALSE,
     age_range = c(0, 99),
     age_interval = 1,
+    age_range_raster = c(0, 10),
+    age_interval_raster = 1,
     return_prop = TRUE,
     scale_outcome = "log_scale",
     shape_outcome = "log_shape",
@@ -1315,6 +1321,24 @@ run_full_workflow <- function(
           n_cores = n_cores
         )
 
+        if (generate_pop_raster) {
+          cli::cli_h1(glue::glue(
+            "Producing Age-Population Raster for {country_name_clr}"
+          ))
+
+          age_pop_raster <- generate_age_pop_raster(
+            predictor_data = predictor_data,
+            scale_pred = scale_pred,
+            shape_pred = shape_pred,
+            age_range = model_params$age_range_raster,
+            age_interval = model_params$age_interval_raster,
+            country_code = country_code_lw,
+            ignore_cache = model_params$ignore_cache,
+            output_dir = output_paths$plot,
+            n_cores = n_cores
+          )
+        }
+
         cli::cli_h1(glue::glue(
           "Producing Regional-level Age-pyramid for {country_name_clr}"
         ))
@@ -1370,7 +1394,8 @@ run_full_workflow <- function(
             pred_list = pred_list,
             final_age_pop_table = final_age_pop_table,
             final_pop = final_pop,
-            all_mod_params = all_mod_params
+            all_mod_params = all_mod_params,
+            age_pop_raster = age_pop_raster
           ))
         }
       },

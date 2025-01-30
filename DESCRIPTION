@@ -10,10 +10,13 @@ Authors@R: c(
          second_email = "mohamedayusuf87@gmail.com")),
   person("Victor A.", "Alegana", 
          role = "aut",
-         email = "aleganav@who.int"),
+         comment = c(ORCID = "0000-0001-5177-9227")),
   person("Chris", "Nnanatu", 
          role = "aut",
-         email = "cc.nnanatu@soton.ac.uk"))
+         comment = c(ORCID = "0000-0002-5841-3700")),
+  person("Andrew", "Tatem", 
+         role = "aut",
+         comment = c(ORCID = "0000-0002-7270-941X")))
 Description: Package to automate the modelling of age-structured population data
   using survey data, popualtion rasters and urban-rural extents.
 License: MIT + file LICENSE

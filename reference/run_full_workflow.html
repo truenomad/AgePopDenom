@@ -67,6 +67,7 @@ with minimal adjustments.</p>
 <span>  raster_height <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>  raster_resolution <span class="op">=</span> <span class="fl">300</span>,</span>
 <span>  save_raster <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  generate_pop_raster <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  pyramid_line_color <span class="op">=</span> <span class="st">"#67000d"</span>,</span>
 <span>  pyramid_fill_high <span class="op">=</span> <span class="st">"#fee0d2"</span>,</span>
 <span>  pyramid_fill_low <span class="op">=</span> <span class="st">"#a50f15"</span>,</span>
@@ -153,6 +154,11 @@ Default: 300</p></dd>
 Default: TRUE</p></dd>
 
 
+<dt id="arg-generate-pop-raster">generate_pop_raster<a class="anchor" aria-label="anchor" href="#arg-generate-pop-raster"></a></dt>
+<dd><p>Logical. Whether to generate population raster.
+Default: FALSE</p></dd>
+
+
 <dt id="arg-pyramid-line-color">pyramid_line_color<a class="anchor" aria-label="anchor" href="#arg-pyramid-line-color"></a></dt>
 <dd><p>Character. Hex color code for the age pyramid's
 outline. Default: "#67000d"</p></dd>
@@ -207,6 +213,8 @@ lower values fill. Default: "#a50f15"</p></dd>
 <li><p>control_params: Control parameters. Default: list(trace = 2)</p></li>
 <li><p>manual_params: Manual parameters. Default: NULL</p></li>
 <li><p>verbose: Verbose output. Default: TRUE</p></li>
+<li><p>age_range_raster: Age range for raster output. Default: c(0, 10)</p></li>
+<li><p>age_interval_raster: Age interval for raster output. Default: 1</p></li>
 </ul></dd>
 
 
@@ -254,8 +262,8 @@ population table, default detectCores()-2</p></dd>
     parameters</p></li>
 <li><p><code><a href="process_final_population_data.html">process_final_population_data</a></code>: Processes final
     population data</p></li>
-<li><p><code><a href="generate_variogram_plot.html">generate_variogram_plot</a></code>: Creates variogram plots showing
-    spatial dependence structure</p></li>
+<li><p><code><a href="generate_variogram_plot.html">generate_variogram_plot</a></code>: Creates variogram plots
+    showing spatial dependence structure</p></li>
 </ul></div>
     </div>
 
@@ -282,7 +290,7 @@ population table, default detectCores()-2</p></dd>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohamed A. Yusuf, Victor A. Alegana, Chris Nnanatu.</p>
+  <p>Developed by Mohamed A. Yusuf, Victor A. Alegana, Chris Nnanatu, Andrew Tatem.</p>
 </div>
 
 <div class="pkgdown-footer-right">

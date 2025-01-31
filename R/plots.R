@@ -94,9 +94,9 @@ generate_variogram_plot <- function(age_param_data, fit_vario, country_code,
     ) +
     ggplot2::theme_bw() +
     ggplot2::theme(
-      plot.title = ggplot2::element_text(hjust = 0.5, size = 14),
-      axis.title = ggplot2::element_text(size = 12),
-      axis.text = ggplot2::element_text(size = 10)
+      plot.title = ggplot2::element_text(hjust = 0.5, size = 12),
+      axis.title = ggplot2::element_text(size = 10),
+      axis.text = ggplot2::element_text(size = 9)
     ) +
     ggplot2::scale_x_continuous(labels = scales::comma)
 

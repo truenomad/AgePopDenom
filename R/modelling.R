@@ -209,7 +209,6 @@ fit_spatial_model <- function(data,
     # Set default if estimate is invalid
     if (range_est <= 0) range_est <- 100
 
-    cli::cli_inform(c("i" = paste("Estimated range:", range_est)))
     cli::cli_process_done()
   }
 
@@ -1243,7 +1242,7 @@ run_full_workflow <- function(
         generate_variogram_plot(
           age_param_data = age_param_data,
           fit_vario = spat_model_param$variogram,
-          country_code = country_code,
+          country_code = cc,
           output_dir = output_paths$plot,
           scale_outcome = model_params$scale_outcome
         )

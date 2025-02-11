@@ -5,7 +5,7 @@ Version: 0.1.0
 Authors@R: c(
   person("Mohamed A.", "Yusuf", 
          role = c("aut", "cre"),
-         email = "moyusuf@who.who",  
+         email = "moyusuf@who.int",  
          comment = c(ORCID = "0000-0002-9339-4613",
          second_email = "mohamedayusuf87@gmail.com")),
   person("Victor A.", "Alegana", 

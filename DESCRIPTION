@@ -6,8 +6,7 @@ Authors@R: c(
   person("Mohamed A.", "Yusuf", 
          role = c("aut", "cre"),
          email = "moyusuf@who.int",  
-         comment = c(ORCID = "0000-0002-9339-4613",
-         second_email = "mohamedayusuf87@gmail.com")),
+         comment = c(ORCID = "0000-0002-9339-4613")),
   person("Victor A.", "Alegana", 
          role = "aut",
          comment = c(ORCID = "0000-0001-5177-9227")),
@@ -18,7 +17,7 @@ Authors@R: c(
          role = "aut",
          comment = c(ORCID = "0000-0002-7270-941X")))
 Description: Package to automate the modelling of age-structured population data
-  using survey data, popualtion rasters and urban-rural extents.
+  using survey data, grid population estimates and urban-rural extents.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -73,3 +72,4 @@ RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 URL: https://truenomad.github.io/AgePopDenom/
+Depends: R (>= 4.1.0)

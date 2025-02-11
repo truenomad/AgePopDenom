@@ -137,19 +137,19 @@ install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
 #' @details The function generates the following folder structure:
 #' \preformatted{
 #' # 01_data/
-#' # ├── 1a_survey_data/
-#' # │   ├── processed/
-#' # │   └── raw/
-#' # ├── 1b_rasters/
-#' # │   ├── urban_extent/
-#' # │   └── pop_raster/
-#' # ├── 1c_shapefiles/
+#' # +-- 1a_survey_data/
+#' # |    +-- processed/
+#' # |    \-- raw/
+#' # +-- 1b_rasters/
+#' # |    +-- urban_extent/
+#' # |    \-- pop_raster/
+#' # +-- 1c_shapefiles/
 #' # 02_scripts/
 #' # 03_outputs/
-#' # ├── 3a_model_outputs/
-#' # ├── 3b_visualizations/
-#' # ├── 3c_table_outputs/
-#' # └── 3d_compiled_results/
+#' # +-- 3a_model_outputs/
+#' # +-- 3b_visualizations/
+#' # +-- 3c_table_outputs/
+#' # \-- 3d_compiled_results/
 #' }
 #'
 #' @examples

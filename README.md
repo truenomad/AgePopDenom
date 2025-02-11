@@ -1,7 +1,7 @@
 # AgePopDenom <img src="man/figures/logo.png" align="right" height="138"/>
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml) [![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom) [![codecov](https://codecov.io/gh/truenomad/AgePopDenom/graph/badge.svg?token=UL9XKIIXTQ)](https://codecov.io/gh/truenomad/AgePopDenom) 
+[![R-CMD-check](https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/truenomad/AgePopDenom/actions/workflows/R-CMD-check.yaml) [![CodeFactor](https://www.codefactor.io/repository/github/truenomad/agepopdenom/badge)](https://www.codefactor.io/repository/github/truenomad/agepopdenom) [![codecov]( https://app.codecov.io/gh/truenomad/AgePopDenom/graph/badge.svg?token=UL9XKIIXTQ)]( https://app.codecov.io/gh/truenomad/AgePopDenom) 
 <!-- badges: end -->
 
 ## What is AgePopDenom?

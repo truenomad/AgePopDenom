@@ -1,6 +1,6 @@
 Package: AgePopDenom
 Type: Package
-Title: Model fine-scale age-structured population data using open-source data
+Title: Package to model fine-scale age-structured population data
 Version: 0.1.0
 Authors@R: c(
   person("Mohamed A.", "Yusuf", 
@@ -16,12 +16,13 @@ Authors@R: c(
   person("Andrew", "Tatem", 
          role = "aut",
          comment = c(ORCID = "0000-0002-7270-941X")))
-Description: Automate the modelling of age-structured population data
+Description: Package to automate the modelling of age-structured population data
   using survey data, grid population estimates and urban-rural extents.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Remotes: yonghah/esri2sf
+Remotes:
+  github::yonghah/esri2sf
 SystemRequirements: C++17, TMB
 Imports:
     TMB,

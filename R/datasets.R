@@ -744,32 +744,44 @@ download_shapefile <- function(
   codes_str <- paste0("'", paste(country_codes, collapse = "','"), "'")
   where_clause <- paste0("ISO_3_CODE IN (", codes_str, ")")
   base_url <- paste0(
-    "https://services.arcgis.com/5T5nSi527N4",
-    "F7luB/arcgis/rest/services/Detailed_Boundary_ADM2/",
-    "FeatureServer/0"
+    "https://services.arcgis.com/5T5nSi527N4F7luB",
+    "/arcgis/rest/services/Detailed_Boundary_ADM2/",
+    "FeatureServer/0/query"
   )
+  params <- list(
+    where = where_clause,
+    outFields = "ISO_3_CODE,ADM0_NAME,ADM1_NAME,ADM2_NAME,ENDDATE",
+    outSR = 4326,
+    f = "geojson"
+  )
+
 
   cli::cli_alert_info(
     glue::glue(
       "Downloading missing WHO ADM2 data for: ",
-      "{paste(country_codes, collapse=', ')}")
+      "{crayon::blue(paste(country_codes, collapse=', '))}")
   )
 
-  # Download data from the ArcGIS API
-  new_sf <- esri2sf::esri2sf(
-    url       = base_url,
-    where     = where_clause,
-    outFields = c("ISO_3_CODE", "ADM0_NAME", "ADM1_NAME",
-                  "ADM2_NAME", "ENDDATE"),
-    progress  = TRUE
-  ) |>
-    dplyr::filter(ENDDATE == "253402214400000") |>
+  # get shapefile
+  new_sf <- base::suppressWarnings(
+    base::suppressMessages({
+      base::invisible(
+        utils::capture.output(
+          out <- sf::st_read(
+            httr::modify_url(base_url, query = params), quiet = TRUE)
+        )
+      )
+      out
+    }
+    )
+  ) |> dplyr::filter(ENDDATE == "253402214400000") |>
     dplyr::transmute(
       country_code = ISO_3_CODE,
       country      = ADM0_NAME,
       region       = ADM1_NAME,
       district     = ADM2_NAME
     )
+
   # Append new data to the file or create a new one
   if (file.exists(dest_file)) {
 

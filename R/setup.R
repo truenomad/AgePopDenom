@@ -2,8 +2,7 @@
 #'
 #' @description
 #' This function checks for suggested packages and prompts the user to install
-#' any missing ones that are needed for full functionality. It handles both
-#' CRAN and GitHub packages.
+#' any missing ones that are needed for full functionality.
 #'
 #' @param libname The library name where the package is installed (not used)
 #' @param pkgname The name of the package being loaded (not used)
@@ -11,8 +10,7 @@
 #' @details
 #' The function maintains a predefined list of suggested packages and checks if
 #' they are installed. For missing packages, it prompts the user for
-#' installation in interactive sessions. Special handling is included for
-#' GitHub packages like esri2sf'.
+#' installation in interactive sessions.
 #'
 #' The function uses 'cli' for user communication and handles errors gracefully
 #' during installation attempts. In non-interactive sessions, it skips
@@ -40,7 +38,7 @@ install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
     "haven", "here", "matrixStats", "rstudioapi", "geodata",
     "pbmcapply", "remotes", "future", "future.apply",
     "testthat", "rdhs", "openxlsx2", "purrr", "rlang", "pak",
-    "sp", "automap", "esri2sf", "knitr", "rmarkdown", "mockery"
+    "sp", "automap", "knitr", "rmarkdown", "mockery"
   )
 
   missing_pkgs <- suggested_pkgs[!(
@@ -69,40 +67,14 @@ install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
     if (tolower(user_choice) == "y") {
       cli::cli_alert_success("Installing missing packages...")
 
-      # Ensure remotes is installed
-      if (!requireNamespace("remotes", quietly = TRUE)) {
-        tryCatch({
-          utils::install.packages("remotes", quiet = TRUE)
-        }, error = function(e) {
-          cli::cli_alert_danger(paste0(
-            "Failed to install 'remotes'. Error: ", e$message
-          ))
-          invisible(NULL)
-        })
-      }
-
       # Install CRAN packages
-      cran_pkgs <- missing_pkgs[missing_pkgs != "esri2sf"]
-      if (length(cran_pkgs) > 0) {
-        for (pkg in cran_pkgs) {
-          tryCatch({
-            utils::install.packages(pkg, quiet = TRUE)
-          }, error = function(e) {
-            cli::cli_alert_danger(paste0(
-              "Failed to install package: ", pkg,
-              ". Error: ", e$message
-            ))
-          })
-        }
-      }
-
-      # Install GitHub packages
-      if ("esri2sf" %in% missing_pkgs) {
+      for (pkg in missing_pkgs) {
         tryCatch({
-          remotes::install_github("yonghah/esri2sf", quiet = TRUE)
+          utils::install.packages(pkg, quiet = TRUE)
         }, error = function(e) {
           cli::cli_alert_danger(paste0(
-            "Failed to install GitHub package 'esri2sf'. Error: ", e$message
+            "Failed to install package: ", pkg,
+            ". Error: ", e$message
           ))
         })
       }

@@ -22,14 +22,12 @@ Returns NULL invisibly. The function's main effects are:
 }
 \description{
 This function checks for suggested packages and prompts the user to install
-any missing ones that are needed for full functionality. It handles both
-CRAN and GitHub packages.
+any missing ones that are needed for full functionality.
 }
 \details{
 The function maintains a predefined list of suggested packages and checks if
 they are installed. For missing packages, it prompts the user for
-installation in interactive sessions. Special handling is included for
-GitHub packages like esri2sf'.
+installation in interactive sessions.
 
 The function uses 'cli' for user communication and handles errors gracefully
 during installation attempts. In non-interactive sessions, it skips

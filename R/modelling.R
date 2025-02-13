@@ -94,7 +94,6 @@
 #'   output_dir = "03_outputs/3a_model_outputs"
 #' )
 #' }
-#' @importFrom RcppEigen fastLm
 #' @export
 fit_spatial_model <- function(data,
                               country_code = NULL,

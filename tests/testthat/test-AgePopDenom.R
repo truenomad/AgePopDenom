@@ -10,7 +10,7 @@ testthat::test_that("install_suggested_packages handles scenarios correctly", {
     "cli", "countrycode", "crayon", "scales", "glue", "haven", "here",
     "matrixStats", "rstudioapi", "geodata", "pbmcapply", "remotes", "future",
     "future.apply", "testthat", "rdhs", "openxlsx2", "purrr", "rlang", "pak",
-    "sp", "automap", "esri2sf", "knitr", "rmarkdown"
+    "sp", "automap", "knitr", "rmarkdown"
   )
 
   # Setup mocks

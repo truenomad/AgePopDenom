@@ -33,6 +33,47 @@ pkgbuild::has_build_tools()
 
 If FALSE, download and install Rtools from: [CRAN Rtools](https://cran.r-project.org/bin/windows/Rtools/)
 
+
+2. After installation, add Rtools to the system PATH:
+
+```
+echo 'export PATH="C:/rtools43/usr/bin;C:/rtools43/mingw64/bin:$PATH"' >> ~/.Renviron
+```
+
+3. Restart R and verify the correct compiler setup:
+
+```
+Sys.getenv("PATH")
+```
+
+It should include `C:/rtools43/usr/bin` and `C:/rtools43/mingw64/bin`.
+
+4. Ensure the correct compiler is available:
+
+```
+g++ --version
+```
+
+It should output GCC version 10 or later.
+
+5. Set up the Makevars.win file to use the correct compiler:
+
+
+```
+mkdir -p ~/.R
+nano ~/.R/Makevars.win
+```
+
+Add the following lines:
+
+```
+CXX14=C:/rtools43/mingw64/bin/g++
+CXX17=C:/rtools43/mingw64/bin/g++
+CXX20=C:/rtools43/mingw64/bin/g++
+```
+
+Save and exit (`CTRL+X`, then `Y`, then `Enter`).
+
 **macOS**
 
 1.  Install Command Line Tools:
@@ -47,13 +88,92 @@ xcode-select --install
 brew install gcc
 ```
 
-**Linux (Ubuntu/Debian)**
-
-1.  Update your system and install necessary packages:
+3. Install LLVM via Homebrew:
 
 ```         
+brew install llvm
+```
+
+4. Set up compiler paths:
+
+For Zsh (default on macOS):
+
+```
+echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' >> ~/.zshrc
+echo 'export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"' >> ~/.zshrc
+echo 'export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+For Bash:
+
+```
+echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' >> ~/.bashrc
+echo 'export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"' >> ~/.bashrc
+echo 'export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+5. Verify the correct compiler is now being used:
+
+```
+clang++ --version
+```
+
+It should output Homebrew Clang (e.g., `Homebrew clang version XXXXX`).
+
+6. Configure R to use LLVM: Modify your `~/.R/Makevars` file:
+
+```
+
+nano ~/.R/Makevars
+```
+
+Add the following lines:
+
+```
+CXX=/opt/homebrew/opt/llvm/bin/clang++
+CXX11=/opt/homebrew/opt/llvm/bin/clang++
+CXX14=/opt/homebrew/opt/llvm/bin/clang++
+CXX17=/opt/homebrew/opt/llvm/bin/clang++
+CXX20=/opt/homebrew/opt/llvm/bin/clang++
+```
+
+Save and exit (`CTRL+X`, then `Y`, then `Enter`).
+
+**Linux (Ubuntu/Debian)**
+
+1. Update your system and install necessary packages:
+
+```
 sudo apt-get update
 sudo apt-get install build-essential libxml2-dev
+```
+
+2. Ensure you have GCC installed:
+
+```
+sudo apt-get install g++
+```
+
+3. Install Clang (optional, if required for TMB compilation):
+
+```
+sudo apt-get install clang
+```
+4. Verify compiler setup:
+
+```
+g++ --version
+clang++ --version
+```
+
+#### Install and Compile TMB
+
+Restart R and install TMB:
+
+```
+install.packages("TMB", type = "source")
 ```
 
 ### AgePopDenom installation

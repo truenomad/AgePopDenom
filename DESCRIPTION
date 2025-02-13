@@ -1,6 +1,6 @@
 Package: AgePopDenom
 Type: Package
-Title: Package to model fine-scale age-structured population data
+Title: Model Fine-Scale Age-Structured Population Data using Open-Source Data
 Version: 0.1.0
 Authors@R: c(
   person("Mohamed A.", "Yusuf", 
@@ -16,7 +16,7 @@ Authors@R: c(
   person("Andrew", "Tatem", 
          role = "aut",
          comment = c(ORCID = "0000-0002-7270-941X")))
-Description: Package to automate the modelling of age-structured population data
+Description: Automate the modelling of age-structured population data
   using survey data, grid population estimates and urban-rural extents.
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -52,7 +52,6 @@ Suggests:
     here,
     rstudioapi,
     geodata,
-    esri2sf,
     pbmcapply, 
     future,
     future.apply,

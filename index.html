@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Package to model fine-scale age-structured population data • AgePopDenom</title>
+<title>Model fine-scale age-structured population data using open-source data • AgePopDenom</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="apple-touch-icon.png">
@@ -16,9 +16,9 @@
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Package to model fine-scale age-structured population data">
-<meta name="description" content="Package to automate the modelling of age-structured population data using survey data, grid population estimates and urban-rural extents.">
-<meta property="og:description" content="Package to automate the modelling of age-structured population data using survey data, grid population estimates and urban-rural extents.">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Model fine-scale age-structured population data using open-source data">
+<meta name="description" content="Automate the modelling of age-structured population data using survey data, grid population estimates and urban-rural extents.">
+<meta property="og:description" content="Automate the modelling of age-structured population data using survey data, grid population estimates and urban-rural extents.">
 <meta property="og:image" content="https://truenomad.github.io/AgePopDenom/logo.png">
 <link rel="icon" type="image/png" href="man/figures/logo.png">
 </head>
@@ -96,6 +96,30 @@
 <code class="sourceCode R"><span><span class="co"># Check if Rtools is installed and properly configured</span></span>
 <span><span class="fu">pkgbuild</span><span class="fu">::</span><span class="fu"><a href="https://pkgbuild.r-lib.org/reference/has_build_tools.html" class="external-link">has_build_tools</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>If FALSE, download and install Rtools from: <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">CRAN Rtools</a></p>
+<ol start="2" style="list-style-type: decimal">
+<li>After installation, add Rtools to the system PATH:</li>
+</ol>
+<pre><code>echo 'export PATH="C:/rtools43/usr/bin;C:/rtools43/mingw64/bin:$PATH"' &gt;&gt; ~/.Renviron</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Restart R and verify the correct compiler setup:</li>
+</ol>
+<pre><code><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PATH"</span><span class="op">)</span></span></code></pre>
+<p>It should include <code>C:/rtools43/usr/bin</code> and <code>C:/rtools43/mingw64/bin</code>.</p>
+<ol start="4" style="list-style-type: decimal">
+<li>Ensure the correct compiler is available:</li>
+</ol>
+<pre><code><span><span class="va">g</span><span class="op">+</span><span class="op">+</span> <span class="op">-</span><span class="op">-</span><span class="va">version</span></span></code></pre>
+<p>It should output GCC version 10 or later.</p>
+<ol start="5" style="list-style-type: decimal">
+<li>Set up the Makevars.win file to use the correct compiler:</li>
+</ol>
+<pre><code>mkdir -p ~/.R
+nano ~/.R/Makevars.win</code></pre>
+<p>Add the following lines:</p>
+<pre><code>CXX14=C:/rtools43/mingw64/bin/g++
+CXX17=C:/rtools43/mingw64/bin/g++
+CXX20=C:/rtools43/mingw64/bin/g++</code></pre>
+<p>Save and exit (<code>CTRL+X</code>, then <code>Y</code>, then <code>Enter</code>).</p>
 <p><strong>macOS</strong></p>
 <ol style="list-style-type: decimal">
 <li>Install Command Line Tools:</li>
@@ -105,12 +129,65 @@
 <li>Alternatively, install gcc via Homebrew:</li>
 </ol>
 <pre><code>brew install gcc</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Install LLVM via Homebrew:</li>
+</ol>
+<pre><code>brew install llvm</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>Set up compiler paths:</li>
+</ol>
+<p>For Zsh (default on macOS):</p>
+<pre><code>echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' &gt;&gt; ~/.zshrc
+echo 'export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"' &gt;&gt; ~/.zshrc
+echo 'export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"' &gt;&gt; ~/.zshrc
+source ~/.zshrc</code></pre>
+<p>For Bash:</p>
+<pre><code>echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' &gt;&gt; ~/.bashrc
+echo 'export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"' &gt;&gt; ~/.bashrc
+echo 'export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"' &gt;&gt; ~/.bashrc
+source ~/.bashrc</code></pre>
+<ol start="5" style="list-style-type: decimal">
+<li>Verify the correct compiler is now being used:</li>
+</ol>
+<pre><code><span><span class="va">clang</span><span class="op">+</span><span class="op">+</span> <span class="op">-</span><span class="op">-</span><span class="va">version</span></span></code></pre>
+<p>It should output Homebrew Clang (e.g., <code>Homebrew clang version XXXXX</code>).</p>
+<ol start="6" style="list-style-type: decimal">
+<li>Configure R to use LLVM: Modify your <code>~/.R/Makevars</code> file:</li>
+</ol>
+<pre><code>
+nano ~/.R/Makevars</code></pre>
+<p>Add the following lines:</p>
+<pre><code>CXX=/opt/homebrew/opt/llvm/bin/clang++
+CXX11=/opt/homebrew/opt/llvm/bin/clang++
+CXX14=/opt/homebrew/opt/llvm/bin/clang++
+CXX17=/opt/homebrew/opt/llvm/bin/clang++
+CXX20=/opt/homebrew/opt/llvm/bin/clang++</code></pre>
+<p>Save and exit (<code>CTRL+X</code>, then <code>Y</code>, then <code>Enter</code>).</p>
 <p><strong>Linux (Ubuntu/Debian)</strong></p>
 <ol style="list-style-type: decimal">
 <li>Update your system and install necessary packages:</li>
 </ol>
 <pre><code>sudo apt-get update
 sudo apt-get install build-essential libxml2-dev</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Ensure you have GCC installed:</li>
+</ol>
+<pre><code>sudo apt-get install g++</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Install Clang (optional, if required for TMB compilation):</li>
+</ol>
+<pre><code>sudo apt-get install clang</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>Verify compiler setup:</li>
+</ol>
+<pre><code><span><span class="va">g</span><span class="op">+</span><span class="op">+</span> <span class="op">-</span><span class="op">-</span><span class="va">version</span></span>
+<span><span class="va">clang</span><span class="op">+</span><span class="op">+</span> <span class="op">-</span><span class="op">-</span><span class="va">version</span></span></code></pre>
+</div>
+<div class="section level4">
+<h4 id="install-and-compile-tmb">Install and Compile TMB<a class="anchor" aria-label="anchor" href="#install-and-compile-tmb"></a>
+</h4>
+<p>Restart R and install TMB:</p>
+<pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"TMB"</span>, type <span class="op">=</span> <span class="st">"source"</span><span class="op">)</span></span></code></pre>
 </div>
 </div>
 <div class="section level3">
@@ -118,14 +195,14 @@ sudo apt-get install build-essential libxml2-dev</code></pre>
 </h3>
 <p>Once the setup is complete, follow the instructions below to download <strong>AgePopDenom</strong></p>
 <p>Note: <strong>AgePopDenom</strong> is currently under development. Once it is available on CRAN, you will be able to install it using the following command:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("AgePopDenom")</span></span></code></pre></div>
 <p>To get the development version from GitHub, use:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"truenomad/AgePopDenom"</span><span class="op">)</span></span></code></pre></div>
 <p>Then load it in R:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://truenomad.github.io/AgePopDenom/">AgePopDenom</a></span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
@@ -135,12 +212,12 @@ sudo apt-get install build-essential libxml2-dev</code></pre>
 <ol style="list-style-type: decimal">
 <li>Initialize project structure:</li>
 </ol>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/init.html">init</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <ol start="2" style="list-style-type: decimal">
 <li>Download required data:</li>
 </ol>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Example for Kenya and Uganda</span></span>
 <span><span class="va">countries</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"KEN"</span>, <span class="st">"UGA"</span><span class="op">)</span></span>
 <span></span>
@@ -163,7 +240,7 @@ sudo apt-get install build-essential libxml2-dev</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Run full analysis:</li>
 </ol>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/run_full_workflow.html">run_full_workflow</a></span><span class="op">(</span><span class="va">countries</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>

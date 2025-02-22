@@ -28,8 +28,12 @@ This function converts spatial data with x, y coordinates and a value field
 into a raster using a specified resolution and CRS.
 }
 \examples{
-# rast <- rasterize_data(
-#   predictor_data$web_x, predictor_data$web_y, pred_list$shape_hat,
-#   cell_size = 5000, crs = "EPSG:3857"
-# )
+\dontrun{
+# Not run to avoid lengthy data downloads, processing and modelling
+# in examples
+rast <- rasterize_data(
+   predictor_data$web_x, predictor_data$web_y, pred_list$shape_hat,
+   cell_size = 5000, crs = "EPSG:3857"
+ )
+ }
 }

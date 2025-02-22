@@ -40,10 +40,11 @@ The function generates the following folder structure:
 }
 }
 \examples{
+\dontrun{
+# Not run to avoid amending user environment
 # Create the project folder structure in the current directory
-# create_project_structure()
-
-# Create the folder structure in a specific directory
-# create_project_structure(base_path = "~/my_project")
-
+tf <- file.path(tempdir(), "test_env")
+dir.create(tf, recursive = TRUE, showWarnings = FALSE)
+create_project_structure(base_path = tf)
+}
 }

@@ -27,8 +27,13 @@ details, combines the results into a data frame, and optionally saves
 the output to a file.
 }
 \examples{
-# params_df <- extract_age_param(
-#  dir_path = "03_outputs/3a_model_outputs",
-#  output_file = "03_outputs/age_parameters.csv"
-# )
+\dontrun{
+# Not run to avoid lengthy data downloads, processing and modelling
+# in examples
+params_df <- extract_age_param(
+  dir_path = "03_outputs/3a_model_outputs",
+  output_file = "03_outputs/age_parameters.csv"
+ )
+}
+
 }

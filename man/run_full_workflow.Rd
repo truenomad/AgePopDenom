@@ -158,7 +158,8 @@ with minimal adjustments.
 }
 \examples{
 \dontrun{
-# Run model for Tanzania with default parameters
+# Not run to avoid lengthy data downloads, processing and modelling
+# in examples
 results <- run_full_workflow(country_code = "TZA")
 
 # Run with custom parameters

@@ -30,8 +30,11 @@ This function extracts the `afurextent.asc` file from the package's
 requires the `raster` package to load the raster file.
 }
 \examples{
+\dontrun{
+# Not run to avoid lengthy data downloads, processing and modelling
+# in examples
 # Extract the raster to a temporary directory
-# raster_path <- extract_afurextent(tempdir(), overwrite = TRUE)
-# print(raster_path)
-
+raster_path <- extract_afurextent(tempdir(), overwrite = TRUE)
+print(raster_path)
+}
 }

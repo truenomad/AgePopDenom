@@ -50,11 +50,15 @@ This function creates rasters from prediction data, combines them into a
 stack, and saves the faceted plot to a specified file.
 }
 \examples{
-# raster_path <- generate_gamma_raster_plot(
-#   predictor_data = predictor_data,
-#   pred_list = pred_list,
-#   country_code = "ken",
-#   output_dir = "03_outputs/3b_visualizations"
-# )
+\dontrun{
+# Not run to avoid lengthy data downloads, processing and modelling
+# in examples
+raster_path <- generate_gamma_raster_plot(
+   predictor_data = predictor_data,
+   pred_list = pred_list,
+   country_code = "ken",
+   output_dir = "03_outputs/3b_visualizations"
+ )
+}
 
 }

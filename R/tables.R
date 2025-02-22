@@ -300,10 +300,15 @@ generate_age_pop_table <- function(predictor_data,
 #'   location with six sheets containing population counts and proportions at
 #'   different administrative levels.
 #' @examples
-#' # process_final_population_data(
-#' #   input_dir = "03_outputs/3c_table_outputs",
-#' #   excel_output_file = "03_outputs/afro_population_2020.xlsx"
-#' # )
+#' \dontrun{
+#' # Not run to avoid lengthy data downloads, processing and modelling
+#' # in examples
+#' process_final_population_data(
+#'    input_dir = "03_outputs/3c_table_outputs",
+#'    excel_output_file = "03_outputs/afro_population_2020.xlsx"
+#'  )
+#'  }
+#'
 #' @export
 process_final_population_data <- function(
     input_dir = here::here("03_outputs", "3c_table_outputs"),
@@ -440,10 +445,15 @@ process_final_population_data <- function(
 #' @return A data frame with the extracted parameters, log-likelihood,
 #'         and optimization details.
 #' @examples
-#' # params_df <- extract_age_param(
-#' #  dir_path = "03_outputs/3a_model_outputs",
-#' #  output_file = "03_outputs/age_parameters.csv"
-#' # )
+#' \dontrun{
+#' # Not run to avoid lengthy data downloads, processing and modelling
+#' # in examples
+#' params_df <- extract_age_param(
+#'   dir_path = "03_outputs/3a_model_outputs",
+#'   output_file = "03_outputs/age_parameters.csv"
+#'  )
+#' }
+#'
 #' @export
 extract_age_param <- function(
     dir_path = here::here("03_outputs", "3a_model_outputs"),

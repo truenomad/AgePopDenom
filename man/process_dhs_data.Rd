@@ -45,6 +45,8 @@ The final output includes two datasets:
 }
 \examples{
 \dontrun{
+# Not run to avoid lengthy data downloads, processing and modelling
+# in examples
 process_dhs_data(
   rds_dir = "01_data/1a_survey_data/raw/pr_records",
   shp_dir = "01_data/1a_survey_data/raw/shapefiles/",

@@ -318,6 +318,8 @@ aggregate_and_extract_gamma <- function(data,
 #'
 #' @examples
 #' \dontrun{
+#' # Not run to avoid lengthy data downloads, processing and modelling
+#' # in examples
 #' process_dhs_data(
 #'   rds_dir = "01_data/1a_survey_data/raw/pr_records",
 #'   shp_dir = "01_data/1a_survey_data/raw/shapefiles/",
@@ -527,7 +529,11 @@ process_dhs_data <- function(
 #'  (or NA if not found).
 #'
 #' @examples
-#'# download_pop_rasters(c("DZA", "KEN"))
+#' \dontrun{
+#' # Not run to avoid lengthy data downloads, processing and modelling
+#' # in examples
+#' download_pop_rasters(c("DZA", "KEN"))
+#' }
 #' @export
 download_pop_rasters <- function(
     country_codes,
@@ -638,10 +644,13 @@ download_pop_rasters <- function(
 #' requires the `raster` package to load the raster file.
 #'
 #' @examples
+#' \dontrun{
+#' # Not run to avoid lengthy data downloads, processing and modelling
+#' # in examples
 #' # Extract the raster to a temporary directory
-#' # raster_path <- extract_afurextent(tempdir(), overwrite = TRUE)
-#' # print(raster_path)
-#'
+#' raster_path <- extract_afurextent(tempdir(), overwrite = TRUE)
+#' print(raster_path)
+#' }
 #' @export
 extract_afurextent <- function(
     dest_dir = here::here("01_data", "1b_rasters", "urban_extent"),

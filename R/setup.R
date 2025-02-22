@@ -41,8 +41,8 @@ install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
     "sp", "automap", "knitr", "rmarkdown", "mockery"
   )
 
-  missing_pkgs <- suggested_pkgs[!(
-    suggested_pkgs %in% utils::installed.packages()[, "Package"])]
+  missing_pkgs <- suggested_pkgs[!sapply(
+    suggested_pkgs, requireNamespace, quietly = TRUE)]
 
   if (length(missing_pkgs) > 0) {
     cli::cli_h2("Package Installation Required")
@@ -125,12 +125,13 @@ install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
 #' }
 #'
 #' @examples
+#' \dontrun{
+#' # Not run to avoid amending user environment
 #' # Create the project folder structure in the current directory
-#' # create_project_structure()
-#'
-#' # Create the folder structure in a specific directory
-#' # create_project_structure(base_path = "~/my_project")
-#'
+#' tf <- file.path(tempdir(), "test_env")
+#' dir.create(tf, recursive = TRUE, showWarnings = FALSE)
+#' create_project_structure(base_path = tf)
+#'}
 #' @export
 create_project_structure <- function(base_path = here::here()) {
 
@@ -192,15 +193,17 @@ create_project_structure <- function(base_path = here::here()) {
 #'
 #' @examples
 #' \dontrun{
+#' # Not run to avoid amending user environment
+#' tf <- file.path(tempdir(), "test_env")
+#' dir.create(tf, recursive = TRUE, showWarnings = FALSE)
 #' # Create scripts in current directory
-#' init()
+#' init(path = tf)
 #'
 #' # Create scripts in custom directory with specific names
 #' init(r_script_name = "my_pipeline.R",
 #'      cpp_script_name = "my_model.cpp",
-#'      path = "project_dir")
-#' }
-#'
+#'      path = tf)
+#'}
 #' @export
 init <- function(r_script_name = "full_pipeline.R",
                  cpp_script_name = "model.cpp",

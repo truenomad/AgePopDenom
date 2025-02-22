@@ -83,7 +83,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Basic usage with caching
+#' # Not run to avoid lengthy data downloads and processing in examples
 #' fit <- fit_spatial_model(
 #'   data = my_data,
 #'   scale_outcome = "log_scale",
@@ -518,6 +518,7 @@ extract_betas <- function(params_result,
 #'
 #' @examples
 #' \dontrun{
+#' # Not run to avoid lengthy data downloads in examples
 #' predictors <- create_prediction_data(
 #'   country_code = "KEN",
 #'   country_shape = country_sf,
@@ -918,10 +919,13 @@ generate_gamma_predictions <- function(country_code,
 #'   - `shape_hat`: A vector of mean shape parameters.
 #'
 #' @examples
-#' # results <- process_gamma_predictions(
-#' #            gamma_prediction = gamma_prediction)
-#' # print(results$mean_age_pred)
-#'
+#' \dontrun{
+#' # Not run to avoid lengthy data downloads, processing and modelling
+#' # in examples
+#'  results <- process_gamma_predictions(
+#'           gamma_prediction = gamma_prediction)
+#' print(results$mean_age_pred)
+#' }
 #' @export
 process_gamma_predictions <- function(gamma_prediction) {
   # Extract scale and shape predictions
@@ -1046,7 +1050,8 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'
 #' @examples
 #' \dontrun{
-#' # Run model for Tanzania with default parameters
+#' # Not run to avoid lengthy data downloads, processing and modelling
+#' # in examples
 #' results <- run_full_workflow(country_code = "TZA")
 #'
 #' # Run with custom parameters

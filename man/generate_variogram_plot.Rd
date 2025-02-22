@@ -68,6 +68,9 @@ The output filename is constructed as lowercase country
 }
 \examples{
 \dontrun{
+# Not run to avoid lengthy data downloads, processing and modelling
+# in examples
+
 # Generate variogram plot for Tanzania
 vario_plot <- generate_variogram_plot(
   age_param_data = my_data,

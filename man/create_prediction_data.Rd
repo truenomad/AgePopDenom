@@ -48,6 +48,7 @@ specified directory for reuse and provides progress updates.
 }
 \examples{
 \dontrun{
+# Not run to avoid lengthy data downloads in examples
 predictors <- create_prediction_data(
   country_code = "KEN",
   country_shape = country_sf,

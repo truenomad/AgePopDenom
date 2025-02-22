@@ -30,8 +30,13 @@ administrative levels (Country, Region, District), and writes the results to
 an Excel file with separate sheets for each level and metric.
 }
 \examples{
-# process_final_population_data(
-#   input_dir = "03_outputs/3c_table_outputs",
-#   excel_output_file = "03_outputs/afro_population_2020.xlsx"
-# )
+\dontrun{
+# Not run to avoid lengthy data downloads, processing and modelling
+# in examples
+process_final_population_data(
+   input_dir = "03_outputs/3c_table_outputs",
+   excel_output_file = "03_outputs/afro_population_2020.xlsx"
+ )
+ }
+
 }

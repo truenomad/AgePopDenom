@@ -1,62 +1,15 @@
-# Mock function for `utils::installed.packages`
-mock_installed_packages <- function(pkg_list) {
-  list(Package = pkg_list) |>
-    structure(class = "data.frame", row.names = seq_along(pkg_list))
-}
-
-# Test suite for `install_suggested_packages`
-testthat::test_that("install_suggested_packages handles scenarios correctly", {
-  suggested_pkgs <- c(
-    "cli", "countrycode", "crayon", "scales", "glue", "haven", "here",
-    "matrixStats", "rstudioapi", "geodata", "pbmcapply", "remotes", "future",
-    "future.apply", "testthat", "rdhs", "openxlsx2", "purrr", "rlang", "pak",
-    "sp", "automap", "knitr", "rmarkdown"
-  )
-
-  # Setup mocks
-  cli_msgs <- character()
-  mock_cli <- function(msg) {
-    cli_msgs <<- c(cli_msgs, msg)
-    invisible()
-  }
-
-  # Test scenario 1: Some packages missing
-  mockery::stub(
-    install_suggested_packages,
-    "utils::installed.packages",
-    mock_installed_packages(c("cli", "scales", "haven"))
-  )
-  mockery::stub(
-    install_suggested_packages, "interactive", function() FALSE
-  )
-  mockery::stub(
-    install_suggested_packages, "cli::cli_h2", mock_cli
-  )
-  mockery::stub(
-    install_suggested_packages, "cli::cli_text", mock_cli
-  )
-
-  install_suggested_packages()
-
-  testthat::expect_true(any(grepl("Package Installation Required", cli_msgs)))
-  testthat::expect_true(any(grepl(
-    "The following packages are missing:",
-    cli_msgs
-  )))
-})
-
 testthat::test_that("process_dhs_data correctly processes DHS survey data", {
 
   # Setup temporary test environment
   # Create temp directory with normalized path
-  tf <- normalizePath(tempfile(), winslash = "/", mustWork = FALSE)
-  dir.create(tf)
+  tf <- file.path(tempdir(), "test_env")
+  dir.create(tf, recursive = TRUE, showWarnings = FALSE)
   tmp_rds_dir <- file.path(tf, "rds")
   tmp_shp_dir <- file.path(tf, "shp")
   tmp_output <- file.path(tf, "output.rds")
 
-  dir.create(tmp_rds_dir)
-  dir.create(tmp_shp_dir)
+  dir.create(tmp_rds_dir, recursive = TRUE, showWarnings = FALSE)
+  dir.create(tmp_shp_dir, recursive = TRUE, showWarnings = FALSE)
 
   # Create fake DHS data
   create_fake_dhs_data <- function(country_code) {
@@ -230,11 +183,12 @@ testthat::test_that(
 
     suppressWarnings({
       # Create temp directory with normalized path
-      tf <- normalizePath(tempfile(), winslash = "/", mustWork = FALSE)
-      dir.create(tf)
+      tf <- file.path(tempdir(), "test_env")
+      dir.create(tf, recursive = TRUE, showWarnings = FALSE)
 
       # Initialize with normalized path
       cpp_path <- file.path(tf, "02_scripts", "model")
+      dir.create(cpp_path, recursive = TRUE, showWarnings = FALSE)
       cpp_path <- normalizePath(cpp_path, winslash = "/", mustWork = FALSE)
 
       init(

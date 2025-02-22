@@ -43,6 +43,9 @@
 #'
 #' @examples
 #' \dontrun{
+#' # Not run to avoid lengthy data downloads, processing and modelling
+#' # in examples
+#'
 #' # Generate variogram plot for Tanzania
 #' vario_plot <- generate_variogram_plot(
 #'   age_param_data = my_data,
@@ -136,10 +139,14 @@ generate_variogram_plot <- function(age_param_data, fit_vario, country_code,
 #'
 #' @return A `terra::SpatRaster` object.
 #' @examples
-#' # rast <- rasterize_data(
-#' #   predictor_data$web_x, predictor_data$web_y, pred_list$shape_hat,
-#' #   cell_size = 5000, crs = "EPSG:3857"
-#' # )
+#' \dontrun{
+#' # Not run to avoid lengthy data downloads, processing and modelling
+#' # in examples
+#' rast <- rasterize_data(
+#'    predictor_data$web_x, predictor_data$web_y, pred_list$shape_hat,
+#'    cell_size = 5000, crs = "EPSG:3857"
+#'  )
+#'  }
 #' @export
 rasterize_data <- function(x_coords, y_coords, values,
                            cell_size = 5000, crs, fun = mean) {
@@ -182,12 +189,16 @@ rasterize_data <- function(x_coords, y_coords, values,
 #' @return The path to the saved raster plot.
 #'
 #' @examples
-#' # raster_path <- generate_gamma_raster_plot(
-#' #   predictor_data = predictor_data,
-#' #   pred_list = pred_list,
-#' #   country_code = "ken",
-#' #   output_dir = "03_outputs/3b_visualizations"
-#' # )
+#' \dontrun{
+#' # Not run to avoid lengthy data downloads, processing and modelling
+#' # in examples
+#' raster_path <- generate_gamma_raster_plot(
+#'    predictor_data = predictor_data,
+#'    pred_list = pred_list,
+#'    country_code = "ken",
+#'    output_dir = "03_outputs/3b_visualizations"
+#'  )
+#' }
 #'
 #' @export
 generate_gamma_raster_plot <- function(predictor_data,
@@ -246,6 +257,10 @@ generate_gamma_raster_plot <- function(predictor_data,
     # Save the plot
     png(output_file, width = width, height = height, res = png_resolution)
 
+    # ave the current graphical parameters and restore them on exit
+    oldpar <- graphics::par(no.readonly = TRUE)
+    on.exit(graphics::par(oldpar), add = TRUE)
+
     # Adjust layout and spacing
     graphics::par(
       mfrow = c(2, 2), # Arrange plots in 2 rows and 2 columns
@@ -262,8 +277,8 @@ generate_gamma_raster_plot <- function(predictor_data,
       main = "Shape Parameter", cex.main = 1.2,
       cex.axis = 0.8, cex.lab = 1.2
     )
-    # Skip the third position (top right) by plotting in fourth position
-    graphics::par(mfg = c(2, 1)) # Move to bottom left position
+
+    graphics::par(mfg = c(2, 1))
     terra::plot(rast_mean_age,
       main = "Mean Age Prediction", cex.main = 1.2,
       cex.axis = 0.8, cex.lab = 1.2
@@ -301,11 +316,15 @@ generate_gamma_raster_plot <- function(predictor_data,
 #' @return A list containing both proportion and count plots.
 #'
 #' @examples
-#' # generate_age_pyramid_plot(
-#' #  dataset = list(prop_df = prop_results, pop_df = pop_results),
-#' #  country_code = "ken",
-#' #  output_dir = "03_outputs/3b_figures"
-#' # )
+#' \dontrun{
+#' # Not run to avoid lengthy data downloads, processing and modelling
+#' # in examples
+#'  generate_age_pyramid_plot(
+#'   dataset = list(prop_df = prop_results, pop_df = pop_results),
+#'   country_code = "ken",
+#'   output_dir = "03_outputs/3b_figures"
+#'  )
+#' }
 #'
 #' @export
 generate_age_pyramid_plot <- function(

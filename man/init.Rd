@@ -45,13 +45,15 @@ shapefiles, and running models.
 }
 \examples{
 \dontrun{
+# Not run to avoid amending user environment
+tf <- file.path(tempdir(), "test_env")
+dir.create(tf, recursive = TRUE, showWarnings = FALSE)
 # Create scripts in current directory
-init()
+init(path = tf)
 
 # Create scripts in custom directory with specific names
 init(r_script_name = "my_pipeline.R",
      cpp_script_name = "my_model.cpp",
-     path = "project_dir")
+     path = tf)
 }
-
 }

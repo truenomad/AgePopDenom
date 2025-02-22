@@ -36,5 +36,9 @@ location provides the file, it returns NA and prompts you to check the
 WorldPop website directly.
 }
 \examples{
-# download_pop_rasters(c("DZA", "KEN"))
+\dontrun{
+# Not run to avoid lengthy data downloads, processing and modelling
+# in examples
+download_pop_rasters(c("DZA", "KEN"))
+}
 }

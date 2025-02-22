@@ -51,10 +51,14 @@ generates age pyramid plots by region showing both proportions and counts,
 and saves the plots to a specified directory.
 }
 \examples{
-# generate_age_pyramid_plot(
-#  dataset = list(prop_df = prop_results, pop_df = pop_results),
-#  country_code = "ken",
-#  output_dir = "03_outputs/3b_figures"
-# )
+\dontrun{
+# Not run to avoid lengthy data downloads, processing and modelling
+# in examples
+ generate_age_pyramid_plot(
+  dataset = list(prop_df = prop_results, pop_df = pop_results),
+  country_code = "ken",
+  output_dir = "03_outputs/3b_figures"
+ )
+}
 
 }

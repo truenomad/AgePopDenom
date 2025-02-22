@@ -113,7 +113,7 @@ fitting.
 }
 \examples{
 \dontrun{
-# Basic usage with caching
+# Not run to avoid lengthy data downloads and processing in examples
 fit <- fit_spatial_model(
   data = my_data,
   scale_outcome = "log_scale",

@@ -42,17 +42,26 @@
 #'   code + "_variogram.png"
 #'
 #' @examples
-#' \dontrun{
-#' # Not run to avoid lengthy data downloads, processing and modelling
-#' # in examples
-#'
-#' # Generate variogram plot for Tanzania
-#' vario_plot <- generate_variogram_plot(
-#'   age_param_data = my_data,
-#'   fit_vario = fitted_variogram,
-#'   country_code = "TZA",
-#'   output_dir = "path/to/output"
+#' \donttest{
+#' set.seed(123)  # For reproducibility
+#' age_param_data <- data.frame(
+#'   country = rep("TZA", 100),
+#'   web_x = runif(100, 0, 100),
+#'   web_y = runif(100, 0, 100),
+#'   log_scale = rnorm(100, mean = 5, sd = 2)
 #' )
+#'
+#' # Create a dummy fitted variogram object
+#' fit_vario <- list(
+#'   psill = c(0.1, 0.5),
+#'   range = c(0, 50)
+#' )
+#'
+#' vario_plot <- generate_variogram_plot(
+#'    age_param_data = age_param_data,
+#'    fit_vario = fit_vario,
+#'    country_code = "TZA",
+#'    output_dir = file.path(tempdir()))
 #' }
 #'
 #' @export
@@ -139,14 +148,16 @@ generate_variogram_plot <- function(age_param_data, fit_vario, country_code,
 #'
 #' @return A `terra::SpatRaster` object.
 #' @examples
-#' \dontrun{
-#' # Not run to avoid lengthy data downloads, processing and modelling
-#' # in examples
-#' rast <- rasterize_data(
-#'    predictor_data$web_x, predictor_data$web_y, pred_list$shape_hat,
-#'    cell_size = 5000, crs = "EPSG:3857"
-#'  )
-#'  }
+#'
+#' \donttest{
+#' x_coords <- runif(100, -100, 100)
+#' y_coords <- runif(100, -50, 50)
+#' values <- rnorm(100, mean = 10, sd = 5)
+#'
+#' rasterize_data(x_coords, y_coords, values,
+#'                cell_size = 5000, crs = "EPSG:3857", fun = mean)
+#' }
+#'
 #' @export
 rasterize_data <- function(x_coords, y_coords, values,
                            cell_size = 5000, crs, fun = mean) {
@@ -189,15 +200,23 @@ rasterize_data <- function(x_coords, y_coords, values,
 #' @return The path to the saved raster plot.
 #'
 #' @examples
-#' \dontrun{
-#' # Not run to avoid lengthy data downloads, processing and modelling
-#' # in examples
-#' raster_path <- generate_gamma_raster_plot(
-#'    predictor_data = predictor_data,
-#'    pred_list = pred_list,
-#'    country_code = "ken",
-#'    output_dir = "03_outputs/3b_visualizations"
-#'  )
+#'
+#' \donttest{
+#' predictor_data <- data.frame(
+#'   web_x = runif(100, -100, 100),
+#'   web_y = runif(100, -50, 50)
+#' )
+#'
+#' pred_list <- list(
+#'   shape_hat = rnorm(100, mean = 2, sd = 0.5),
+#'   scale_hat = rnorm(100, mean = 10, sd = 2),
+#'   mean_age_pred = rnorm(100, mean = 30, sd = 5)
+#' )
+#'
+#' generate_gamma_raster_plot(predictor_data,
+#'                            pred_list,
+#'                            country_code = "COD",
+#'                            output_dir = file.path(tempdir()))
 #' }
 #'
 #' @export
@@ -206,7 +225,8 @@ generate_gamma_raster_plot <- function(predictor_data,
                                        country_code,
                                        output_dir,
                                        save_raster = TRUE,
-                                       file_name_suffix = "gamma_prediction_rasters",
+                                       file_name_suffix =
+                                         "gamma_prediction_rasters",
                                        width = 2500,
                                        height = 2000,
                                        png_resolution = 300) {
@@ -316,15 +336,35 @@ generate_gamma_raster_plot <- function(predictor_data,
 #' @return A list containing both proportion and count plots.
 #'
 #' @examples
-#' \dontrun{
-#' # Not run to avoid lengthy data downloads, processing and modelling
-#' # in examples
-#'  generate_age_pyramid_plot(
-#'   dataset = list(prop_df = prop_results, pop_df = pop_results),
-#'   country_code = "ken",
-#'   output_dir = "03_outputs/3b_figures"
-#'  )
-#' }
+#' \donttest{
+#' set.seed(123)
+#' prop_df <- data.frame(
+#'  country = rep("COD", 10),
+#'  region = rep("RegionA", 10),
+#'  district = paste("District", 1:10),
+#'  popsize = runif(10, 2340, 28761),
+#'  `0-4_mean` = runif(10, 0.1, 0.5),
+#'  `5-9_mean` = runif(10, 0.05, 0.4),
+#'  `10-14_mean` = runif(10, 0.03, 0.3)
+#')
+#'
+#'pop_df <- data.frame(
+#'  country = rep("COD", 10),
+#'  region = rep("RegionA", 10),
+#'  district = paste("District", 1:10),
+#'  popsize = runif(10, 2340, 28761),
+#'  `0-4_mean` = runif(10, 1000, 5000),
+#'  `5-9_mean` = runif(10, 800, 4500),
+#'  `10-14_mean` = runif(10, 700, 4000)
+#')
+#'
+#' dataset <- list(prop_df = prop_df, pop_df = pop_df)
+#'
+#'res <- generate_age_pyramid_plot(
+#'          dataset = dataset,
+#'          country_code = "COD",
+#'          output_dir = file.path(tempdir()))
+#'}
 #'
 #' @export
 generate_age_pyramid_plot <- function(
@@ -548,6 +588,28 @@ generate_age_pyramid_plot <- function(
 #' proportions using parallel processing. Results are cached as a GeoTIFF file
 #' for future use. The output raster maintains spatial properties of the input
 #' data and is suitable for GIS analysis and visualization.
+#'
+#' @examples
+#' \donttest{
+#' predictor_data <- data.frame(
+#'  country = rep("CountryX", 100),
+#'  region = rep("RegionA", 100),
+#'  district = rep("District1", 100),
+#'  pop = sample(100:1000, 100, replace = TRUE),
+#'  web_x = runif(100, -100, 100),
+#'  web_y = runif(100, -50, 50)
+#')
+#'
+#' scale_pred <- matrix(runif(100 * 10, 1, 5), nrow = 100, ncol = 10)
+#' shape_pred <- matrix(runif(100 * 10, 1, 5), nrow = 100, ncol = 10)
+#'
+#'res <- generate_age_pop_raster(predictor_data,
+#'                        scale_pred,
+#'                        shape_pred,
+#'                        country_code = "COD",
+#'                        output_dir = file.path(tempdir()),
+#'                        n_cores = 1)
+#'}
 #'
 #' @export
 generate_age_pop_raster <- function(predictor_data,

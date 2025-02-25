@@ -40,11 +40,16 @@ The function generates the following folder structure:
 }
 }
 \examples{
-\dontrun{
-# Not run to avoid amending user environment
-# Create the project folder structure in the current directory
+\donttest{
+# Create temp directory with normalized path
 tf <- file.path(tempdir(), "test_env")
 dir.create(tf, recursive = TRUE, showWarnings = FALSE)
+
+#  Initialize with normalized path
+cpp_path <- file.path(tf, "02_scripts", "model")
+dir.create(cpp_path, recursive = TRUE, showWarnings = FALSE)
+cpp_path <- normalizePath(cpp_path, winslash = "/", mustWork = FALSE)
+
 create_project_structure(base_path = tf)
 }
 }

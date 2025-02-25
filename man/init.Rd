@@ -44,16 +44,21 @@ The scripts contain example code for downloading and processing DHS data,
 shapefiles, and running models.
 }
 \examples{
-\dontrun{
-# Not run to avoid amending user environment
+\donttest{
+# Create temp directory with normalized path
 tf <- file.path(tempdir(), "test_env")
 dir.create(tf, recursive = TRUE, showWarnings = FALSE)
-# Create scripts in current directory
-init(path = tf)
 
-# Create scripts in custom directory with specific names
-init(r_script_name = "my_pipeline.R",
-     cpp_script_name = "my_model.cpp",
-     path = tf)
+#  Initialize with normalized path
+cpp_path <- file.path(tf, "02_scripts", "model")
+dir.create(cpp_path, recursive = TRUE, showWarnings = FALSE)
+cpp_path <- normalizePath(cpp_path, winslash = "/", mustWork = FALSE)
+
+init(
+r_script_name = "full_pipeline.R",
+cpp_script_name = "model.cpp",
+path = tf,
+open_r_script = FALSE
+)
 }
 }

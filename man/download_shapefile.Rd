@@ -26,3 +26,16 @@ boundaries for all requested ISO3 codes (`country_codes`). It dynamically
 Downloades only the missing codes and appends them to the file, ensuring no
 duplication.
 }
+\examples{
+
+\donttest{
+
+tf <- file.path(tempdir(), "test_env")
+
+# Download population rasters from worldpop
+download_shapefile(
+  country_codes = "COM",
+  dest_file = here::here(tf, "district_shape.gpkg")
+)
+}
+}

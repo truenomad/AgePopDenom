@@ -47,16 +47,66 @@ predictors data if the file already exists. It saves the generated data to a
 specified directory for reuse and provides progress updates.
 }
 \examples{
-\dontrun{
-# Not run to avoid lengthy data downloads in examples
+\donttest{
+tf <- file.path(tempdir(), "test_env")
+
+# Initialize with normalized path
+dir.create(tf, recursive = TRUE, showWarnings = FALSE)
+
+init(
+  r_script_name = "full_pipeline.R",
+  cpp_script_name = "model.cpp",
+  path = tf,
+  open_r_script = FALSE
+)
+
+# Download shapefiles
+download_shapefile(
+  country_codes =  "COM",
+  dest_file = file.path(
+    tf, "01_data", "1c_shapefiles",
+    "district_shape.gpkg"
+  )
+)
+
+# Download population rasters from worldpop
+download_pop_rasters(
+  country_codes = "COM",
+  dest_dir = file.path(tf, "01_data", "1b_rasters", "pop_raster")
+)
+
+# Extract urban extent raster
+extract_afurextent(
+  dest_dir = file.path(tf, "01_data", "1b_rasters", "urban_extent")
+)
+
+
+urban_raster <-  terra::rast(
+  file.path(tf, "01_data", "1b_rasters",
+            "urban_extent", "afurextent.asc"))
+
+pop_raster <-  terra::rast(
+  file.path(tf, "01_data", "1b_rasters", "pop_raster",
+            "com_ppp_2020_constrained.tif")
+
+)
+
+adm2_sf <- sf::read_sf(
+ file.path(tf, "01_data", "1c_shapefiles",
+            "district_shape.gpkg"))
+
+country_sf <- sf::st_union(adm2_sf)
+
 predictors <- create_prediction_data(
-  country_code = "KEN",
+  country_code =  "COM",
   country_shape = country_sf,
   pop_raster = pop_raster,
   ur_raster = urban_raster,
   adm2_shape = adm2_sf,
   cell_size = 5000,
-  output_dir = "03_outputs/3a_model_outputs"
+  output_dir = file.path(
+    tf, "03_outputs/3a_model_outputs"
+  )
 )
 }
 

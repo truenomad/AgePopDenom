@@ -84,6 +84,24 @@ run_parallel_other <- function(n_sim, scale_pred, shape_pred, runnum, n_cores) {
 #'    - prop_df: Age-stratified population proportions with uncertainty intervals
 #'    - pop_df: Age-stratified population counts with uncertainty intervals
 #'
+#' @examples
+#'
+#' \donttest{
+#' predictor_data <- data.frame(
+#'  country = rep("ABC", 1100),
+#'   region = rep("Region1", 1100),
+#'   district = rep("District1", 1100),
+#'   pop = rep(1000, 1100)
+#' )
+#' scale_pred <- matrix(rep(1:10, 1100), nrow = 1100, ncol = 10)
+#' shape_pred <- matrix(rep(1:10, 1100), nrow = 1100, ncol = 10)
+#' output <- generate_age_pop_table(
+#'   predictor_data, scale_pred, shape_pred, age_range = c(0, 99),
+#'   age_interval = 10, country_code = "ABC", ignore_cache = TRUE,
+#'   output_dir = tempdir(), n_cores = 1
+#' )
+#' }
+#'
 #' @export
 generate_age_pop_table <- function(predictor_data,
                                    scale_pred,
@@ -299,15 +317,6 @@ generate_age_pop_table <- function(predictor_data,
 #' @return None. The function writes an Excel file to the specified output
 #'   location with six sheets containing population counts and proportions at
 #'   different administrative levels.
-#' @examples
-#' \dontrun{
-#' # Not run to avoid lengthy data downloads, processing and modelling
-#' # in examples
-#' process_final_population_data(
-#'    input_dir = "03_outputs/3c_table_outputs",
-#'    excel_output_file = "03_outputs/afro_population_2020.xlsx"
-#'  )
-#'  }
 #'
 #' @export
 process_final_population_data <- function(
@@ -445,13 +454,25 @@ process_final_population_data <- function(
 #' @return A data frame with the extracted parameters, log-likelihood,
 #'         and optimization details.
 #' @examples
-#' \dontrun{
-#' # Not run to avoid lengthy data downloads, processing and modelling
-#' # in examples
-#' params_df <- extract_age_param(
-#'   dir_path = "03_outputs/3a_model_outputs",
-#'   output_file = "03_outputs/age_parameters.csv"
-#'  )
+#'
+#' \donttest{
+#' # Create temporary directory for dummy parameter files
+#' dummy_dir <- tempdir()
+#'
+#' dummy_params <- list(
+#'   par = c(0.5, 1.2, 0.8, log(2), log(3), log(4)),
+#'   objective = -123.45,
+#'   convergence = 0,
+#'   iterations = 10,
+#'   evaluations = c("function = 20, gradient = 15"),
+#'   message = "Converged"
+#' )
+#'
+#' saveRDS(dummy_params, file = file.path(dummy_dir,
+#'                                        "abc_age_param_spatial_urban.rds"))
+#'
+#' params_df <- extract_age_param(dir_path = dummy_dir,
+#'                                output_file = tempdir())
 #' }
 #'
 #' @export

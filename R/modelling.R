@@ -82,17 +82,64 @@
 #' fitting.
 #'
 #' @examples
-#' \dontrun{
-#' # Not run to avoid lengthy data downloads and processing in examples
-#' fit <- fit_spatial_model(
-#'   data = my_data,
+#'
+#' \donttest{
+#' set.seed(123)
+#' # Set parameters for simulation
+#' total_population <- 266
+#' urban_proportion <- 0.602
+#' total_coords <- 266
+#' lon_range <- c(-16.802, -13.849)
+#' lat_range <- c(13.149, 13.801)
+#' mean_web_x <- -1764351
+#' mean_web_y <- 1510868
+#'
+#' # Simulate processed survey dataset for Gambia
+#' df_gambia <- NULL
+#' df_gambia$age_param_data <- dplyr::tibble(
+#'   country = "Gambia",
+#'   country_code_iso3 = "GMB",
+#'   country_code_dhs = "GM",
+#'   year_of_survey = 2024,
+#'   id_coords = rep(1:total_coords, length.out = total_population),
+#'   lon = runif(total_population, lon_range[1], lon_range[2]),
+#'   lat = runif(total_population, lat_range[1], lat_range[2]),
+#'   web_x = rnorm(total_population, mean_web_x, 50000),
+#'   web_y = rnorm(total_population, mean_web_y, 50000),
+#'   log_scale = rnorm(total_population, 2.82, 0.2),
+#'   log_shape = rnorm(total_population, 0.331, 0.1),
+#'   urban = rep(c(1, 0), c(
+#'     round(total_population * urban_proportion),
+#'     total_population - round(total_population * urban_proportion)
+#'  )),
+#'  b1 = rnorm(total_population, 0.0142, 0.002),
+#'  c = rnorm(total_population, -0.00997, 0.001),
+#'   b2 = rnorm(total_population, 0.00997, 0.002),
+#'   nsampled = sample(180:220, total_population, replace = TRUE)
+#' )
+#'
+#'
+#' tf <- file.path(tempdir(), "test_env")
+#' dir.create(tf, recursive = TRUE, showWarnings = FALSE)
+#'
+#' #initialise files and key scripts
+#' init(
+#'   r_script_name = "full_pipeline.R",
+#'   cpp_script_name = "model.cpp",
+#'   path = tf,
+#'   open_r_script = FALSE
+#' )
+#'
+#' mod <- fit_spatial_model(
+#'   df_gambia$age_param_data,
 #'   scale_outcome = "log_scale",
 #'   shape_outcome = "log_shape",
-#'   covariates = c("elevation", "temperature", "urban"),
-#'   cpp_script_name = "02_scripts/model",
-#'   country_code = "KEN",
-#'   output_dir = "03_outputs/3a_model_outputs"
+#'   covariates = "urban",
+#'   cpp_script_name = file.path(tf, "02_scripts/model"),
+#'   country_code = "GMB",
+#'   output_dir = file.path(tf, "03_outputs/3a_model_outputs")
 #' )
+#'
 #' }
 #' @export
 fit_spatial_model <- function(data,
@@ -517,16 +564,66 @@ extract_betas <- function(params_result,
 #' @return A data object (`predictor_data`) containing the generated predictors.
 #'
 #' @examples
-#' \dontrun{
-#' # Not run to avoid lengthy data downloads in examples
+#' \donttest{
+#' tf <- file.path(tempdir(), "test_env")
+#'
+#' # Initialize with normalized path
+#' dir.create(tf, recursive = TRUE, showWarnings = FALSE)
+#'
+#' init(
+#'   r_script_name = "full_pipeline.R",
+#'   cpp_script_name = "model.cpp",
+#'   path = tf,
+#'   open_r_script = FALSE
+#' )
+#'
+#' # Download shapefiles
+#' download_shapefile(
+#'   country_codes =  "COM",
+#'   dest_file = file.path(
+#'     tf, "01_data", "1c_shapefiles",
+#'     "district_shape.gpkg"
+#'   )
+#' )
+#'
+#' # Download population rasters from worldpop
+#' download_pop_rasters(
+#'   country_codes = "COM",
+#'   dest_dir = file.path(tf, "01_data", "1b_rasters", "pop_raster")
+#' )
+#'
+#' # Extract urban extent raster
+#' extract_afurextent(
+#'   dest_dir = file.path(tf, "01_data", "1b_rasters", "urban_extent")
+#' )
+#'
+#'
+#' urban_raster <-  terra::rast(
+#'   file.path(tf, "01_data", "1b_rasters",
+#'             "urban_extent", "afurextent.asc"))
+#'
+#' pop_raster <-  terra::rast(
+#'   file.path(tf, "01_data", "1b_rasters", "pop_raster",
+#'             "com_ppp_2020_constrained.tif")
+#'
+#' )
+#'
+#' adm2_sf <- sf::read_sf(
+#'  file.path(tf, "01_data", "1c_shapefiles",
+#'             "district_shape.gpkg"))
+#'
+#' country_sf <- sf::st_union(adm2_sf)
+#'
 #' predictors <- create_prediction_data(
-#'   country_code = "KEN",
+#'   country_code =  "COM",
 #'   country_shape = country_sf,
 #'   pop_raster = pop_raster,
 #'   ur_raster = urban_raster,
 #'   adm2_shape = adm2_sf,
 #'   cell_size = 5000,
-#'   output_dir = "03_outputs/3a_model_outputs"
+#'   output_dir = file.path(
+#'     tf, "03_outputs/3a_model_outputs"
+#'   )
 #' )
 #' }
 #'
@@ -918,14 +1015,6 @@ generate_gamma_predictions <- function(country_code,
 #'   - `scale_hat`: A vector of mean scale parameters.
 #'   - `shape_hat`: A vector of mean shape parameters.
 #'
-#' @examples
-#' \dontrun{
-#' # Not run to avoid lengthy data downloads, processing and modelling
-#' # in examples
-#'  results <- process_gamma_predictions(
-#'           gamma_prediction = gamma_prediction)
-#' print(results$mean_age_pred)
-#' }
 #' @export
 process_gamma_predictions <- function(gamma_prediction) {
   # Extract scale and shape predictions
@@ -1048,22 +1137,6 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'   If return_results is FALSE, the function saves all outputs to disk and
 #'   returns NULL invisibly.
 #'
-#' @examples
-#' \dontrun{
-#' # Not run to avoid lengthy data downloads, processing and modelling
-#' # in examples
-#' results <- run_full_workflow(country_code = "TZA")
-#'
-#' # Run with custom parameters
-#' results <- run_full_workflow(
-#'   country_code = "KEN",
-#'   model_params = list(
-#'     cell_size = 2500,
-#'     n_sim = 10000,
-#'     covariates = c("urban", "elevation")
-#'   )
-#' )
-#' }
 #' @seealso
 #' \itemize{
 #'   \item \code{\link{fit_spatial_model}}: Fits the spatial model for age
@@ -1085,6 +1158,166 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'   \item \code{\link{generate_variogram_plot}}: Creates variogram plots
 #'     showing spatial dependence structure
 #' }
+#'
+#'@examples
+#'
+#' \donttest{
+#' # set country code
+#' country_codeiso <- "GMB"
+#'
+#' set.seed(123)
+#' # Set parameters for simulation
+#' total_population <- 266
+#' urban_proportion <- 0.602
+#' total_coords <- 266
+#' lon_range <- c(-16.802, -13.849)
+#' lat_range <- c(13.149, 13.801)
+#' mean_web_x <- -1764351
+#' mean_web_y <- 1510868
+#'
+#' # Simulate processed survey dataset for Gambia
+#' df_gambia <- NULL
+#' df_gambia$age_param_data <- dplyr::tibble(
+#'   country = "Gambia",
+#'   country_code_iso3 = "GMB",
+#'   country_code_dhs = "GM",
+#'   year_of_survey = 2024,
+#'   id_coords = rep(1:total_coords, length.out = total_population),
+#'   lon = runif(total_population, lon_range[1], lon_range[2]),
+#'   lat = runif(total_population, lat_range[1], lat_range[2]),
+#'   web_x = rnorm(total_population, mean_web_x, 50000),
+#'   web_y = rnorm(total_population, mean_web_y, 50000),
+#'   log_scale = rnorm(total_population, 2.82, 0.2),
+#'   log_shape = rnorm(total_population, 0.331, 0.1),
+#'   urban = rep(c(1, 0), c(
+#'     round(total_population * urban_proportion),
+#'     total_population - round(total_population * urban_proportion)
+#'   )),
+#'   b1 = rnorm(total_population, 0.0142, 0.002),
+#'   c = rnorm(total_population, -0.00997, 0.001),
+#'   b2 = rnorm(total_population, 0.00997, 0.002),
+#'  nsampled = sample(180:220, total_population, replace = TRUE)
+#' )
+#'
+#'
+#' # Create temp directory with normalized path
+#' tf <- file.path(tempdir(), "test_env")
+# Initialize with normalized path
+#' dir.create(tf, recursive = TRUE, showWarnings = FALSE)
+#' tf <- normalizePath(tf, winslash = "/", mustWork = FALSE)
+#'
+#' AgePopDenom::init(
+#'   r_script_name = "full_pipeline.R",
+#'   cpp_script_name = "model.cpp",
+#'   path = tf,
+#'   open_r_script = FALSE
+#' )
+#'
+#' # save as processed dhs data
+#' saveRDS(
+#'   df_gambia,
+#'   file = file.path(
+#'     tf, "01_data", "1a_survey_data", "processed",
+#'     "dhs_pr_records_combined.rds"
+#'   ) |>
+#'     normalizePath(winslash = "/", mustWork = FALSE)
+#' )
+#'
+#' # Download shapefiles
+#' download_shapefile(
+#'   country_codes = country_codeiso,
+#'   dest_file = file.path(
+#'     tf, "01_data", "1c_shapefiles",
+#'     "district_shape.gpkg"
+#'   ) |>
+#'     normalizePath(winslash = "/", mustWork = FALSE)
+#' )
+#'
+#' # Download population rasters from worldpop
+#' download_pop_rasters(
+#'  country_codes = country_codeiso,
+#'   dest_dir = file.path(tf, "01_data", "1b_rasters", "pop_raster") |>
+#'     normalizePath(winslash = "/", mustWork = FALSE)
+#' )
+
+#' # Extract urban extent raster
+#' extract_afurextent(
+#'   dest_dir = file.path(tf, "01_data", "1b_rasters", "urban_extent") |>
+#'     normalizePath(winslash = "/", mustWork = FALSE)
+#' )
+#'
+#' # Modelling --------------------------------------------------------------
+#'
+#' run_full_workflow(
+#'   country_code = country_codeiso,
+#'   survey_data_path = file.path(
+#'     tf, "01_data", "1a_survey_data", "processed"
+#'   ) |>
+#'     normalizePath(winslash = "/", mustWork = FALSE),
+#'   survey_data_suffix = "dhs_pr_records_combined.rds",
+#'   shape_path = file.path(
+#'     tf, "01_data", "1c_shapefiles"
+#'   ) |>
+#'     normalizePath(winslash = "/", mustWork = FALSE),
+#'   shape_suffix = "district_shape.gpkg",
+#'   pop_raster_path = file.path(
+#'     tf, "01_data", "1b_rasters", "pop_raster"
+#'   ) |>
+#'     normalizePath(winslash = "/", mustWork = FALSE),
+#'   pop_raster_suffix = "_ppp_2020_constrained.tif",
+#'   ur_raster_path = file.path(
+#'     tf, "01_data", "1b_rasters", "urban_extent"
+#'   ) |>
+#'     normalizePath(winslash = "/", mustWork = FALSE),
+#'   ur_raster_suffix = "afurextent.asc",
+#'   pred_save_file = FALSE,
+#'   raster_width = 2500,
+#'   raster_height = 2000,
+#'   raster_resolution = 300,
+#'   save_raster = TRUE,
+#'   pyramid_line_color = "#67000d",
+#'   pyramid_fill_high = "#fee0d2",
+#'   pyramid_fill_low = "#a50f15",
+#'   pyramid_caption = paste0(
+#'     "Note: Total population includes ",
+#'     "ages 99+, pyramid shows ages 0-99"
+#'   ),
+#'   generate_pop_raster = TRUE,
+#'   output_paths = list(
+#'     model = file.path(tf, "03_outputs", "3a_model_outputs"),
+#'     plot = file.path(tf, "03_outputs", "3b_visualizations"),
+#'     raster = file.path(tf, "03_outputs", "3c_raster_outputs"),
+#'     table = file.path(tf, "03_outputs", "3c_table_outputs"),
+#'     compiled = file.path(tf, "03_outputs", "3d_compiled_results"),
+#'     excel = file.path(
+#'       tf, "03_outputs", "3d_compiled_results",
+#'       "age_pop_denom_compiled.xlsx"
+#'     ),
+#'     log = file.path(
+#'       tf, "03_outputs", "3a_model_outputs", "modelling_log.rds"
+#'     )
+#'   ) |> lapply(\(x) normalizePath(x, winslash = "/", mustWork = FALSE)),
+#'   model_params = list(
+#'     cell_size = 5000,
+#'     n_sim = 10,
+#'     ignore_cache = FALSE,
+#'     age_range = c(0, 1),
+#'     age_interval = 1,
+#'     return_prop = TRUE,
+#'     scale_outcome = "log_scale",
+#'     shape_outcome = "log_shape",
+#'     covariates = "urban",
+#'     cpp_script = file.path(tf, "02_scripts", "model") |>
+#'       normalizePath(winslash = "/", mustWork = FALSE),
+#'     control_params = list(trace = 2),
+#'     manual_params = NULL,
+#'     verbose = TRUE
+#'   ),
+#'   return_results = FALSE,
+#'   n_cores = 1
+#' )
+#' }
+#'
 #' @export
 run_full_workflow <- function(
     country_code,

@@ -59,3 +59,26 @@ proportions using parallel processing. Results are cached as a GeoTIFF file
 for future use. The output raster maintains spatial properties of the input
 data and is suitable for GIS analysis and visualization.
 }
+\examples{
+\donttest{
+predictor_data <- data.frame(
+ country = rep("CountryX", 100),
+ region = rep("RegionA", 100),
+ district = rep("District1", 100),
+ pop = sample(100:1000, 100, replace = TRUE),
+ web_x = runif(100, -100, 100),
+ web_y = runif(100, -50, 50)
+)
+
+scale_pred <- matrix(runif(100 * 10, 1, 5), nrow = 100, ncol = 10)
+shape_pred <- matrix(runif(100 * 10, 1, 5), nrow = 100, ncol = 10)
+
+res <- generate_age_pop_raster(predictor_data,
+                       scale_pred,
+                       shape_pred,
+                       country_code = "COD",
+                       output_dir = file.path(tempdir()),
+                       n_cores = 1)
+}
+
+}

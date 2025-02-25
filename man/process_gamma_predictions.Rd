@@ -20,12 +20,3 @@ A list containing the following elements:
 This function processes gamma prediction results to calculate the mean age
 predictions, scale, and shape parameters efficiently.
 }
-\examples{
-\dontrun{
-# Not run to avoid lengthy data downloads, processing and modelling
-# in examples
- results <- process_gamma_predictions(
-          gamma_prediction = gamma_prediction)
-print(results$mean_age_pred)
-}
-}

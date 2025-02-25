@@ -112,16 +112,63 @@ properly structured for TMB. The automap package is required for variogram
 fitting.
 }
 \examples{
-\dontrun{
-# Not run to avoid lengthy data downloads and processing in examples
-fit <- fit_spatial_model(
-  data = my_data,
+
+\donttest{
+set.seed(123)
+# Set parameters for simulation
+total_population <- 266
+urban_proportion <- 0.602
+total_coords <- 266
+lon_range <- c(-16.802, -13.849)
+lat_range <- c(13.149, 13.801)
+mean_web_x <- -1764351
+mean_web_y <- 1510868
+
+# Simulate processed survey dataset for Gambia
+df_gambia <- NULL
+df_gambia$age_param_data <- dplyr::tibble(
+  country = "Gambia",
+  country_code_iso3 = "GMB",
+  country_code_dhs = "GM",
+  year_of_survey = 2024,
+  id_coords = rep(1:total_coords, length.out = total_population),
+  lon = runif(total_population, lon_range[1], lon_range[2]),
+  lat = runif(total_population, lat_range[1], lat_range[2]),
+  web_x = rnorm(total_population, mean_web_x, 50000),
+  web_y = rnorm(total_population, mean_web_y, 50000),
+  log_scale = rnorm(total_population, 2.82, 0.2),
+  log_shape = rnorm(total_population, 0.331, 0.1),
+  urban = rep(c(1, 0), c(
+    round(total_population * urban_proportion),
+    total_population - round(total_population * urban_proportion)
+ )),
+ b1 = rnorm(total_population, 0.0142, 0.002),
+ c = rnorm(total_population, -0.00997, 0.001),
+  b2 = rnorm(total_population, 0.00997, 0.002),
+  nsampled = sample(180:220, total_population, replace = TRUE)
+)
+
+
+tf <- file.path(tempdir(), "test_env")
+dir.create(tf, recursive = TRUE, showWarnings = FALSE)
+
+#initialise files and key scripts
+init(
+  r_script_name = "full_pipeline.R",
+  cpp_script_name = "model.cpp",
+  path = tf,
+  open_r_script = FALSE
+)
+
+mod <- fit_spatial_model(
+  df_gambia$age_param_data,
   scale_outcome = "log_scale",
   shape_outcome = "log_shape",
-  covariates = c("elevation", "temperature", "urban"),
-  cpp_script_name = "02_scripts/model",
-  country_code = "KEN",
-  output_dir = "03_outputs/3a_model_outputs"
+  covariates = "urban",
+  cpp_script_name = file.path(tf, "02_scripts/model"),
+  country_code = "GMB",
+  output_dir = file.path(tf, "03_outputs/3a_model_outputs")
 )
+
 }
 }

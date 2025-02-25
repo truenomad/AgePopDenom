@@ -36,9 +36,8 @@ location provides the file, it returns NA and prompts you to check the
 WorldPop website directly.
 }
 \examples{
-\dontrun{
-# Not run to avoid lengthy data downloads, processing and modelling
-# in examples
-download_pop_rasters(c("DZA", "KEN"))
+\donttest{
+download_pop_rasters(country_codes = "COM", dest_dir = tempdir())
 }
+
 }

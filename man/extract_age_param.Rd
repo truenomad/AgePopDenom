@@ -27,13 +27,25 @@ details, combines the results into a data frame, and optionally saves
 the output to a file.
 }
 \examples{
-\dontrun{
-# Not run to avoid lengthy data downloads, processing and modelling
-# in examples
-params_df <- extract_age_param(
-  dir_path = "03_outputs/3a_model_outputs",
-  output_file = "03_outputs/age_parameters.csv"
- )
+
+\donttest{
+# Create temporary directory for dummy parameter files
+dummy_dir <- tempdir()
+
+dummy_params <- list(
+  par = c(0.5, 1.2, 0.8, log(2), log(3), log(4)),
+  objective = -123.45,
+  convergence = 0,
+  iterations = 10,
+  evaluations = c("function = 20, gradient = 15"),
+  message = "Converged"
+)
+
+saveRDS(dummy_params, file = file.path(dummy_dir,
+                                       "abc_age_param_spatial_urban.rds"))
+
+params_df <- extract_age_param(dir_path = dummy_dir,
+                               output_file = tempdir())
 }
 
 }

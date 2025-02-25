@@ -67,17 +67,26 @@ The output filename is constructed as lowercase country
   code + "_variogram.png"
 }
 \examples{
-\dontrun{
-# Not run to avoid lengthy data downloads, processing and modelling
-# in examples
-
-# Generate variogram plot for Tanzania
-vario_plot <- generate_variogram_plot(
-  age_param_data = my_data,
-  fit_vario = fitted_variogram,
-  country_code = "TZA",
-  output_dir = "path/to/output"
+\donttest{
+set.seed(123)  # For reproducibility
+age_param_data <- data.frame(
+  country = rep("TZA", 100),
+  web_x = runif(100, 0, 100),
+  web_y = runif(100, 0, 100),
+  log_scale = rnorm(100, mean = 5, sd = 2)
 )
+
+# Create a dummy fitted variogram object
+fit_vario <- list(
+  psill = c(0.1, 0.5),
+  range = c(0, 50)
+)
+
+vario_plot <- generate_variogram_plot(
+   age_param_data = age_param_data,
+   fit_vario = fit_vario,
+   country_code = "TZA",
+   output_dir = file.path(tempdir()))
 }
 
 }

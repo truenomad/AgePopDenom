@@ -51,14 +51,34 @@ generates age pyramid plots by region showing both proportions and counts,
 and saves the plots to a specified directory.
 }
 \examples{
-\dontrun{
-# Not run to avoid lengthy data downloads, processing and modelling
-# in examples
- generate_age_pyramid_plot(
-  dataset = list(prop_df = prop_results, pop_df = pop_results),
-  country_code = "ken",
-  output_dir = "03_outputs/3b_figures"
- )
+\donttest{
+set.seed(123)
+prop_df <- data.frame(
+ country = rep("COD", 10),
+ region = rep("RegionA", 10),
+ district = paste("District", 1:10),
+ popsize = runif(10, 2340, 28761),
+ `0-4_mean` = runif(10, 0.1, 0.5),
+ `5-9_mean` = runif(10, 0.05, 0.4),
+ `10-14_mean` = runif(10, 0.03, 0.3)
+)
+
+pop_df <- data.frame(
+ country = rep("COD", 10),
+ region = rep("RegionA", 10),
+ district = paste("District", 1:10),
+ popsize = runif(10, 2340, 28761),
+ `0-4_mean` = runif(10, 1000, 5000),
+ `5-9_mean` = runif(10, 800, 4500),
+ `10-14_mean` = runif(10, 700, 4000)
+)
+
+dataset <- list(prop_df = prop_df, pop_df = pop_df)
+
+res <- generate_age_pyramid_plot(
+         dataset = dataset,
+         country_code = "COD",
+         output_dir = file.path(tempdir()))
 }
 
 }

@@ -50,3 +50,22 @@ List containing two data frames:
 Creates age-stratified population tables from predictor data and gamma
 distribution parameters. Supports parallel processing and caching of results.
 }
+\examples{
+
+\donttest{
+predictor_data <- data.frame(
+ country = rep("ABC", 1100),
+  region = rep("Region1", 1100),
+  district = rep("District1", 1100),
+  pop = rep(1000, 1100)
+)
+scale_pred <- matrix(rep(1:10, 1100), nrow = 1100, ncol = 10)
+shape_pred <- matrix(rep(1:10, 1100), nrow = 1100, ncol = 10)
+output <- generate_age_pop_table(
+  predictor_data, scale_pred, shape_pred, age_range = c(0, 99),
+  age_interval = 10, country_code = "ABC", ignore_cache = TRUE,
+  output_dir = tempdir(), n_cores = 1
+)
+}
+
+}

@@ -15,7 +15,7 @@ shapefiles, and running models."><meta property="og:image" content="https://true
 
     <a class="navbar-brand me-2" href="../index.html">AgePopDenom</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -99,18 +99,37 @@ code. Defaults to `TRUE`.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Not run to avoid amending user environment</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># Create temp directory with normalized path</span></span></span>
 <span class="r-in"><span><span class="va">tf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"test_env"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">tf</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># Create scripts in current directory</span></span></span>
-<span class="r-in"><span><span class="fu">init</span><span class="op">(</span>path <span class="op">=</span> <span class="va">tf</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Create scripts in custom directory with specific names</span></span></span>
-<span class="r-in"><span><span class="fu">init</span><span class="op">(</span>r_script_name <span class="op">=</span> <span class="st">"my_pipeline.R"</span>,</span></span>
-<span class="r-in"><span>     cpp_script_name <span class="op">=</span> <span class="st">"my_model.cpp"</span>,</span></span>
-<span class="r-in"><span>     path <span class="op">=</span> <span class="va">tf</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="co">#  Initialize with normalized path</span></span></span>
+<span class="r-in"><span><span class="va">cpp_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tf</span>, <span class="st">"02_scripts"</span>, <span class="st">"model"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">cpp_path</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">cpp_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="va">cpp_path</span>, winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">init</span><span class="op">(</span></span></span>
+<span class="r-in"><span>r_script_name <span class="op">=</span> <span class="st">"full_pipeline.R"</span>,</span></span>
+<span class="r-in"><span>cpp_script_name <span class="op">=</span> <span class="st">"model.cpp"</span>,</span></span>
+<span class="r-in"><span>path <span class="op">=</span> <span class="va">tf</span>,</span></span>
+<span class="r-in"><span>open_r_script <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> All suggested packages are already installed.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/01_data/1a_survey_data/processed</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/01_data/1a_survey_data/raw</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/01_data/1b_rasters/urban_extent</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/01_data/1b_rasters/pop_raster</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/01_data/1c_shapefiles</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/02_scripts</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/03_outputs/3a_model_outputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/03_outputs/3b_visualizations</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/03_outputs/3c_table_outputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/03_outputs/3d_compiled_results</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Folder structure created successfully.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> R script created but could not open automatically: RStudio not available.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> C++ script '/tmp/Rtmp0Wrsow/test_env/02_scripts/model.cpp' successfully created.</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

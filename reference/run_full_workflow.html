@@ -15,7 +15,7 @@ with minimal adjustments."><meta property="og:image" content="https://truenomad.
 
     <a class="navbar-brand me-2" href="../index.html">AgePopDenom</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -269,21 +269,289 @@ population table, default detectCores()-2</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Not run to avoid lengthy data downloads, processing and modelling</span></span></span>
-<span class="r-in"><span><span class="co"># in examples</span></span></span>
-<span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">run_full_workflow</span><span class="op">(</span>country_code <span class="op">=</span> <span class="st">"TZA"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># set country code</span></span></span>
+<span class="r-in"><span><span class="va">country_codeiso</span> <span class="op">&lt;-</span> <span class="st">"GMB"</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Run with custom parameters</span></span></span>
-<span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">run_full_workflow</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  country_code <span class="op">=</span> <span class="st">"KEN"</span>,</span></span>
-<span class="r-in"><span>  model_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    cell_size <span class="op">=</span> <span class="fl">2500</span>,</span></span>
-<span class="r-in"><span>    n_sim <span class="op">=</span> <span class="fl">10000</span>,</span></span>
-<span class="r-in"><span>    covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"urban"</span>, <span class="st">"elevation"</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Set parameters for simulation</span></span></span>
+<span class="r-in"><span><span class="va">total_population</span> <span class="op">&lt;-</span> <span class="fl">266</span></span></span>
+<span class="r-in"><span><span class="va">urban_proportion</span> <span class="op">&lt;-</span> <span class="fl">0.602</span></span></span>
+<span class="r-in"><span><span class="va">total_coords</span> <span class="op">&lt;-</span> <span class="fl">266</span></span></span>
+<span class="r-in"><span><span class="va">lon_range</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">16.802</span>, <span class="op">-</span><span class="fl">13.849</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">lat_range</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">13.149</span>, <span class="fl">13.801</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mean_web_x</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">1764351</span></span></span>
+<span class="r-in"><span><span class="va">mean_web_y</span> <span class="op">&lt;-</span> <span class="fl">1510868</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Simulate processed survey dataset for Gambia</span></span></span>
+<span class="r-in"><span><span class="va">df_gambia</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span></span>
+<span class="r-in"><span><span class="va">df_gambia</span><span class="op">$</span><span class="va">age_param_data</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  country <span class="op">=</span> <span class="st">"Gambia"</span>,</span></span>
+<span class="r-in"><span>  country_code_iso3 <span class="op">=</span> <span class="st">"GMB"</span>,</span></span>
+<span class="r-in"><span>  country_code_dhs <span class="op">=</span> <span class="st">"GM"</span>,</span></span>
+<span class="r-in"><span>  year_of_survey <span class="op">=</span> <span class="fl">2024</span>,</span></span>
+<span class="r-in"><span>  id_coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">total_coords</span>, length.out <span class="op">=</span> <span class="va">total_population</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  lon <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">total_population</span>, <span class="va">lon_range</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">lon_range</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  lat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">total_population</span>, <span class="va">lat_range</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">lat_range</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  web_x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">total_population</span>, <span class="va">mean_web_x</span>, <span class="fl">50000</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  web_y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">total_population</span>, <span class="va">mean_web_y</span>, <span class="fl">50000</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  log_scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">total_population</span>, <span class="fl">2.82</span>, <span class="fl">0.2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  log_shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">total_population</span>, <span class="fl">0.331</span>, <span class="fl">0.1</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  urban <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">total_population</span> <span class="op">*</span> <span class="va">urban_proportion</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="va">total_population</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">total_population</span> <span class="op">*</span> <span class="va">urban_proportion</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  b1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">total_population</span>, <span class="fl">0.0142</span>, <span class="fl">0.002</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">total_population</span>, <span class="op">-</span><span class="fl">0.00997</span>, <span class="fl">0.001</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  b2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">total_population</span>, <span class="fl">0.00997</span>, <span class="fl">0.002</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span> nsampled <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">180</span><span class="op">:</span><span class="fl">220</span>, <span class="va">total_population</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Create temp directory with normalized path</span></span></span>
+<span class="r-in"><span><span class="va">tf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"test_env"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">tf</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="va">tf</span>, winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="init.html">init</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  r_script_name <span class="op">=</span> <span class="st">"full_pipeline.R"</span>,</span></span>
+<span class="r-in"><span>  cpp_script_name <span class="op">=</span> <span class="st">"model.cpp"</span>,</span></span>
+<span class="r-in"><span>  path <span class="op">=</span> <span class="va">tf</span>,</span></span>
+<span class="r-in"><span>  open_r_script <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> All suggested packages are already installed.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/01_data/1a_survey_data/processed</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/01_data/1a_survey_data/raw</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/01_data/1b_rasters/urban_extent</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/01_data/1b_rasters/pop_raster</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/01_data/1c_shapefiles</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/02_scripts</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/03_outputs/3a_model_outputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/03_outputs/3b_visualizations</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/03_outputs/3c_table_outputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Exists: /tmp/Rtmp0Wrsow/test_env/03_outputs/3d_compiled_results</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Folder structure created successfully.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> R script created but could not open automatically: RStudio not available.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> C++ script '/tmp/Rtmp0Wrsow/test_env/02_scripts/model.cpp' successfully created.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># save as processed dhs data</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">df_gambia</span>,</span></span>
+<span class="r-in"><span>  file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">tf</span>, <span class="st">"01_data"</span>, <span class="st">"1a_survey_data"</span>, <span class="st">"processed"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"dhs_pr_records_combined.rds"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span>winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Download shapefiles</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="download_shapefile.html">download_shapefile</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  country_codes <span class="op">=</span> <span class="va">country_codeiso</span>,</span></span>
+<span class="r-in"><span>  dest_file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">tf</span>, <span class="st">"01_data"</span>, <span class="st">"1c_shapefiles"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"district_shape.gpkg"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span>winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading missing WHO ADM2 data for: <span style="color: #0000BB;">GMB</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Appended missing country codes to existing shapefile: GMB</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Download population rasters from worldpop</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="download_pop_rasters.html">download_pop_rasters</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span> country_codes <span class="op">=</span> <span class="va">country_codeiso</span>,</span></span>
+<span class="r-in"><span>  dest_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tf</span>, <span class="st">"01_data"</span>, <span class="st">"1b_rasters"</span>, <span class="st">"pop_raster"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span>winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Population raster files successfully processed.</span>
+<span class="r-in"><span><span class="co"># Extract urban extent raster</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="extract_afurextent.html">extract_afurextent</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  dest_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tf</span>, <span class="st">"01_data"</span>, <span class="st">"1b_rasters"</span>, <span class="st">"urban_extent"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span>winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The file already exists at /tmp/Rtmp0Wrsow/test_env/01_data/1b_rasters/urban_extent/afurextent.asc and FALSE is FALSE.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/tmp/Rtmp0Wrsow/test_env/01_data/1b_rasters/urban_extent/afurextent.asc"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Modelling --------------------------------------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">run_full_workflow</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  country_code <span class="op">=</span> <span class="va">country_codeiso</span>,</span></span>
+<span class="r-in"><span>  survey_data_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">tf</span>, <span class="st">"01_data"</span>, <span class="st">"1a_survey_data"</span>, <span class="st">"processed"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span>winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  survey_data_suffix <span class="op">=</span> <span class="st">"dhs_pr_records_combined.rds"</span>,</span></span>
+<span class="r-in"><span>  shape_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">tf</span>, <span class="st">"01_data"</span>, <span class="st">"1c_shapefiles"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span>winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  shape_suffix <span class="op">=</span> <span class="st">"district_shape.gpkg"</span>,</span></span>
+<span class="r-in"><span>  pop_raster_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">tf</span>, <span class="st">"01_data"</span>, <span class="st">"1b_rasters"</span>, <span class="st">"pop_raster"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span>winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  pop_raster_suffix <span class="op">=</span> <span class="st">"_ppp_2020_constrained.tif"</span>,</span></span>
+<span class="r-in"><span>  ur_raster_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">tf</span>, <span class="st">"01_data"</span>, <span class="st">"1b_rasters"</span>, <span class="st">"urban_extent"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span>winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  ur_raster_suffix <span class="op">=</span> <span class="st">"afurextent.asc"</span>,</span></span>
+<span class="r-in"><span>  pred_save_file <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>  raster_width <span class="op">=</span> <span class="fl">2500</span>,</span></span>
+<span class="r-in"><span>  raster_height <span class="op">=</span> <span class="fl">2000</span>,</span></span>
+<span class="r-in"><span>  raster_resolution <span class="op">=</span> <span class="fl">300</span>,</span></span>
+<span class="r-in"><span>  save_raster <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  pyramid_line_color <span class="op">=</span> <span class="st">"#67000d"</span>,</span></span>
+<span class="r-in"><span>  pyramid_fill_high <span class="op">=</span> <span class="st">"#fee0d2"</span>,</span></span>
+<span class="r-in"><span>  pyramid_fill_low <span class="op">=</span> <span class="st">"#a50f15"</span>,</span></span>
+<span class="r-in"><span>  pyramid_caption <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"Note: Total population includes "</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"ages 99+, pyramid shows ages 0-99"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  generate_pop_raster <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  output_paths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tf</span>, <span class="st">"03_outputs"</span>, <span class="st">"3a_model_outputs"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tf</span>, <span class="st">"03_outputs"</span>, <span class="st">"3b_visualizations"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    raster <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tf</span>, <span class="st">"03_outputs"</span>, <span class="st">"3c_raster_outputs"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tf</span>, <span class="st">"03_outputs"</span>, <span class="st">"3c_table_outputs"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    compiled <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tf</span>, <span class="st">"03_outputs"</span>, <span class="st">"3d_compiled_results"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    excel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      <span class="va">tf</span>, <span class="st">"03_outputs"</span>, <span class="st">"3d_compiled_results"</span>,</span></span>
+<span class="r-in"><span>      <span class="st">"age_pop_denom_compiled.xlsx"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    log <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      <span class="va">tf</span>, <span class="st">"03_outputs"</span>, <span class="st">"3a_model_outputs"</span>, <span class="st">"modelling_log.rds"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="va">x</span>, winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  model_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    cell_size <span class="op">=</span> <span class="fl">5000</span>,</span></span>
+<span class="r-in"><span>    n_sim <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span>    ignore_cache <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>    age_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    age_interval <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>    return_prop <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>    scale_outcome <span class="op">=</span> <span class="st">"log_scale"</span>,</span></span>
+<span class="r-in"><span>    shape_outcome <span class="op">=</span> <span class="st">"log_shape"</span>,</span></span>
+<span class="r-in"><span>    covariates <span class="op">=</span> <span class="st">"urban"</span>,</span></span>
+<span class="r-in"><span>    cpp_script <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tf</span>, <span class="st">"02_scripts"</span>, <span class="st">"model"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span>winslash <span class="op">=</span> <span class="st">"/"</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    control_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>trace <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    manual_params <span class="op">=</span> <span class="cn">NULL</span>,</span></span>
+<span class="r-in"><span>    verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  return_results <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>  n_cores <span class="op">=</span> <span class="fl">1</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Fitting Spatial Model for </span><span style="color: #0000BB; font-weight: bold;">Gambia</span> <span style="color: #00BBBB;">────────────────────────────────────────────</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Importing cached model results...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Successfully imported cached model results.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ── <span style="font-weight: bold;">Generating variogram plot for </span><span style="color: #0000BB; font-weight: bold;">Gambia</span> ──</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Variogram saved to /tmp/Rtmp0Wrsow/test_env/03_outputs/3b_visualizations/gmb_variogram.png</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Creating Predictor Data for </span><span style="color: #0000BB; font-weight: bold;">Gambia</span> <span style="color: #00BBBB;">──────────────────────────────────────────</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing shapefiles and grids...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Processed shapefiles and grids.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing population raster...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Processed population raster.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing urban-rural raster...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Processed urban-rural raster.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Extracting data from rasters onto grid...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Extracted data from rasters onto grid.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Creating grided data with predictors...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Created grided data with predictors.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Predictors data created and saved at /tmp/Rtmp0Wrsow/test_env/03_outputs/3a_model_outputs/gmb_predictor_data.rds</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Running Prediction for </span><span style="color: #0000BB; font-weight: bold;">Gambia</span> <span style="color: #00BBBB;">───────────────────────────────────────────────</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Making a prediction grid...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Prediction grid successfully made.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Setting model parameters...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Model parameters set successfully.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Calculating pairwise distances for prediction grid...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Computed pairwise distances for prediction grid.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Computing and inverting covariance matrix...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Computed and inverted covariance matrix.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Computing mean and standard deviation of predictions...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Computed mean and standard deviation of predictions.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Simulating random effects...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Simulated random effects.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Predicting gamma, scale, and shape parameters...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Predicted gamma, scale, and shape parameters.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Producing Prediction Rasters for </span><span style="color: #0000BB; font-weight: bold;">Gambia</span> <span style="color: #00BBBB;">─────────────────────────────────────</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Raster plot saved to /tmp/Rtmp0Wrsow/test_env/03_outputs/3b_visualizations/gmb_gamma_prediction_rasters.png</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Producing District-level Age-Population Tables for </span><span style="color: #0000BB; font-weight: bold;">Gambia</span> <span style="color: #00BBBB;">───────────────────</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 1/2...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 1/2.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 2/2...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 2/2.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Final age population data saved to /tmp/Rtmp0Wrsow/test_env/03_outputs/3c_table_outputs/gmb_age_tables_pop_0_1plus_yrs_by_1yrs.rds</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Producing Age-Population Raster for </span><span style="color: #0000BB; font-weight: bold;">Gambia</span> <span style="color: #00BBBB;">──────────────────────────────────</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 1/11...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 1/11.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 2/11...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 2/11.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 3/11...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 3/11.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 4/11...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 4/11.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 5/11...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 5/11.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 6/11...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 6/11.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 7/11...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 7/11.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 8/11...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 8/11.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 9/11...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 9/11.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 10/11...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 10/11.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Processing interval 11/11...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Completed interval 11/11.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Raster stack saved to /tmp/Rtmp0Wrsow/test_env/03_outputs/3b_visualizations/gmb_age_pop_grid_0_10_yrs_by_1yrs.tif</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Producing Regional-level Age-pyramid for </span><span style="color: #0000BB; font-weight: bold;">Gambia</span> <span style="color: #00BBBB;">─────────────────────────────</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Age pyramid count plot saved to /tmp/Rtmp0Wrsow/test_env/03_outputs/3b_visualizations/gmb_age_pyramid_count.png</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Age pyramid prop plot saved to /tmp/Rtmp0Wrsow/test_env/03_outputs/3b_visualizations/gmb_age_pyramid_prop.png</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Compiling model parameter data for all countries</span> <span style="color: #00BBBB;">────────────────────────────</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Model paramters extracted and saved to /tmp/Rtmp0Wrsow/test_env/03_outputs/3d_compiled_results.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Compiling age-structured population data for all countries</span> <span style="color: #00BBBB;">──────────────────</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Final age-structured population and proportions saved to /tmp/Rtmp0Wrsow/test_env/03_outputs/3d_compiled_results/age_pop_denom_compiled.xlsx.</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

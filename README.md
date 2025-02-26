@@ -180,10 +180,10 @@ install.packages("TMB", type = "source")
 
 Once the setup is complete, follow the instructions below to download **AgePopDenom**
 
-Note: **AgePopDenom** is currently under development. Once it is available on CRAN, you will be able to install it using the following command:
+**AgePopDenom** is available on CRAN, you will be able to install it using the following command:
 
 ``` r
-# install.packages("AgePopDenom")
+install.packages("AgePopDenom")
 ```
 
 To get the development version from GitHub, use:

@@ -15,10 +15,7 @@ navbar:
       href: articles/using_agepopdenom.html
   - text: Reference
     href: reference/index.html
-  right:
-  - icon: fa-github fa-lg
-    href: https://github.com/truenomad/AgePopDenom
-    aria-label: GitHub repository
+
 articles:
 - title: Using AgePopDenom
   contents: using_agepopdenom

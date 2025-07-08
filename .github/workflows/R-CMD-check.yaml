@@ -15,11 +15,11 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest, r: 'release'}
-          - {os: windows-latest, r: 'release'}
-          - {os: ubuntu-latest, r: 'devel', http-user-agent: 'release'}
-          - {os: ubuntu-latest, r: 'release'}
-          - {os: ubuntu-latest, r: 'oldrel-1'}
+          - { os: macos-latest, r: "release" }
+          - { os: windows-latest, r: "release" }
+          - { os: ubuntu-latest, r: "devel", http-user-agent: "release" }
+          - { os: ubuntu-latest, r: "release" }
+          - { os: ubuntu-latest, r: "oldrel-1" }
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -40,7 +40,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           # Ensure RTools is properly configured
-          echo 'PATH="${RTOOLS40_HOME}\\usr\\bin;${PATH}"' >> ~/.Renviron
+          echo 'PATH="${RTOOLS40_HOME}/usr/bin;${PATH}"' >> ~/.Renviron
           # Install system dependencies using pacman
           pacman -S mingw-w64-x86_64-eigen3 --noconfirm
         shell: C:\rtools44\usr\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
@@ -60,7 +60,6 @@ jobs:
         with:
           upload-snapshots: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
-
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

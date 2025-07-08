@@ -1,19 +1,19 @@
 Package: AgePopDenom
 Type: Package
 Title: Model Fine-Scale Age-Structured Population Data using Open-Source Data
-Version: 0.4.0
+Version: 0.6.0
 Authors@R: c(
-  person("Mohamed A.", "Yusuf", 
+  person("Mohamed A.", "Yusuf",
          role = c("aut", "cre"),
-         email = "moyusuf@who.int",  
+         email = "moyusuf@who.int",
          comment = c(ORCID = "0000-0002-9339-4613")),
-  person("Victor A.", "Alegana", 
+  person("Victor A.", "Alegana",
          role = "aut",
          comment = c(ORCID = "0000-0001-5177-9227")),
-  person("Chris", "Nnanatu", 
+  person("Chris", "Nnanatu",
          role = "aut",
          comment = c(ORCID = "0000-0002-5841-3700")),
-  person("Andrew", "Tatem", 
+  person("Andrew", "Tatem",
          role = "aut",
          comment = c(ORCID = "0000-0002-7270-941X")))
 Description: Automate the modelling of age-structured population data
@@ -37,7 +37,7 @@ Imports:
     terra,
     tidyr,
     httr
-Suggests: 
+Suggests:
     stats,
     stringr,
     openxlsx2,
@@ -49,7 +49,7 @@ Suggests:
     here,
     rstudioapi,
     geodata,
-    pbmcapply, 
+    pbmcapply,
     future,
     future.apply,
     purrr,
@@ -57,7 +57,6 @@ Suggests:
     rlang,
     pak,
     sp,
-    automap,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,

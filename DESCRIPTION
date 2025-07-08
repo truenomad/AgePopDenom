@@ -36,7 +36,12 @@ Imports:
     tibble,
     terra,
     tidyr,
-    httr
+    httr,
+    gstat,
+    sp,
+    sf,
+    stars,
+    reshape
 Suggests:
     stats,
     stringr,

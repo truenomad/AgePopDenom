@@ -36,6 +36,13 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Install automap from CRAN archive
+        run: |
+          Rscript -e 'utils::install.packages(
+            "https://cran.r-project.org/src/contrib/Archive/automap/automap_1.1-16.tar.gz",
+            repos = NULL, type = "source"
+          )'
+
       - name: Windows TMB setup
         if: runner.os == 'Windows'
         run: |

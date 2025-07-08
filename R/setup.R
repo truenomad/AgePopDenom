@@ -72,9 +72,11 @@ install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
         tryCatch(
           {
             if (pkg == "automap") {
-              install.packages(
-                paste0("https://cran.r-project.org/src/contrib/Archive",
-                "/automap/automap_1.1-16.tar.gz")
+              utils::install.packages(
+                paste0(
+                  "https://cran.r-project.org/src/contrib/Archive",
+                  "/automap/automap_1.1-16.tar.gz"
+                )
               )
             } else {
               pak::pkg_install(pkg)

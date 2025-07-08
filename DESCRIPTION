@@ -31,7 +31,6 @@ Imports:
     numDeriv,
     pdist,
     utils,
-    sf,
     cli,
     tibble,
     terra,
@@ -61,13 +60,11 @@ Suggests:
     rdhs,
     rlang,
     pak,
-    sp,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
     matrixStats,
     mockery,
-    gstat,
     RcppEigen
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr

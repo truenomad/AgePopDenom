@@ -38,9 +38,7 @@ Imports:
     httr,
     gstat,
     sp,
-    sf,
-    stars,
-    reshape
+    sf
 Suggests:
     stats,
     stringr,
@@ -65,6 +63,7 @@ Suggests:
     rmarkdown,
     matrixStats,
     mockery,
+    methods,
     RcppEigen
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr

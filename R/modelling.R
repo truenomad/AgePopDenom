@@ -224,10 +224,6 @@ fit_spatial_model <- function(data,
       msg_done = "Empirical variogram fitted."
     )
 
-    if (!requireNamespace("automap", quietly = TRUE)) {
-      stop("Package 'automap' is required for variogram fitting.")
-    }
-
     # Create spatial coordinates
     coords <- data |>
       dplyr::select(web_x, web_y) |>
@@ -243,7 +239,7 @@ fit_spatial_model <- function(data,
     sp::coordinates(vgm_data) <- ~ web_x + web_y
 
     # Fit variogram using automap
-    fit_vario <- automap::autofitVariogram(
+    fit_vario <- autofitVariogram(
       stats::formula(paste0(scale_outcome, "~1")),
       vgm_data,
       cutoff = max(dist_matrix) / 2

@@ -39,6 +39,10 @@ jobs:
       - name: Install automap from CRAN archive
         run: Rscript -e 'utils::install.packages("https://cran.r-project.org/src/contrib/Archive/automap/automap_1.1-16.tar.gz", repos = NULL, type = "source")'
 
+      - name: Install automap dependencies
+        run: |
+          install.packages(c('gstat', 'reshape', 'ggplot2', 'sp', 'sf', 'stars'), repos = "https://cran.r-project.org")
+
       - name: Windows TMB setup
         if: runner.os == 'Windows'
         run: |

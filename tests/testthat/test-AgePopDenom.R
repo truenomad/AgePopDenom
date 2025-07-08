@@ -153,7 +153,7 @@ testthat::test_that(
     df_gambia <- NULL
     df_gambia$age_param_data <- dplyr::tibble(
       country = "Gambia",
-      country_code_iso3 = "GMB",
+      country_code_iso3 = country_codeiso,
       country_code_dhs = "GM",
       year_of_survey = 2024,
       id_coords = rep(1:total_coords, length.out = total_population),
@@ -163,10 +163,13 @@ testthat::test_that(
       web_y = rnorm(total_population, mean_web_y, 50000),
       log_scale = rnorm(total_population, 2.82, 0.2),
       log_shape = rnorm(total_population, 0.331, 0.1),
-      urban = rep(c(1, 0), c(
-        round(total_population * urban_proportion),
-        total_population - round(total_population * urban_proportion)
-      )),
+      urban = rep(
+        c(1, 0),
+        c(
+          round(total_population * urban_proportion),
+          total_population - round(total_population * urban_proportion)
+        )
+      ),
       b1 = rnorm(total_population, 0.0142, 0.002),
       c = rnorm(total_population, -0.00997, 0.001),
       b2 = rnorm(total_population, 0.00997, 0.002),

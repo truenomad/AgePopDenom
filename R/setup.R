@@ -69,14 +69,26 @@ install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
 
       # Install CRAN packages
       for (pkg in missing_pkgs) {
-        tryCatch({
-          utils::install.packages(pkg, quiet = TRUE)
-        }, error = function(e) {
-          cli::cli_alert_danger(paste0(
-            "Failed to install package: ", pkg,
-            ". Error: ", e$message
-          ))
-        })
+        tryCatch(
+          {
+            if (pkg == "automap") {
+              install.packages(
+                paste0("https://cran.r-project.org/src/contrib/Archive",
+                "/automap/automap_1.1-16.tar.gz")
+              )
+            } else {
+              pak::pkg_install(pkg)
+            }
+          },
+          error = function(e) {
+            cli::cli_alert_danger(paste0(
+              "Failed to install package: ",
+              pkg,
+              ". Error: ",
+              e$message
+            ))
+          }
+        )
       }
 
       cli::cli_alert_success("Installation of all packages complete.")

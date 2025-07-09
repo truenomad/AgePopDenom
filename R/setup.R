@@ -434,6 +434,5 @@ get_current_script_path <- function() {
     return(normalizePath(sys.frames()[[1]]$ofile))
   }
 
-  # 4. fallback
-  return(NULL)
+  NULL
 }

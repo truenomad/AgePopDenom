@@ -380,7 +380,7 @@ fit_spatial_model <- function(data,
     cli::cli_alert_success("Model fitted and saved at {model_param_path}")
   }
 
-  return(opt)
+  opt
 }
 
 #' Compute Covariance Matrix for Spatial Model
@@ -788,7 +788,7 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
     "Predictors data created and saved at {predictor_data_path}"
   )
 
-  return(predictor_data)
+  predictor_data
 }
 
 #' Predict Gamma Distribution Parameters for Spatial Grid
@@ -994,7 +994,7 @@ generate_gamma_predictions <- function(country_code,
     )
   }
 
-  return(gamma_prediction)
+  gamma_prediction
 }
 
 

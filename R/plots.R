@@ -153,18 +153,28 @@ getModel = function(psill, model, range, kappa, nugget,
     fit.ranges = c(fit_range), fit.sills = c(fit_nugget,
       fit_sill), debug.level = 0), TRUE)
   if ("try-error" %in% class(obj)) {
-    warning("An error has occured during variogram fitting. Used:\n",
-      "\tnugget:\t", nugget, "\n\tmodel:\t", model,
-      "\n\tpsill:\t", psill, "\n\trange:\t", range,
-      "\n\tkappa:\t", ifelse(kappa == 0, NA, kappa),
+    warning(
+      "An error has occured during variogram fitting. Used:\n",
+      "\tnugget:\t",
+      nugget,
+      "\n\tmodel:\t",
+      model,
+      "\n\tpsill:\t",
+      psill,
+      "\n\trange:\t",
+      range,
+      "\n\tkappa:\t",
+      ifelse(kappa == 0, NA, kappa),
       "\n  as initial guess. This particular variogram fit is not taken into account. \nGstat error:\n",
-      obj)
-    return(NULL)
+      obj
+    )
+    NULL
+  } else {
+    obj
   }
-  else return(obj)
 }
 test_models = model
-SSerr_list = c()
+SSerr_list = NULL
 vgm_list = list()
 counter = 1
 for (m in test_models) {
@@ -770,10 +780,10 @@ generate_age_pyramid_plot <- function(
     )
   }
 
-  return(list(
+  list(
     count_plot = pop_plot,
     prop_plot = prop_plot
-  ))
+  )
 }
 
 #' Generate Age Population Raster
@@ -965,5 +975,5 @@ generate_age_pop_raster <- function(predictor_data,
   terra::writeRaster(raster_stack, output_path, overwrite = TRUE)
   cli::cli_alert_success("Raster stack saved to {output_path}")
 
-  return(raster_stack)
+  raster_stack
 }

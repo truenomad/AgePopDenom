@@ -239,7 +239,7 @@ init <- function(r_script_name = "full_pipeline.R",
   r_script_content <- if (setup_rscript) {
     '
 # set up country of interest
-cntry_codes = c("GMB"")
+cntry_codes = c("GMB")
 
 # Gather and process datasets --------------------------------------------------
 

@@ -24,6 +24,7 @@
 <url><loc>https://truenomad.github.io/AgePopDenom/reference/generate_gamma_predictions.html</loc></url>
 <url><loc>https://truenomad.github.io/AgePopDenom/reference/generate_gamma_raster_plot.html</loc></url>
 <url><loc>https://truenomad.github.io/AgePopDenom/reference/generate_variogram_plot.html</loc></url>
+<url><loc>https://truenomad.github.io/AgePopDenom/reference/get_current_script_path.html</loc></url>
 <url><loc>https://truenomad.github.io/AgePopDenom/reference/index.html</loc></url>
 <url><loc>https://truenomad.github.io/AgePopDenom/reference/init.html</loc></url>
 <url><loc>https://truenomad.github.io/AgePopDenom/reference/install_suggested_packages.html</loc></url>
@@ -33,5 +34,6 @@
 <url><loc>https://truenomad.github.io/AgePopDenom/reference/process_gamma_predictions.html</loc></url>
 <url><loc>https://truenomad.github.io/AgePopDenom/reference/rasterize_data.html</loc></url>
 <url><loc>https://truenomad.github.io/AgePopDenom/reference/run_full_workflow.html</loc></url>
+<url><loc>https://truenomad.github.io/AgePopDenom/reference/simulate_dummy_dhs_pr.html</loc></url>
 </urlset>
 

@@ -7,7 +7,25 @@ input data by testing a range of model types and kappa values (for Matern
 and Stein models), and selecting the best-fit model based on the sum of
 squared errors.
 Dependencies from `gstat`, `sp`, and `sf` are required for this function
+to operate correctly.
+This function was originally sourced from the `automap` package
+(version 1.1-16), which is no longer available on CRAN. It is provided
+here with minimal modification for internal use in this package.
+`autofitVariogram()` automates the fitting of a variogram model to spatial
+input data by testing a range of model types and kappa values (for Matern
+and Stein models), and selecting the best-fit model based on the sum of
+squared errors.
+Dependencies from `gstat`, `sp`, and `sf` are required for this function
 to operate correctly."><meta property="og:description" content="This function was originally sourced from the `automap` package
+(version 1.1-16), which is no longer available on CRAN. It is provided
+here with minimal modification for internal use in this package.
+`autofitVariogram()` automates the fitting of a variogram model to spatial
+input data by testing a range of model types and kappa values (for Matern
+and Stein models), and selecting the best-fit model based on the sum of
+squared errors.
+Dependencies from `gstat`, `sp`, and `sf` are required for this function
+to operate correctly.
+This function was originally sourced from the `automap` package
 (version 1.1-16), which is no longer available on CRAN. It is provided
 here with minimal modification for internal use in this package.
 `autofitVariogram()` automates the fitting of a variogram model to spatial
@@ -46,7 +64,7 @@ to operate correctly."><meta property="og:image" content="https://truenomad.gith
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Automatically Fit a Variogram Model</h1>
-      <small class="dont-index">Source: <a href="https://github.com/truenomad/AgePopDenom/blob/master/R/zzz_noncranpkg.R" class="external-link"><code>R/zzz_noncranpkg.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/truenomad/AgePopDenom/blob/master/R/plots.R" class="external-link"><code>R/plots.R</code></a>, <a href="https://github.com/truenomad/AgePopDenom/blob/master/R/zzz_noncranpkg.R" class="external-link"><code>R/zzz_noncranpkg.R</code></a></small>
       <div class="d-none name"><code>autofitVariogram.Rd</code></div>
     </div>
 
@@ -60,11 +78,33 @@ and Stein models), and selecting the best-fit model based on the sum of
 squared errors.</p>
 <p>Dependencies from `gstat`, `sp`, and `sf` are required for this function
 to operate correctly.</p>
+<p>This function was originally sourced from the `automap` package
+(version 1.1-16), which is no longer available on CRAN. It is provided
+here with minimal modification for internal use in this package.</p>
+<p>`autofitVariogram()` automates the fitting of a variogram model to spatial
+input data by testing a range of model types and kappa values (for Matern
+and Stein models), and selecting the best-fit model based on the sum of
+squared errors.</p>
+<p>Dependencies from `gstat`, `sp`, and `sf` are required for this function
+to operate correctly.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">autofitVariogram</span><span class="op">(</span></span>
+<span>  <span class="va">formula</span>,</span>
+<span>  <span class="va">input_data</span>,</span>
+<span>  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sph"</span>, <span class="st">"Exp"</span>, <span class="st">"Gau"</span>, <span class="st">"Ste"</span><span class="op">)</span>,</span>
+<span>  kappa <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">2</span>, <span class="fl">0.1</span><span class="op">)</span>, <span class="fl">5</span>, <span class="fl">10</span><span class="op">)</span>,</span>
+<span>  fix.values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  GLS.model <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  start_vals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
+<span>  miscFitOptions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">autofitVariogram</span><span class="op">(</span></span>
 <span>  <span class="va">formula</span>,</span>
 <span>  <span class="va">input_data</span>,</span>
 <span>  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sph"</span>, <span class="st">"Exp"</span>, <span class="st">"Gau"</span>, <span class="st">"Ste"</span><span class="op">)</span>,</span>
@@ -134,16 +174,34 @@ to operate correctly.</p>
 <dd><p>sum of squared errors for the best model</p></dd>
 
 
+</dl><p>a list with class `"autofitVariogram"` containing:</p><dl><dt>exp_var</dt>
+<dd><p>the empirical variogram</p></dd>
+
+  <dt>var_model</dt>
+<dd><p>the best-fit variogram model object</p></dd>
+
+  <dt>sserr</dt>
+<dd><p>sum of squared errors for the best model</p></dd>
+
+
 </dl></div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
     <p>Original author: J. H. Hiemstra (2013), `automap` package.
+License: GPL-2 | GPL-3.</p>
+<p>Original author: J. H. Hiemstra (2013), `automap` package.
 License: GPL-2 | GPL-3.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">autofitVariogram</span><span class="op">(</span><span class="va">z</span> <span class="op">~</span> <span class="fl">1</span>, <span class="va">input_data</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">exp_var</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">var_model</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">autofitVariogram</span><span class="op">(</span><span class="va">z</span> <span class="op">~</span> <span class="fl">1</span>, <span class="va">input_data</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">exp_var</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">var_model</span><span class="op">)</span></span></span>
@@ -156,7 +214,7 @@ License: GPL-2 | GPL-3.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohamed A. Yusuf, Victor A. Alegana, Chris Nnanatu, Andrew Tatem.</p>
+  <p>Developed by Mohamed A. Yusuf, Victor A. Alegana, Chibuzor Christopher Nnanatu, Andrew Tatem.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -464,3 +464,97 @@ testthat::test_that(
     })
   }
 )
+
+testthat::test_that("simulate_dummy_dhs_pr() creates expected DHS dataset", {
+  # setup: temporary output path
+  temp_path <- tempfile(fileext = ".rds")
+
+  # run simulation
+  AgePopDenom::simulate_dummy_dhs_pr(
+    total_population = 100,
+    output_path = temp_path,
+    seed = 42
+  )
+
+  # check file was created
+  testthat::expect_true(file.exists(temp_path))
+
+  # read the output
+  result <- readRDS(temp_path)
+
+  # check structure
+  testthat::expect_type(result, "list")
+  testthat::expect_named(result, "age_param_data")
+  testthat::expect_s3_class(result$age_param_data, "tbl_df")
+
+  # check column names
+  expected_cols <- c(
+    "country",
+    "country_code_iso3",
+    "country_code_dhs",
+    "year_of_survey",
+    "id_coords",
+    "lon",
+    "lat",
+    "web_x",
+    "web_y",
+    "log_scale",
+    "log_shape",
+    "urban",
+    "b1",
+    "c",
+    "b2",
+    "nsampled"
+  )
+  testthat::expect_true(all(expected_cols %in% names(result$age_param_data)))
+
+  # cleanup
+  unlink(temp_path)
+})
+
+testthat::test_that("autofitVariogram() returns valid variogram model", {
+  testthat::skip_if_not_installed("sp")
+  testthat::skip_if_not_installed("sf")
+  testthat::skip_if_not_installed("gstat")
+
+  # prepare data
+  data("meuse", package = "sp")
+  meuse_sf <- sf::st_as_sf(meuse, coords = c("x", "y"), crs = 28992)
+
+  # run function
+  result <- AgePopDenom:::autofitVariogram(zinc ~ 1, meuse_sf)
+
+  # basic checks
+  testthat::expect_s3_class(result, "autofitVariogram")
+  testthat::expect_type(result, "list")
+  testthat::expect_named(
+    result,
+    c("exp_var", "var_model", "sserr"),
+    ignore.order = TRUE
+  )
+
+  # check contents
+  testthat::expect_s3_class(result$exp_var, "data.frame")
+  testthat::expect_true(nrow(result$exp_var) > 1)
+  testthat::expect_s3_class(result$var_model, "variogramModel")
+  testthat::expect_true(is.numeric(result$sserr))
+})
+
+testthat::test_that("autofitVariogram() prints expected output in verbose mode", {
+  testthat::skip_if_not_installed("sp")
+  testthat::skip_if_not_installed("sf")
+  testthat::skip_if_not_installed("gstat")
+
+  data("meuse", package = "sp")
+  meuse_sf <- sf::st_as_sf(meuse, coords = c("x", "y"), crs = 28992)
+
+  testthat::expect_output(
+    AgePopDenom:::autofitVariogram(zinc ~ 1, meuse_sf, verbose = TRUE),
+    regexp = "Selected:"
+  )
+
+  testthat::expect_output(
+    AgePopDenom:::autofitVariogram(zinc ~ 1, meuse_sf, verbose = TRUE),
+    regexp = "Tested models, best first:"
+  )
+})

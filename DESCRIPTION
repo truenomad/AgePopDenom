@@ -10,7 +10,7 @@ Authors@R: c(
   person("Victor A.", "Alegana",
          role = "aut",
          comment = c(ORCID = "0000-0001-5177-9227")),
-  person("Chris", "Nnanatu",
+  person("Chibuzor Christopher", "Nnanatu",
          role = "aut",
          comment = c(ORCID = "0000-0002-5841-3700")),
   person("Andrew", "Tatem",

@@ -48,8 +48,32 @@ autofitVariogram <- function (formula, input_data, model = c("Sph", "Exp", "Gau"
 NA, NA), verbose = FALSE, GLS.model = NA, start_vals = c(NA,
 NA, NA), miscFitOptions = list(), ...)
 {
+
+# Check for required packages
+if (!requireNamespace("sp", quietly = TRUE)) {
+  stop(
+    paste0(
+      "Package 'sp' is required for this function. Please ",
+      "install it with install.packages('sp'")
+  )
+}
+
+if (!requireNamespace("methods", quietly = TRUE)) {
+  stop(
+    paste0(
+      "Package 'methods' is required for this function. Please install ",
+      "it with install.packages('methods')"
+    )
+  )
+}
+
 if ("alpha" %in% names(list(...)))
-  warning("Anisotropic variogram model fitting not supported, see the documentation of autofitVariogram for more details.")
+  warning(
+    paste0(
+      "Anisotropic variogram model fitting not supported, see the ",
+      "'documentation of autofitVariogram for more details."
+    )
+  )
 miscFitOptionsDefaults = list(merge.small.bins = TRUE, min.np.bin = 5)
 miscFitOptions = utils::modifyList(miscFitOptionsDefaults, miscFitOptions)
 if (methods::is(input_data, "Spatial")) {
@@ -83,7 +107,12 @@ else {
 }
 if (miscFitOptions[["merge.small.bins"]]) {
   if (verbose)
-    cat("Checking if any bins have less than 5 points, merging bins when necessary...\n\n")
+    cat(
+      paste0(
+        "Checking if any bins have less than 5 points, merging bins ",
+        "when necessary...\n\n"
+      )
+    )
   while (TRUE) {
     if (length(experimental_variogram$np[experimental_variogram$np <
       miscFitOptions[["min.np.bin"]]]) == 0 | length(boundaries) ==
@@ -209,7 +238,12 @@ if (any(strange_entries)) {
     print(vgm_list[strange_entries])
     cat("^^^ ABOVE MODELS WERE REMOVED ^^^\n\n")
   }
-  warning("Some models where removed for being either NULL or having a negative sill/range/nugget, \n\tset verbose == TRUE for more information")
+  warning(
+    paste0(
+      "Some models where removed for being either NULL or having a negative ",
+      "sill/range/nugget, \n\tset verbose == TRUE for more information"
+    )
+  )
   SSerr_list = SSerr_list[!strange_entries]
   vgm_list = vgm_list[!strange_entries]
 }
@@ -223,10 +257,11 @@ if (verbose) {
   tested = tested[order(tested$SSerror), ]
   print(tested)
 }
-result = list(exp_var = experimental_variogram, var_model = vgm_list[[which.min(SSerr_list)]],
+result = list(exp_var = experimental_variogram,
+  var_model = vgm_list[[which.min(SSerr_list)]],
   sserr = min(SSerr_list))
 class(result) = c("autofitVariogram", "list")
-return(result)
+result
 }
 
 
@@ -302,6 +337,23 @@ generate_variogram_plot <- function(age_param_data, fit_vario, country_code,
                                     output_dir, width = 12,
                                     height = 9,
                                     png_resolution = 300) {
+
+  # Check for required packages
+  if (!requireNamespace("sp", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'sp' is required for this function. Please install it ",
+        "with install.packages('sp')"
+      )
+    )
+  }
+  if (!requireNamespace("scales", quietly = TRUE)) {
+    stop(
+      "Package 'scales' is required for this function. Please install it ",
+      "with install.packages('scales')"
+    )
+  }
+
   vgm_data <- age_param_data
   sp::coordinates(vgm_data) <- ~ web_x + web_y
 
@@ -612,6 +664,17 @@ generate_age_pyramid_plot <- function(
         "Note: Total population includes ",
         "ages 99+, pyramid shows ages 0-99"
       )) {
+
+  # Check for required packages
+  if (!requireNamespace("scales", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'scales' is required for this function. Please install it ",
+        "with install.packages('scales')"
+      )
+    )
+  }
+
   # Validate inputs ------------------------------------------------------------
   if (!all(c("prop_df", "pop_df") %in% names(dataset))) {
     stop("Dataset must be a list containing 'prop_df' and 'pop_df'")

@@ -83,7 +83,7 @@
 #'
 #' @examples
 #'
-#' \donttest{
+#' \dontrun{
 #' set.seed(123)
 #' # Set parameters for simulation
 #' total_population <- 266
@@ -152,6 +152,25 @@ fit_spatial_model <- function(data,
                               manual_params = NULL,
                               output_dir = NULL,
                               ignore_cache = FALSE) {
+
+  # Check for required packages
+  if (!requireNamespace("sp", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'sp' is required for this function. Please install it ",
+        "with install.packages('sp')"
+      )
+    )
+  }
+  if (!requireNamespace("methods", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'methods' is required for this function. Please install it ",
+        "with install.packages('methods')"
+      )
+    )
+  }
+
   # Check for caching
   if (!is.null(country_code)) {
     country_code <- tolower(country_code)
@@ -560,7 +579,7 @@ extract_betas <- function(params_result,
 #' @return A data object (`predictor_data`) containing the generated predictors.
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' tf <- file.path(tempdir(), "test_env")
 #'
 #' # Initialize with normalized path
@@ -630,6 +649,17 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
                                    output_dir = here::here(
                                      "03_outputs", "3a_model_outputs"
                                    )) {
+
+  # Check for required packages
+  if (!requireNamespace("exactextractr", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'exactextractr' is required for this function. Please ",
+        "install it with install.packages('exactextractr')"
+      )
+    )
+  }
+
   # Check cache and import if it exists ------------------------------------------
 
   # Create lowercase country code
@@ -1157,7 +1187,7 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'
 #'@examples
 #'
-#' \donttest{
+#' \dontrun{
 #' # set country code
 #' country_codeiso <- "GMB"
 #'

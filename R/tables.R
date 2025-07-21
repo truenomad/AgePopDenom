@@ -35,6 +35,15 @@ compute_age_proportions <- function(sim, scale, shape, run, limslow, limsup) {
 #' Run parallel computation wrapper
 #' @noRd
 run_parallel_mac <- function(n_sim, scale_pred, shape_pred, runnum, n_cores) {
+  # Check for required package
+  if (!requireNamespace("pbmcapply", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'pbmcapply' is required for Mac parallel processing. Please ",
+        "install it with install.packages('pbmcapply')")
+      )
+  }
+
   pbmcapply::pbmclapply(
     1:n_sim,
     function(sim) {
@@ -49,6 +58,24 @@ run_parallel_mac <- function(n_sim, scale_pred, shape_pred, runnum, n_cores) {
 #' Run parallel computation wrapper for non-Mac
 #' @noRd
 run_parallel_other <- function(n_sim, scale_pred, shape_pred, runnum, n_cores) {
+  # Check for required packages
+  if (!requireNamespace("future.apply", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'future.apply' is required for parallel processing. ",
+        "Please install it with install.packages('future.apply')"
+      )
+    )
+  }
+  if (!requireNamespace("future", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'future' is required for parallel processing. Please ",
+        "install it with install.packages('future')"
+      )
+    )
+  }
+
   future.apply::future_lapply(
     1:n_sim,
     function(sim) {
@@ -112,6 +139,17 @@ generate_age_pop_table <- function(predictor_data,
                                    ignore_cache = FALSE,
                                    output_dir,
                                    n_cores = parallel::detectCores() - 2) {
+
+    # Check for required packages used in this function
+    if (!requireNamespace("matrixStats", quietly = TRUE)) {
+      stop(
+        paste0(
+          "Package 'matrixStats' is required for this function. Please ",
+          "install it with install.packages('matrixStats')"
+        )
+      )
+    }
+
   # Construct output path
   output_path <- file.path(
     output_dir,
@@ -170,6 +208,16 @@ generate_age_pop_table <- function(predictor_data,
     # Run parallel computation based on OS
     if (Sys.info()["sysname"] == "Darwin") {
       # For MacOS
+
+      # Check for required package
+      if (!requireNamespace("pbmcapply", quietly = TRUE)) {
+        stop(
+          paste0(
+            "Package 'pbmcapply' is required for Mac parallel processing. ",
+            "Please install it with install.packages('pbmcapply')"
+          )
+        )
+      }
       prop_age_pred <- pbmcapply::pbmclapply(
         1:n_sim,
         function(sim) {
@@ -325,6 +373,17 @@ process_final_population_data <- function(
       "03_outputs", "3d_compiled_results",
       "age_pop_denom_compiled.xlsx"
     )) {
+
+    # Check for required packages
+    if (!requireNamespace("openxlsx2", quietly = TRUE)) {
+      stop(
+        paste0(
+          "Package 'openxlsx2' is required for this function. ",
+          "Please install it with install.packages('openxlsx2')"
+        )
+      )
+    }
+
   # Ensure output directory exists
   dir.create(dirname(excel_output_file),
              recursive = TRUE,

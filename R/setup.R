@@ -34,11 +34,24 @@
 #' @export
 install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
   suggested_pkgs <- c(
-    "cli", "countrycode", "crayon", "scales", "glue", "gstat",
-    "haven", "here", "matrixStats", "rstudioapi", "geodata",
-    "pbmcapply", "remotes", "future", "future.apply",
-    "testthat", "rdhs", "openxlsx2", "purrr", "rlang", "pak",
-    "sp", "knitr", "rmarkdown", "mockery"
+    "sp",
+    "tibble",
+    "rstudioapi",
+    "graphics",
+    "methods",
+    "future",
+    "future.apply",
+    "pbmcapply",
+    "knitr",
+    "httr",
+    "scales",
+    "rmarkdown",
+    "exactextractr",
+    "pdist",
+    "numDeriv",
+    "openxlsx2",
+    "matrixStats",
+    "testthat"
   )
 
   missing_pkgs <- suggested_pkgs[!sapply(
@@ -220,6 +233,17 @@ init <- function(r_script_name = "full_pipeline.R",
                  path = here::here(),
                  open_r_script = TRUE,
                  setup_rscript = TRUE) {
+
+    # Check for required package
+    if (!requireNamespace("pbmcapply", quietly = TRUE)) {
+      stop(
+        paste0(
+          "Package 'rstudioapi' is required for this function ",
+          "Please install it with install.packages('rstudioapi')"
+        )
+      )
+    }
+
   # ensure sugegsted packages are installed
   AgePopDenom::install_suggested_packages()
 

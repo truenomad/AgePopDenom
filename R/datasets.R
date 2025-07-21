@@ -1,7 +1,5 @@
-#' Main Function to Download DHS Datasets
-#'
-#' Downloads the latest PR (household) and GE (geographic) DHS datasets for
-#' specified countries.
+#' Download WHO ADM2 Boundaries with Partial Updateads the latest PR (household)
+#' and GE (geographic) DHS datasets for specified countries.
 #'
 #' @param country_codes A character vector of ISO3 country codes.
 #' @param cache_path A character string specifying the cache path for RDHS.
@@ -156,6 +154,23 @@ aggregate_and_extract_gamma <- function(data,
                                         long_column = "long",
                                         age_column = "ageyrs",
                                         urban_column = "urban") {
+
+  # Check for required packages
+  if (!requireNamespace("numDeriv", quietly = TRUE)) {
+    stop(paste0(
+      "Package 'numDeriv' is required for this function. Please install it ",
+      "with install.packages('numDeriv')")
+    )
+  }
+
+  if (!requireNamespace("tibble", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'tibble' is required for this function. Please install it ",
+        "with install.packages('tibble')"
+      )
+    )
+  }
 
   # Validate input column names exist in data
   if (
@@ -806,6 +821,18 @@ download_shapefile <- function(
     country_codes,
     dest_file = here::here("01_data", "1c_shapefiles", "district_shape.gpkg")) {
 
+
+    # Check for required packages
+    if (!requireNamespace("httr", quietly = TRUE)) {
+      stop(
+        paste0(
+          "Package 'httr' is required for this function. Please install it ",
+          "with install.packages('httr')"
+        )
+      )
+    }
+
+
   # Initialize existing codes if the file exists
   if (file.exists(dest_file)) {
     existing_sf <- sf::st_read(dest_file, quiet = TRUE)
@@ -893,4 +920,3 @@ download_shapefile <- function(
     )
   }
 }
-

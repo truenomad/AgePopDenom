@@ -1,7 +1,7 @@
 Package: AgePopDenom
 Type: Package
 Title: Model Fine-Scale Age-Structured Population Data using Open-Source Data
-Version: 1.2.0
+Version: 1.2.1
 Authors@R: c(
   person("Mohamed A.", "Yusuf",
          role = c("aut", "cre"),
@@ -23,48 +23,47 @@ Encoding: UTF-8
 LazyData: true
 SystemRequirements: C++17, TMB
 Imports:
-    TMB,
     dplyr,
-    curl,
-    exactextractr,
-    ggplot2,
-    numDeriv,
-    pdist,
-    utils,
     cli,
-    tibble,
-    terra,
-    tidyr,
-    httr,
-    gstat,
-    sp,
-    sf
-Suggests:
-    stats,
-    stringr,
-    openxlsx2,
-    countrycode,
-    crayon,
-    scales,
     glue,
-    haven,
+    terra,
+    sf,
     here,
+    ggplot2,
+    stringr,
+    rlang,
+    tidyr,
+    utils,
+    stats,
+    base,
+    rdhs,
+    TMB,
+    curl,
+    gstat,
+    haven,
+    crayon,
+    purrr,
+    countrycode,
+    parallel
+Suggests:
+    sp,
+    tibble,
     rstudioapi,
-    geodata,
-    pbmcapply,
+    graphics,
+    methods,
     future,
     future.apply,
-    purrr,
-    rdhs,
-    rlang,
-    pak,
-    testthat (>= 3.0.0),
+    pbmcapply,
     knitr,
+    httr,
+    scales,
     rmarkdown,
+    exactextractr,
+    pdist,
+    numDeriv,
+    openxlsx2,
     matrixStats,
-    mockery,
-    methods,
-    RcppEigen
+    testthat
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Config/testthat/edition: 3

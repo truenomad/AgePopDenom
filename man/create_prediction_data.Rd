@@ -47,7 +47,7 @@ predictors data if the file already exists. It saves the generated data to a
 specified directory for reuse and provides progress updates.
 }
 \examples{
-\donttest{
+\dontrun{
 tf <- file.path(tempdir(), "test_env")
 
 # Initialize with normalized path

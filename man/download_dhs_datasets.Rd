@@ -2,7 +2,8 @@
 % Please edit documentation in R/datasets.R
 \name{download_dhs_datasets}
 \alias{download_dhs_datasets}
-\title{Main Function to Download DHS Datasets}
+\title{Download WHO ADM2 Boundaries with Partial Updateads the latest PR (household)
+and GE (geographic) DHS datasets for specified countries.}
 \usage{
 download_dhs_datasets(
   country_codes,
@@ -38,6 +39,6 @@ survey.}
 Invisibly returns a list of downloaded dataset filenames.
 }
 \description{
-Downloads the latest PR (household) and GE (geographic) DHS datasets for
-specified countries.
+Download WHO ADM2 Boundaries with Partial Updateads the latest PR (household)
+and GE (geographic) DHS datasets for specified countries.
 }

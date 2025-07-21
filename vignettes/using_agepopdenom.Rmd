@@ -586,7 +586,7 @@ cntry_code = "GMB"
 country = "Gambia"
 country_code_dhs = "GM"
 
-# Simulateand and save processed survey dataset for Gambia
+# Simulate and save processed survey dataset for Gambia
 AgePopDenom::simulate_dummy_dhs_pr(
   country = country,
   country_code_iso3 = cntry_code,

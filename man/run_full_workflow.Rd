@@ -158,7 +158,7 @@ with minimal adjustments.
 }
 \examples{
 
-\donttest{
+\dontrun{
 # set country code
 country_codeiso <- "GMB"
 

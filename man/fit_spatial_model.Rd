@@ -113,7 +113,7 @@ fitting.
 }
 \examples{
 
-\donttest{
+\dontrun{
 set.seed(123)
 # Set parameters for simulation
 total_population <- 266

@@ -1,3 +1,41 @@
+cleanup_tmb_artifacts <- function() {
+  # Find and remove symbols.rds files in R check directories
+  temp_files <- list.files(
+    path = tempdir(),
+    pattern = "symbols.rds$",
+    full.names = TRUE,
+    recursive = TRUE
+  )
+
+  # Filter to only include files in .Rcheck directories
+  rcheck_files <- temp_files[grep("\\.Rcheck", temp_files)]
+
+  # Remove files
+  if (length(rcheck_files) > 0) {
+    message(
+      "Removing ",
+      length(rcheck_files),
+      " TMB artifacts in .Rcheck directories"
+    )
+    for (file in rcheck_files) {
+      tryCatch(
+        {
+          unlink(file, force = TRUE)
+          message("Removed: ", file)
+        },
+        error = function(e) {
+          warning("Could not remove file: ", file, "\n", e$message)
+        }
+      )
+    }
+  }
+
+  # Additional cleanup for local symbols.rds
+  if (file.exists("symbols.rds")) {
+    unlink("symbols.rds", force = TRUE)
+  }
+}
+
 testthat::test_that("process_dhs_data correctly processes DHS survey data", {
 
   # Setup temporary test environment
@@ -10,6 +48,14 @@ testthat::test_that("process_dhs_data correctly processes DHS survey data", {
 
   dir.create(tmp_rds_dir, recursive = TRUE, showWarnings = FALSE)
   dir.create(tmp_shp_dir, recursive = TRUE, showWarnings = FALSE)
+
+  on.exit(
+    {
+      unlink(tf, recursive = TRUE)
+      cleanup_tmb_artifacts()
+    },
+    add = TRUE
+  )
 
   # Create fake DHS data
   create_fake_dhs_data <- function(country_code) {
@@ -98,12 +144,19 @@ testthat::test_that("process_dhs_data correctly processes DHS survey data", {
     is.data.frame(results$outlier_free_data)
   )
 
-
   testthat::expect_true(all(
     c(
-      "country", "country_code_iso3", "country_code_dhs",
-      "year_of_survey", "dhs_clust_num", "ageyrs", "survey_code",
-      "urban", "lat", "long", "country_year"
+      "country",
+      "country_code_iso3",
+      "country_code_dhs",
+      "year_of_survey",
+      "dhs_clust_num",
+      "ageyrs",
+      "survey_code",
+      "urban",
+      "lat",
+      "long",
+      "country_year"
     ) %in%
       names(results$outlier_free_data)
   ))
@@ -113,9 +166,16 @@ testthat::test_that("process_dhs_data correctly processes DHS survey data", {
 
   testthat::expect_true(all(
     c(
-      "country", "country_code_iso3", "country_code_dhs",
-      "year_of_survey", "survey_code", "urban", "lat", "lon",
-      "b1", "country_year"
+      "country",
+      "country_code_iso3",
+      "country_code_dhs",
+      "year_of_survey",
+      "survey_code",
+      "urban",
+      "lat",
+      "lon",
+      "b1",
+      "country_year"
     ) %in%
       names(results$age_param_data)
   ))
@@ -133,337 +193,377 @@ testthat::test_that("process_dhs_data correctly processes DHS survey data", {
 })
 
 
-testthat::test_that(
-  "Test the full pipeline works",
-  {
-    # set country code
-    country_codeiso <- "GMB"
+testthat::test_that("Test the full pipeline works", {
 
-    set.seed(123)
-    # Set parameters for simulation
-    total_population <- 266
-    urban_proportion <- 0.602
-    total_coords <- 266
-    lon_range <- c(-16.802, -13.849)
-    lat_range <- c(13.149, 13.801)
-    mean_web_x <- -1764351
-    mean_web_y <- 1510868
+  # Skip on CRAN and if TMB not available
+  testthat::skip_on_cran()
+  testthat::skip_if(
+    !requireNamespace("TMB", quietly = TRUE),
+    "TMB not available"
+  )
 
-    # Simulate processed survey dataset for Gambia
-    df_gambia <- NULL
-    df_gambia$age_param_data <- dplyr::tibble(
+  country_codeiso <- "GMB"
+
+  suppressWarnings({
+    # Create temp directory with normalized path
+    tf <- file.path(tempdir(), "test_env")
+    dir.create(tf, recursive = TRUE, showWarnings = FALSE)
+
+    # Initialize with normalized path
+    cpp_path <- file.path(tf, "02_scripts", "model")
+    dir.create(cpp_path, recursive = TRUE, showWarnings = FALSE)
+    cpp_path <- normalizePath(cpp_path, winslash = "/", mustWork = FALSE)
+
+    init(
+      r_script_name = "full_pipeline.R",
+      cpp_script_name = "model.cpp",
+      path = tf,
+      open_r_script = FALSE
+    )
+
+    # Simulate and save processed survey dataset for Gambia
+    AgePopDenom::simulate_dummy_dhs_pr(
       country = "Gambia",
       country_code_iso3 = country_codeiso,
       country_code_dhs = "GM",
       year_of_survey = 2024,
-      id_coords = rep(1:total_coords, length.out = total_population),
-      lon = runif(total_population, lon_range[1], lon_range[2]),
-      lat = runif(total_population, lat_range[1], lat_range[2]),
-      web_x = rnorm(total_population, mean_web_x, 50000),
-      web_y = rnorm(total_population, mean_web_y, 50000),
-      log_scale = rnorm(total_population, 2.82, 0.2),
-      log_shape = rnorm(total_population, 0.331, 0.1),
-      urban = rep(
-        c(1, 0),
-        c(
-          round(total_population * urban_proportion),
-          total_population - round(total_population * urban_proportion)
-        )
+      output_path = here::here(
+        tf,
+        "01_data",
+        "1a_survey_data",
+        "processed",
+        "dhs_pr_records_combined.rds"
+      ) |>
+        normalizePath(winslash = "/", mustWork = FALSE)
+    )
+
+    # Download shapefiles
+    download_shapefile(
+      country_codes = country_codeiso,
+      dest_file = file.path(
+        tf,
+        "01_data",
+        "1c_shapefiles",
+        "district_shape.gpkg"
+      ) |>
+        normalizePath(winslash = "/", mustWork = FALSE)
+    )
+
+    # Download population rasters from worldpop
+    download_pop_rasters(
+      country_codes = country_codeiso,
+      dest_dir = file.path(tf, "01_data", "1b_rasters", "pop_raster") |>
+        normalizePath(winslash = "/", mustWork = FALSE)
+    )
+
+    # Extract urban extent raster
+    extract_afurextent(
+      dest_dir = file.path(tf, "01_data", "1b_rasters", "urban_extent") |>
+        normalizePath(winslash = "/", mustWork = FALSE)
+    )
+
+    # Modelling --------------------------------------------------------------
+
+    run_full_workflow(
+      country_code = country_codeiso,
+      survey_data_path = file.path(
+        tf,
+        "01_data",
+        "1a_survey_data",
+        "processed"
+      ) |>
+        normalizePath(winslash = "/", mustWork = FALSE),
+      survey_data_suffix = "dhs_pr_records_combined.rds",
+      shape_path = file.path(
+        tf,
+        "01_data",
+        "1c_shapefiles"
+      ) |>
+        normalizePath(winslash = "/", mustWork = FALSE),
+      shape_suffix = "district_shape.gpkg",
+      pop_raster_path = file.path(
+        tf,
+        "01_data",
+        "1b_rasters",
+        "pop_raster"
+      ) |>
+        normalizePath(winslash = "/", mustWork = FALSE),
+      pop_raster_suffix = "_ppp_2020_constrained.tif",
+      ur_raster_path = file.path(
+        tf,
+        "01_data",
+        "1b_rasters",
+        "urban_extent"
+      ) |>
+        normalizePath(winslash = "/", mustWork = FALSE),
+      ur_raster_suffix = "afurextent.asc",
+      pred_save_file = FALSE,
+      raster_width = 2500,
+      raster_height = 2000,
+      raster_resolution = 300,
+      save_raster = TRUE,
+      pyramid_line_color = "#67000d",
+      pyramid_fill_high = "#fee0d2",
+      pyramid_fill_low = "#a50f15",
+      pyramid_caption = paste0(
+        "Note: Total population includes ",
+        "ages 99+, pyramid shows ages 0-99"
       ),
-      b1 = rnorm(total_population, 0.0142, 0.002),
-      c = rnorm(total_population, -0.00997, 0.001),
-      b2 = rnorm(total_population, 0.00997, 0.002),
-      nsampled = sample(180:220, total_population, replace = TRUE)
+      generate_pop_raster = TRUE,
+      output_paths = list(
+        model = file.path(tf, "03_outputs", "3a_model_outputs"),
+        plot = file.path(tf, "03_outputs", "3b_visualizations"),
+        raster = file.path(tf, "03_outputs", "3c_raster_outputs"),
+        table = file.path(tf, "03_outputs", "3c_table_outputs"),
+        compiled = file.path(tf, "03_outputs", "3d_compiled_results"),
+        excel = file.path(
+          tf,
+          "03_outputs",
+          "3d_compiled_results",
+          "age_pop_denom_compiled.xlsx"
+        ),
+        log = file.path(
+          tf,
+          "03_outputs",
+          "3a_model_outputs",
+          "modelling_log.rds"
+        )
+      ) |>
+        lapply(\(x) normalizePath(x, winslash = "/", mustWork = FALSE)),
+      model_params = list(
+        cell_size = 5000,
+        n_sim = 100,
+        ignore_cache = FALSE,
+        age_range = c(0, 1),
+        age_interval = 1,
+        return_prop = TRUE,
+        scale_outcome = "log_scale",
+        shape_outcome = "log_shape",
+        covariates = "urban",
+        cpp_script = file.path(tf, "02_scripts", "model") |>
+          normalizePath(winslash = "/", mustWork = FALSE),
+        control_params = list(trace = 2),
+        manual_params = NULL,
+        verbose = TRUE
+      ),
+      return_results = FALSE,
+      n_cores = 1
     )
 
-
-    # Skip on CRAN and if TMB not available
-    testthat::skip_on_cran()
-    testthat::skip_if(
-      !requireNamespace("TMB", quietly = TRUE),
-      "TMB not available"
-    )
-
-    suppressWarnings({
-      # Create temp directory with normalized path
-      tf <- file.path(tempdir(), "test_env")
-      dir.create(tf, recursive = TRUE, showWarnings = FALSE)
-
-      # Initialize with normalized path
-      cpp_path <- file.path(tf, "02_scripts", "model")
-      dir.create(cpp_path, recursive = TRUE, showWarnings = FALSE)
-      cpp_path <- normalizePath(cpp_path, winslash = "/", mustWork = FALSE)
-
-      init(
-        r_script_name = "full_pipeline.R",
-        cpp_script_name = "model.cpp",
-        path = tf,
-        open_r_script = FALSE
-      )
-
-      # save as processed dhs data
-      saveRDS(
-        df_gambia,
-        file = file.path(
-          tf, "01_data", "1a_survey_data", "processed",
-          "dhs_pr_records_combined.rds"
-        ) |>
-          normalizePath(winslash = "/", mustWork = FALSE)
-      )
-
-      # Download shapefiles
-      download_shapefile(
-        country_codes = country_codeiso,
-        dest_file = file.path(
-          tf, "01_data", "1c_shapefiles",
-          "district_shape.gpkg"
-        ) |>
-          normalizePath(winslash = "/", mustWork = FALSE)
-      )
-
-      # Download population rasters from worldpop
-      download_pop_rasters(
-        country_codes = country_codeiso,
-        dest_dir = file.path(tf, "01_data", "1b_rasters", "pop_raster") |>
-          normalizePath(winslash = "/", mustWork = FALSE)
-      )
-
-      # Extract urban extent raster
-      extract_afurextent(
-        dest_dir = file.path(tf, "01_data", "1b_rasters", "urban_extent") |>
-          normalizePath(winslash = "/", mustWork = FALSE)
-      )
-
-      # Modelling --------------------------------------------------------------
-
-      run_full_workflow(
-        country_code = country_codeiso,
-        survey_data_path = file.path(
-          tf, "01_data", "1a_survey_data", "processed"
-        ) |>
-          normalizePath(winslash = "/", mustWork = FALSE),
-        survey_data_suffix = "dhs_pr_records_combined.rds",
-        shape_path = file.path(
-          tf, "01_data", "1c_shapefiles"
-        ) |>
-          normalizePath(winslash = "/", mustWork = FALSE),
-        shape_suffix = "district_shape.gpkg",
-        pop_raster_path = file.path(
-          tf, "01_data", "1b_rasters", "pop_raster"
-        ) |>
-          normalizePath(winslash = "/", mustWork = FALSE),
-        pop_raster_suffix = "_ppp_2020_constrained.tif",
-        ur_raster_path = file.path(
-          tf, "01_data", "1b_rasters", "urban_extent"
-        ) |>
-          normalizePath(winslash = "/", mustWork = FALSE),
-        ur_raster_suffix = "afurextent.asc",
-        pred_save_file = FALSE,
-        raster_width = 2500,
-        raster_height = 2000,
-        raster_resolution = 300,
-        save_raster = TRUE,
-        pyramid_line_color = "#67000d",
-        pyramid_fill_high = "#fee0d2",
-        pyramid_fill_low = "#a50f15",
-        pyramid_caption = paste0(
-          "Note: Total population includes ",
-          "ages 99+, pyramid shows ages 0-99"
-        ),
-        generate_pop_raster = TRUE,
-        output_paths = list(
-          model = file.path(tf, "03_outputs", "3a_model_outputs"),
-          plot = file.path(tf, "03_outputs", "3b_visualizations"),
-          raster = file.path(tf, "03_outputs", "3c_raster_outputs"),
-          table = file.path(tf, "03_outputs", "3c_table_outputs"),
-          compiled = file.path(tf, "03_outputs", "3d_compiled_results"),
-          excel = file.path(
-            tf, "03_outputs", "3d_compiled_results",
-            "age_pop_denom_compiled.xlsx"
-          ),
-          log = file.path(
-            tf, "03_outputs", "3a_model_outputs", "modelling_log.rds"
-          )
-        ) |> lapply(\(x) normalizePath(x, winslash = "/", mustWork = FALSE)),
-        model_params = list(
-          cell_size = 5000,
-          n_sim = 100,
-          ignore_cache = FALSE,
-          age_range = c(0, 1),
-          age_interval = 1,
-          return_prop = TRUE,
-          scale_outcome = "log_scale",
-          shape_outcome = "log_shape",
-          covariates = "urban",
-          cpp_script = file.path(tf, "02_scripts", "model") |>
-            normalizePath(winslash = "/", mustWork = FALSE),
-          control_params = list(trace = 2),
-          manual_params = NULL,
-          verbose = TRUE
-        ),
-        return_results = FALSE,
-        n_cores = 1
-      )
-
-      # Model outputs test -----------------------------------------------------
-      # Test existence of model output files
-      testthat::expect_true(
-        file.exists(file.path(
-          tf, "03_outputs", "3a_model_outputs",
-          "gmb_age_param_spatial.rds"
-        ))
-      )
-
-      testthat::expect_true(
-        file.exists(file.path(
-          tf, "03_outputs", "3a_model_outputs",
-          "gmb_predictor_data.rds"
-        ))
-      )
-
-      # Test model output contents
-      model_output <- readRDS(file.path(
-        tf, "03_outputs", "3a_model_outputs",
+    # Model outputs test -----------------------------------------------------
+    # Test existence of model output files
+    testthat::expect_true(
+      file.exists(file.path(
+        tf,
+        "03_outputs",
+        "3a_model_outputs",
         "gmb_age_param_spatial.rds"
       ))
-      testthat::expect_type(model_output, "list")
+    )
 
-      testthat::expect_true(all(c(
-        "par",
-        "objective", "convergence",
-        "iterations", "evaluations",
-        "message", "scale_formula",
-        "shape_formula",
-        "variogram"
-      ) %in% names(model_output)))
-
-      # Test for variogram components
-      testthat::expect_true("variogram" %in% names(model_output))
-      testthat::expect_type(model_output$variogram, "list")
-
-      predictor_data <- readRDS(file.path(
-        tf, "03_outputs", "3a_model_outputs",
+    testthat::expect_true(
+      file.exists(file.path(
+        tf,
+        "03_outputs",
+        "3a_model_outputs",
         "gmb_predictor_data.rds"
       ))
-      testthat::expect_s3_class(predictor_data, "data.frame")
+    )
 
-      testthat::expect_true(all(c(
-        "urban", "web_x", "web_y",
-        "pop", "urban", "country",
-        "region", "district", "country_code"
+    # Test model output contents
+    model_output <- readRDS(file.path(
+      tf,
+      "03_outputs",
+      "3a_model_outputs",
+      "gmb_age_param_spatial.rds"
+    ))
+    testthat::expect_type(model_output, "list")
+
+    testthat::expect_true(all(
+      c(
+        "par",
+        "objective",
+        "convergence",
+        "iterations",
+        "evaluations",
+        "message",
+        "scale_formula",
+        "shape_formula",
+        "variogram"
       ) %in%
-        names(predictor_data)))
+        names(model_output)
+    ))
 
-      # Visualization outputs test
-      testthat::expect_true(
-        file.exists(file.path(
-          tf, "03_outputs", "3b_visualizations",
-          "gmb_gamma_prediction_rasters.png"
-        ))
-      )
-      testthat::expect_true(
-        file.exists(file.path(
-          tf, "03_outputs", "3b_visualizations",
-          "gmb_age_pyramid_count.png"
-        ))
-      )
-      testthat::expect_true(
-        file.exists(file.path(
-          tf, "03_outputs", "3b_visualizations",
-          "gmb_age_pyramid_prop.png"
-        ))
-      )
+    # Test for variogram components
+    testthat::expect_true("variogram" %in% names(model_output))
+    testthat::expect_type(model_output$variogram, "list")
 
-      testthat::expect_true(
-        file.exists(file.path(
-          tf, "03_outputs", "3b_visualizations",
-          "gmb_variogram.png"
-        ))
-      )
+    predictor_data <- readRDS(file.path(
+      tf,
+      "03_outputs",
+      "3a_model_outputs",
+      "gmb_predictor_data.rds"
+    ))
+    testthat::expect_s3_class(predictor_data, "data.frame")
 
-      # Test image properties
-      for (img_file in c(
-        "gmb_gamma_prediction_rasters.png",
-        "gmb_age_pyramid_count.png",
+    testthat::expect_true(all(
+      c(
+        "urban",
+        "web_x",
+        "web_y",
+        "pop",
+        "urban",
+        "country",
+        "region",
+        "district",
+        "country_code"
+      ) %in%
+        names(predictor_data)
+    ))
+
+    # Visualization outputs test
+    testthat::expect_true(
+      file.exists(file.path(
+        tf,
+        "03_outputs",
+        "3b_visualizations",
+        "gmb_gamma_prediction_rasters.png"
+      ))
+    )
+    testthat::expect_true(
+      file.exists(file.path(
+        tf,
+        "03_outputs",
+        "3b_visualizations",
+        "gmb_age_pyramid_count.png"
+      ))
+    )
+    testthat::expect_true(
+      file.exists(file.path(
+        tf,
+        "03_outputs",
+        "3b_visualizations",
         "gmb_age_pyramid_prop.png"
-      )) {
-        img_path <- file.path(tf, "03_outputs", "3b_visualizations", img_file)
-        img_info <- file.info(img_path)
-        testthat::expect_gt(img_info$size, 0)
-      }
+      ))
+    )
 
-      # Table outputs test
-      table_path <- file.path(
-        tf, "03_outputs", "3c_table_outputs",
-        "gmb_age_tables_pop_0_1plus_yrs_by_1yrs.rds"
-      )
-      testthat::expect_true(file.exists(table_path))
+    testthat::expect_true(
+      file.exists(file.path(
+        tf,
+        "03_outputs",
+        "3b_visualizations",
+        "gmb_variogram.png"
+      ))
+    )
 
-      # Test table contents
-      age_tables <- readRDS(table_path)
-      testthat::expect_type(age_tables, "list")
-      testthat::expect_true(all(c("prop_df", "pop_df") %in%
-                                  names(age_tables)))
+    # Test image properties
+    for (img_file in c(
+      "gmb_gamma_prediction_rasters.png",
+      "gmb_age_pyramid_count.png",
+      "gmb_age_pyramid_prop.png"
+    )) {
+      img_path <- file.path(tf, "03_outputs", "3b_visualizations", img_file)
+      img_info <- file.info(img_path)
+      testthat::expect_gt(img_info$size, 0)
+    }
 
-      testthat::expect_true(all(c(
-        "country", "region", "district",
+    # Table outputs test
+    table_path <- file.path(
+      tf,
+      "03_outputs",
+      "3c_table_outputs",
+      "gmb_age_tables_pop_0_1plus_yrs_by_1yrs.rds"
+    )
+    testthat::expect_true(file.exists(table_path))
+
+    # Test table contents
+    age_tables <- readRDS(table_path)
+    testthat::expect_type(age_tables, "list")
+    testthat::expect_true(all(
+      c("prop_df", "pop_df") %in%
+        names(age_tables)
+    ))
+
+    testthat::expect_true(all(
+      c(
+        "country",
+        "region",
+        "district",
         "popsize"
       ) %in%
         c(
           names(age_tables$prop_df),
           names(age_tables$pop_df)
-        )))
+        )
+    ))
 
-      # Raster outputs test
-      rast_path <- file.path(
-        tf, "03_outputs", "3b_visualizations",
-        "gmb_age_pop_grid_0_10_yrs_by_1yrs.tif"
-      )
-      testthat::expect_true(file.exists(table_path))
+    # Raster outputs test
+    rast_path <- file.path(
+      tf,
+      "03_outputs",
+      "3b_visualizations",
+      "gmb_age_pop_grid_0_10_yrs_by_1yrs.tif"
+    )
+    testthat::expect_true(file.exists(table_path))
 
-      # Check if output is raster
-      rast <- terra::rast(rast_path)
-      testthat::expect_equal(class(rast)[1], "SpatRaster")
+    # Check if output is raster
+    rast <- terra::rast(rast_path)
+    testthat::expect_equal(class(rast)[1], "SpatRaster")
 
+    # Compiled results test
+    excel_path <- file.path(
+      tf,
+      "03_outputs",
+      "3d_compiled_results",
+      "age_pop_denom_compiled.xlsx"
+    )
+    testthat::expect_true(file.exists(excel_path))
+    testthat::expect_gt(file.info(excel_path)$size, 0)
 
-      # Compiled results test
-      excel_path <- file.path(
-        tf, "03_outputs", "3d_compiled_results",
-        "age_pop_denom_compiled.xlsx"
-      )
-      testthat::expect_true(file.exists(excel_path))
-      testthat::expect_gt(file.info(excel_path)$size, 0)
+    params_path <- file.path(
+      tf,
+      "03_outputs",
+      "3d_compiled_results",
+      "afro_model_params.csv"
+    )
+    testthat::expect_true(file.exists(params_path))
 
-      params_path <- file.path(
-        tf, "03_outputs", "3d_compiled_results",
-        "afro_model_params.csv"
-      )
-      testthat::expect_true(file.exists(params_path))
+    # Test CSV contents
+    params_data <- read.csv(params_path)
+    testthat::expect_true(all(
+      c(
+        "country",
+        "beta1",
+        "beta2",
+        "gamma",
+        "log_sigma2",
+        "log_phi",
+        "log_tau1",
+        "log_likelihood",
+        "convergence",
+        "iterations",
+        "eval_function",
+        "eval_gradient",
+        "message"
+      ) %in%
+        names(params_data)
+    ))
 
-      # Test CSV contents
-      params_data <- read.csv(params_path)
-      testthat::expect_true(all(
-        c(
-          "country", "beta1", "beta2", "gamma", "log_sigma2", "log_phi",
-          "log_tau1", "log_likelihood", "convergence", "iterations",
-          "eval_function", "eval_gradient", "message"
-        ) %in%
-          names(params_data)
-      ))
+    testthat::expect_equal(params_data$country[1], "GMB")
 
-      testthat::expect_equal(params_data$country[1], "GMB")
+    # Test log file
+    log_path <- file.path(
+      tf,
+      "03_outputs",
+      "3a_model_outputs",
+      "modelling_log.rds"
+    )
+    testthat::expect_true(file.exists(log_path))
+    log_data <- readRDS(log_path)
+    testthat::expect_type(log_data, "list")
+  })
 
-      # Test log file
-      log_path <- file.path(
-        tf, "03_outputs", "3a_model_outputs",
-        "modelling_log.rds"
-      )
-      testthat::expect_true(file.exists(log_path))
-      log_data <- readRDS(log_path)
-      testthat::expect_type(log_data, "list")
-    })
-  }
-)
+})
 
 testthat::test_that("simulate_dummy_dhs_pr() creates expected DHS dataset", {
   # setup: temporary output path
@@ -514,8 +614,6 @@ testthat::test_that("simulate_dummy_dhs_pr() creates expected DHS dataset", {
 
 testthat::test_that("autofitVariogram() returns valid variogram model", {
   testthat::skip_if_not_installed("sp")
-  testthat::skip_if_not_installed("sf")
-  testthat::skip_if_not_installed("gstat")
 
   # prepare data
   data("meuse", package = "sp")
@@ -558,3 +656,6 @@ testthat::test_that("autofitVariogram() prints expected output in verbose mode",
     regexp = "Tested models, best first:"
   )
 })
+
+
+cleanup_tmb_artifacts()

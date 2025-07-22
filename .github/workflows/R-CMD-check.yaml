@@ -53,13 +53,13 @@ jobs:
             echo 'CXXFLAGS += -I/usr/include/eigen3' >> ~/.R/Makevars
           fi
 
-      # Windows: expose Eigen headers from Rtools path
+      # Windows: fix Eigen path for TMB compilation
       - name: Install Eigen for TMB on Windows
         if: runner.os == 'Windows'
+        shell: bash
         run: |
-          echo "R_MAKEVARS_USER=${HOME}\\Documents\\.R\\Makevars.win" >> $GITHUB_ENV
-          mkdir -p "${HOME}\\Documents\\.R"
-          echo "CXXFLAGS += -I\"C:/rtools43/x86_64-w64-mingw32/include/eigen3\"" > "${HOME}\\Documents\\.R\\Makevars.win"
+          mkdir -p "${HOME}/.R"
+          echo 'CXXFLAGS += -IC:/rtools43/x86_64-w64-mingw32/include/eigen3' >> "${HOME}/.R/Makevars.win"
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:

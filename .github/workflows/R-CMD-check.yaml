@@ -37,6 +37,7 @@ jobs:
           use-public-rspm: true
 
       - name: Install Eigen via Homebrew
+        if: runner.os == 'macOS'
         run: brew install eigen
 
       - name: Windows TMB setup

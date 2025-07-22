@@ -55,11 +55,16 @@ jobs:
 
       # Windows: fix Eigen path for TMB compilation
       - name: Install Eigen for TMB on Windows
+      # Install Eigen manually for Windows
+      - name: Install Eigen manually for TMB on Windows
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          mkdir -p "${HOME}/.R"
-          echo 'CXXFLAGS += -IC:/rtools45/x86_64-w64-mingw32/include/eigen3' >> "${HOME}/.R/Makevars.win"
+          curl -L -o eigen.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
+          unzip -q eigen.zip
+          mkdir -p C:/eigen
+          cp -r eigen-3.4.0/Eigen C:/eigen
+          echo "TMB_CXXFLAGS=-IC:/eigen" >> $GITHUB_ENV
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:

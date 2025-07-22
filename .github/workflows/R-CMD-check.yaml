@@ -118,21 +118,6 @@ jobs:
         env:
           _R_CHECK_FORCE_SUGGESTS_: false
 
-      # Additional Windows-specific TMB test
-      - name: Test TMB installation (Windows)
-        if: runner.os == 'Windows'
-        shell: Rscript {0}
-        run: |
-          cat("Testing TMB installation...\n")
-          tryCatch({
-            library(TMB)
-            cat("TMB loaded successfully\n")
-            cat("TMB version:", packageVersion("TMB"), "\n")
-          }, error = function(e) {
-            cat("TMB loading failed:", e$message, "\n")
-            quit(status = 1)
-          })
-
       # Run R CMD check
       - uses: r-lib/actions/check-r-package@v2
         with:

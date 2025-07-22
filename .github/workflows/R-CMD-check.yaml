@@ -36,27 +36,40 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      # Install Eigen for macOS
+      # Install Eigen for macOS and set include path
       - name: Install Eigen via Homebrew
         if: runner.os == 'macOS'
-        run: brew install eigen
+        run: |
+          brew install eigen
+          mkdir -p ~/.R
+          if [ -d /opt/homebrew/include/eigen3 ]; then
+            echo 'PKG_CPPFLAGS=-I/opt/homebrew/include/eigen3' >> ~/.R/Makevars
+          elif [ -d /usr/local/include/eigen3 ]; then
+            echo 'PKG_CPPFLAGS=-I/usr/local/include/eigen3' >> ~/.R/Makevars
+          fi
 
-      # Install Eigen for Ubuntu/Linux
+      # Install Eigen for Ubuntu/Linux and set include path
       - name: Install Eigen (Ubuntu)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libeigen3-dev
 
-      # Install Eigen for Windows
-      - name: Windows TMB setup
+      - name: Set Eigen include path (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p ~/.R
+          echo 'PKG_CPPFLAGS=-I/usr/include/eigen3' >> ~/.R/Makevars
+
+      # Install Eigen for Windows and set include path
+      - name: Install Eigen (Windows)
         if: runner.os == 'Windows'
         run: |
-          # Ensure RTools is properly configured
-          echo 'PATH=${RTOOLS40_HOME}/usr/bin;${PATH}' >> $HOME/.Renviron
-          # Install Eigen3 using pacman (from MSYS2)
+          echo 'Installing Eigen for Windows'
           pacman -S --noconfirm mingw-w64-x86_64-eigen3
+          mkdir -p ~/.R
+          echo 'PKG_CPPFLAGS=-I/mingw64/include/eigen3' >> ~/.R/Makevars
         shell: bash
 
-      # (Optional) Other system deps for macOS
+      # Other system deps for macOS (optional, but often needed for geospatial R packages)
       - name: Install system dependencies (macOS)
         if: runner.os == 'macOS'
         run: |

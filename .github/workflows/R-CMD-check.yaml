@@ -2,9 +2,12 @@ on:
   push:
     branches: [main, master]
   pull_request:
+
 name: R-CMD-check.yaml
+
 permissions:
   contents: read
+
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
@@ -18,9 +21,11 @@ jobs:
           - { os: ubuntu-latest, r: "devel", http-user-agent: "release" }
           - { os: ubuntu-latest, r: "release" }
           - { os: ubuntu-latest, r: "oldrel-1" }
+
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+
     steps:
       - uses: actions/checkout@v4
 
@@ -40,74 +45,19 @@ jobs:
           echo "C:\rtools44\x86_64-w64-mingw32.static.posix\bin;C:\rtools44\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         shell: powershell
 
-      # macOS + Linux: install system dependencies including Eigen
+      # macOS + Linux: install system dependencies
       - name: Install system dependencies for Linux/macOS
         if: runner.os != 'Windows'
         run: |
           if [[ "${{ runner.os }}" == "macOS" ]]; then
             brew update
-            brew install pkg-config proj gdal eigen
-            mkdir -p ~/.R
-            echo 'CXXFLAGS += -I/opt/homebrew/include/eigen3' >> ~/.R/Makevars
-            echo 'CXX_STD = CXX17' >> ~/.R/Makevars
+            brew install pkg-config proj gdal
           else
             sudo apt-get update
-            sudo apt-get install -y libeigen3-dev libproj-dev libgdal-dev
-            mkdir -p ~/.R
-            echo 'CXXFLAGS += -I/usr/include/eigen3' >> ~/.R/Makevars
-            echo 'CXX_STD = CXX17' >> ~/.R/Makevars
+            sudo apt-get install -y libproj-dev libgdal-dev
           fi
 
-      # Install Eigen manually for Windows with improved setup
-      - name: Install Eigen manually for TMB on Windows
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          # Download and extract Eigen
-          curl -L -o eigen.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
-          unzip -q eigen.zip
-
-          # Create directory and copy headers
-          mkdir -p /c/eigen
-          cp -r eigen-3.4.0/Eigen /c/eigen/
-
-          # Create R Makevars directory and file
-          mkdir -p ~/.R
-          echo 'PKG_CXXFLAGS += -I/c/eigen' >> ~/.R/Makevars
-          echo 'CXX_STD = CXX17' >> ~/.R/Makevars
-          echo 'PKG_LIBS += $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)' >> ~/.R/Makevars
-
-          # Set environment variables for this session
-          echo "PKG_CXXFLAGS=-I/c/eigen" >> $GITHUB_ENV
-          echo "CXX_STD=CXX17" >> $GITHUB_ENV
-
-      # Debug information for Windows
-      - name: Debug R and system info (Windows)
-        if: runner.os == 'Windows'
-        shell: Rscript {0}
-        run: |
-          cat("=== R Session Info ===\n")
-          print(sessionInfo())
-          cat("\n=== System PATH ===\n")
-          cat(Sys.getenv("PATH"), "\n")
-          cat("\n=== R Environment Variables ===\n")
-          cat("PKG_CXXFLAGS:", Sys.getenv("PKG_CXXFLAGS"), "\n")
-          cat("CXX_STD:", Sys.getenv("CXX_STD"), "\n")
-          cat("\n=== Makevars Content ===\n")
-          makevars_path <- file.path(Sys.getenv("HOME"), ".R", "Makevars")
-          if (file.exists(makevars_path)) {
-            cat(readLines(makevars_path), sep="\n")
-          } else {
-            cat("Makevars file not found at:", makevars_path, "\n")
-          }
-          cat("\n=== Eigen Directory Check ===\n")
-          eigen_path <- "/c/eigen/Eigen"
-          cat("Eigen path exists:", file.exists(eigen_path), "\n")
-          if (file.exists(eigen_path)) {
-            cat("Eigen contents:", list.files(eigen_path)[1:5], "\n")
-          }
-
-      # Install R dependencies with additional system packages
+      # Install R dependencies
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
@@ -117,21 +67,6 @@ jobs:
           needs: check
         env:
           _R_CHECK_FORCE_SUGGESTS_: false
-
-      # Additional Windows-specific TMB test
-      - name: Test TMB installation (Windows)
-        if: runner.os == 'Windows'
-        shell: Rscript {0}
-        run: |
-          cat("Testing TMB installation...\n")
-          tryCatch({
-            library(TMB)
-            cat("TMB loaded successfully\n")
-            cat("TMB version:", packageVersion("TMB"), "\n")
-          }, error = function(e) {
-            cat("TMB loading failed:", e$message, "\n")
-            quit(status = 1)
-          })
 
       # Run R CMD check
       - uses: r-lib/actions/check-r-package@v2

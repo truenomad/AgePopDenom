@@ -59,7 +59,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p "${HOME}/.R"
-          echo 'CXXFLAGS += -IC:/rtools43/x86_64-w64-mingw32/include/eigen3' >> "${HOME}/.R/Makevars.win"
+          echo 'CXXFLAGS += -IC:/rtools45/x86_64-w64-mingw32/include/eigen3' >> "${HOME}/.R/Makevars.win"
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:

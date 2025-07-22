@@ -21,7 +21,7 @@ Description: Automate the modelling of age-structured population data
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-SystemRequirements: C++17, TMB
+SystemRequirements: C++17, TMB, eigen
 Imports:
     dplyr,
     cli,
@@ -63,8 +63,7 @@ Suggests:
     numDeriv,
     openxlsx2,
     matrixStats,
-    testthat,
-    eigen
+    testthat
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Config/testthat/edition: 3

@@ -36,6 +36,9 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Install Eigen via Homebrew
+        run: brew install eigen
+
       - name: Windows TMB setup
         if: runner.os == 'Windows'
         run: |

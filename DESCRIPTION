@@ -63,7 +63,8 @@ Suggests:
     numDeriv,
     openxlsx2,
     matrixStats,
-    testthat
+    testthat,
+    eigen
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Config/testthat/edition: 3

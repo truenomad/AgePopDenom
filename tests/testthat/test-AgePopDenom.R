@@ -38,6 +38,8 @@ cleanup_tmb_artifacts <- function() {
 
 testthat::test_that("process_dhs_data correctly processes DHS survey data", {
 
+  testthat::skip_if_not_installed("numDeriv")
+
   # Setup temporary test environment
   # Create temp directory with normalized path
   tf <- file.path(tempdir(), "test_env")
@@ -566,6 +568,9 @@ testthat::test_that("Test the full pipeline works", {
 })
 
 testthat::test_that("simulate_dummy_dhs_pr() creates expected DHS dataset", {
+
+  testthat::skip_if_not_installed("dplyr")
+
   # setup: temporary output path
   temp_path <- tempfile(fileext = ".rds")
 

@@ -70,15 +70,19 @@ jobs:
           choco install eigen -y --no-progress
         shell: powershell
 
-      # Set Eigen path and Makevars for Windows
+      # Set Eigen path and Makevars for Windows, in both possible locations
       - name: Set EIGEN_INCLUDE_PATH and Makevars for Windows
         if: runner.os == 'Windows'
         run: |
           echo "EIGEN_INCLUDE_PATH=C:/ProgramData/chocolatey/lib/eigen/include/eigen3" >> $env:GITHUB_ENV
-          $makevarsDir = "$env:USERPROFILE/.R"
-          if (!(Test-Path $makevarsDir)) { New-Item -ItemType Directory -Path $makevarsDir }
-          Add-Content -Path "$makevarsDir/Makevars" -Value "PKG_CXXFLAGS += -IC:/ProgramData/chocolatey/lib/eigen/include/eigen3"
-          Add-Content -Path "$makevarsDir/Makevars" -Value "CXX_STD = CXX17"
+          $makevarsDir1 = "$env:USERPROFILE/.R"
+          if (!(Test-Path $makevarsDir1)) { New-Item -ItemType Directory -Path $makevarsDir1 }
+          Add-Content -Path "$makevarsDir1/Makevars" -Value "PKG_CXXFLAGS += -IC:/ProgramData/chocolatey/lib/eigen/include/eigen3"
+          Add-Content -Path "$makevarsDir1/Makevars" -Value "CXX_STD = CXX17"
+          $makevarsDir2 = "$env:USERPROFILE/Documents/.R"
+          if (!(Test-Path $makevarsDir2)) { New-Item -ItemType Directory -Path $makevarsDir2 }
+          Add-Content -Path "$makevarsDir2/Makevars" -Value "PKG_CXXFLAGS += -IC:/ProgramData/chocolatey/lib/eigen/include/eigen3"
+          Add-Content -Path "$makevarsDir2/Makevars" -Value "CXX_STD = CXX17"
         shell: powershell
 
       # Debug information for Windows
@@ -93,12 +97,19 @@ jobs:
           cat("\n=== R Environment Variables ===\n")
           cat("EIGEN_INCLUDE_PATH:", Sys.getenv("EIGEN_INCLUDE_PATH"), "\n")
           cat("CXX_STD:", Sys.getenv("CXX_STD"), "\n")
-          cat("\n=== Makevars Content ===\n")
-          makevars_path <- file.path(Sys.getenv("HOME"), ".R", "Makevars")
-          if (file.exists(makevars_path)) {
-            cat(readLines(makevars_path), sep="\n")
+          cat("\n=== Makevars Content (.R) ===\n")
+          makevars_path1 <- file.path(Sys.getenv("USERPROFILE"), ".R", "Makevars")
+          if (file.exists(makevars_path1)) {
+            cat(readLines(makevars_path1), sep="\n")
           } else {
-            cat("Makevars file not found at:", makevars_path, "\n")
+            cat("Makevars file not found at:", makevars_path1, "\n")
+          }
+          cat("\n=== Makevars Content (Documents/.R) ===\n")
+          makevars_path2 <- file.path(Sys.getenv("USERPROFILE"), "Documents", ".R", "Makevars")
+          if (file.exists(makevars_path2)) {
+            cat(readLines(makevars_path2), sep="\n")
+          } else {
+            cat("Makevars file not found at:", makevars_path2, "\n")
           }
           cat("\n=== Eigen Directory Check ===\n")
           eigen_path <- "C:/ProgramData/chocolatey/lib/eigen/include/eigen3/Eigen"

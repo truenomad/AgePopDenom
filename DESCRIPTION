@@ -21,7 +21,7 @@ Description: Automate the modelling of age-structured population data
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-SystemRequirements: C++17, TMB, eigen
+SystemRequirements: C++17, TMB, Eigen3
 Imports:
     dplyr,
     cli,

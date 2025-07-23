@@ -1,12 +1,11 @@
-name: R-CMD-check
-
 on:
   push:
     branches: [main, master]
   pull_request:
 
-permissions:
-  contents: read
+name: R-CMD-check.yaml
+
+permissions: read-all
 
 jobs:
   R-CMD-check:
@@ -37,108 +36,30 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      # Install Rtools for Windows
-      - name: Install Rtools for Windows
+      - name: Windows TMB setup
         if: runner.os == 'Windows'
         run: |
-          choco install rtools -y --no-progress
-          echo "C:\rtools44\x86_64-w64-mingw32.static.posix\bin;C:\rtools44\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        shell: powershell
+          # Ensure RTools is properly configured
+          echo 'PATH=${RTOOLS40_HOME}/usr/bin;${PATH}' >> $HOME/.Renviron
+          # Install system dependencies using pacman
+          pacman -S mingw-w64-x86_64-eigen3 --noconfirm
+        shell: bash
 
-      # Install Eigen and system dependencies for Linux/macOS
-      - name: Install system dependencies for Linux/macOS
-        if: runner.os != 'Windows'
+      - name: Install system dependencies (macOS)
+        if: runner.os == 'macOS'
         run: |
-          if [[ "${{ runner.os }}" == "macOS" ]]; then
-            brew update
-            brew install pkg-config proj gdal eigen
-            mkdir -p ~/.R
-            echo 'CXXFLAGS += -I/opt/homebrew/include/eigen3' >> ~/.R/Makevars
-            echo 'CXX_STD = CXX17' >> ~/.R/Makevars
-          else
-            sudo apt-get update
-            sudo apt-get install -y libeigen3-dev libproj-dev libgdal-dev
-            mkdir -p ~/.R
-            echo 'CXXFLAGS += -I/usr/include/eigen3' >> ~/.R/Makevars
-            echo 'CXX_STD = CXX17' >> ~/.R/Makevars
-          fi
-
-      # Install Eigen for Windows using Chocolatey
-      - name: Install Eigen for TMB on Windows
-        if: runner.os == 'Windows'
-        run: |
-          choco install eigen -y --no-progress
-        shell: powershell
-
-      # Set Eigen path and Makevars for Windows, in both possible locations
-      - name: Set EIGEN_INCLUDE_PATH and Makevars for Windows
-        if: runner.os == 'Windows'
-        run: |
-          echo "EIGEN_INCLUDE_PATH=C:/ProgramData/chocolatey/lib/eigen/include/eigen3" >> $env:GITHUB_ENV
-          $makevarsDir1 = "$env:USERPROFILE/.R"
-          if (!(Test-Path $makevarsDir1)) { New-Item -ItemType Directory -Path $makevarsDir1 }
-          Add-Content -Path "$makevarsDir1/Makevars" -Value "PKG_CXXFLAGS += -IC:/ProgramData/chocolatey/lib/eigen/include/eigen3"
-          Add-Content -Path "$makevarsDir1/Makevars" -Value "CXX_STD = CXX17"
-          $makevarsDir2 = "$env:USERPROFILE/Documents/.R"
-          if (!(Test-Path $makevarsDir2)) { New-Item -ItemType Directory -Path $makevarsDir2 }
-          Add-Content -Path "$makevarsDir2/Makevars" -Value "PKG_CXXFLAGS += -IC:/ProgramData/chocolatey/lib/eigen/include/eigen3"
-          Add-Content -Path "$makevarsDir2/Makevars" -Value "CXX_STD = CXX17"
-        shell: powershell
-
-      # Debug information for Windows
-      - name: Debug R and system info (Windows)
-        if: runner.os == 'Windows'
-        shell: Rscript {0}
-        run: |
-          cat("=== R Session Info ===\n")
-          print(sessionInfo())
-          cat("\n=== System PATH ===\n")
-          cat(Sys.getenv("PATH"), "\n")
-          cat("\n=== R Environment Variables ===\n")
-          cat("EIGEN_INCLUDE_PATH:", Sys.getenv("EIGEN_INCLUDE_PATH"), "\n")
-          cat("CXX_STD:", Sys.getenv("CXX_STD"), "\n")
-          cat("\n=== Makevars Content (.R) ===\n")
-          makevars_path1 <- file.path(Sys.getenv("USERPROFILE"), ".R", "Makevars")
-          if (file.exists(makevars_path1)) {
-            cat(readLines(makevars_path1), sep="\n")
-          } else {
-            cat("Makevars file not found at:", makevars_path1, "\n")
-          }
-          cat("\n=== Makevars Content (Documents/.R) ===\n")
-          makevars_path2 <- file.path(Sys.getenv("USERPROFILE"), "Documents", ".R", "Makevars")
-          if (file.exists(makevars_path2)) {
-            cat(readLines(makevars_path2), sep="\n")
-          } else {
-            cat("Makevars file not found at:", makevars_path2, "\n")
-          }
-          cat("\n=== Eigen Directory Check ===\n")
-          eigen_path <- "C:/ProgramData/chocolatey/lib/eigen/include/eigen3/Eigen"
-          cat("Eigen path exists:", file.exists(eigen_path), "\n")
-          if (file.exists(eigen_path)) {
-            cat("Eigen contents:", list.files(eigen_path)[1:5], "\n")
-          }
-          cat("EIGEN_INCLUDE_PATH:", Sys.getenv("EIGEN_INCLUDE_PATH"), "\n")
-
-      # Install R dependencies
+          brew update
+          brew install pkg-config proj gdal
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: |
-            any::rcmdcheck
-            any::TMB
-            any::Matrix
+          extra-packages: any::rcmdcheck
           needs: check
-        env:
-          _R_CHECK_FORCE_SUGGESTS_: false
 
-      # Run R CMD check
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
-        env:
-          _R_CHECK_FORCE_SUGGESTS_: false
 
-      # Upload coverage reports to Codecov
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:

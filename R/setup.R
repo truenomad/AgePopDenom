@@ -235,7 +235,7 @@ init <- function(r_script_name = "full_pipeline.R",
                  setup_rscript = TRUE) {
 
     # Check for required package
-    if (!requireNamespace("pbmcapply", quietly = TRUE)) {
+    if (!requireNamespace("rstudioapi", quietly = TRUE)) {
       stop(
         paste0(
           "Package 'rstudioapi' is required for this function ",
@@ -437,6 +437,17 @@ cli::cli_alert_success(
 #'
 #' @export
 get_current_script_path <- function() {
+
+  # Check for required package
+  if (!requireNamespace("rstudioapi", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'rstudioapi' is required for this function ",
+        "Please install it with install.packages('rstudioapi')"
+      )
+    )
+  }
+
   # 1. try RStudio editor path
   if (
     requireNamespace("rstudioapi", quietly = TRUE) &&

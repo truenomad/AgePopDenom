@@ -1,7 +1,7 @@
 Package: AgePopDenom
 Type: Package
 Title: Model Fine-Scale Age-Structured Population Data using Open-Source Data
-Version: 1.2.2
+Version: 1.2.3
 Authors@R: c(
   person("Mohamed A.", "Yusuf",
          role = c("aut", "cre"),

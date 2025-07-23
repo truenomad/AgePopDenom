@@ -3,7 +3,7 @@ pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   using_agepopdenom: using_agepopdenom.html
-last_built: 2025-07-23T05:59Z
+last_built: 2025-07-23T06:11Z
 urls:
   reference: https://truenomad.github.io/AgePopDenom/reference
   article: https://truenomad.github.io/AgePopDenom/articles

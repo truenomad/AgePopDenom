@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgePopDenom Workflow</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: opx;
+            /* background: #f8f9fa; */
+            background: transparent;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            padding: 35px;
+        }
+
+        .title {
+            font-size: 26px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-weight: 400;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .header-section {
+            padding: 15px 0;
+            margin-bottom: 15px;
+        }
+
+        /* Main Workflow - Seamless Flow */
+        .workflow-main {
+            display: flex;
+            align-items: stretch;
+            margin-bottom: 25px;
+            height: 500px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .input-section, .output-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 0 15px;
+        }
+
+        .central-process {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .data-inputs {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .data-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .data-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.1);
+            transform: skewY(-2deg);
+        }
+
+        .data-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .data-card p {
+            margin: 0;
+            font-size: 12px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            line-height: 1.3;
+        }
+
+        .data-card.survey { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        .data-card.raster { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+        .data-card.urban { background: linear-gradient(135deg, #45b7d1, #2c3e50); }
+        .data-card.admin { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+        /* Central Process */
+        .central-process {
+            height: 500px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            border: 2.5px solid #ecf0f1;
+        }
+
+        .code-section {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 25px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 1.5;
+            overflow-x: auto;
+            position: relative;
+            flex: 3;
+        }
+
+        .code-section::before {
+            content: '# AgePopDenom_Gambia.R';
+            position: absolute;
+            top: 8px;
+            right: 20px;
+            font-size: 14px;
+            color: #95a5a6;
+        }
+
+        .function-call {
+            color: #3498db;
+        }
+
+        .string {
+            color: #e74c3c;
+        }
+
+        .comment {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        .process-pipeline {
+            background: #f8f9fa;
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .process-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .process-step {
+            background: white;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            padding: 12px 15px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            flex: 1;
+            text-align: center;
+        }
+
+        .process-arrow {
+            color: #3498db;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Outputs */
+        .output-cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .output-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 0;
+        }
+
+        .output-card h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .output-visual {
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .age-pyramid {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 40px;
+            gap: 3px;
+        }
+
+        .pyramid-bar {
+            background: rgba(255,255,255,0.8);
+            border-radius: 2px;
+            min-width: 8px;
+        }
+
+        .raster-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            height: 30px;
+        }
+
+        .grid-cell {
+            background: rgba(255,255,255,0.7);
+            border-radius: 2px;
+        }
+
+        .spatial-map {
+            height: 40px;
+            background: linear-gradient(45deg, rgba(255,255,255,0.3) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.3) 75%);
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .map-point {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #e74c3c;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .output-card p {
+            font-size: 12px;
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            line-height: 1.3;
+        }
+
+        .output-card.pyramid { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        .output-card.raster { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+        .output-card.table { background: linear-gradient(135deg, #45b7d1, #2c3e50); }
+        .output-card.policy { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+        .arrow-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #3498db;
+            width: 50px;
+            position: relative;
+        }
+
+        .arrow-flow::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            bottom: 20%;
+            left: 50%;
+            width: 3px;
+            background: #3498db;
+            transform: translateX(-50%);
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <div class="title">AgePopDenom Package Workflow</div>
+            <div class="subtitle">Geostatistical modeling for fine-scale population age structures using survey data, spatial covariates, and high-resolution grids</div>
+        </div>
+
+        <!-- Main Workflow -->
+        <div class="workflow-main">
+            <!-- Input Data -->
+            <div class="input-section">
+                <div class="section-title">Input Datasets</div>
+                <div class="data-inputs">
+                    <div class="data-card survey">
+                        <h4>📋 Survey Data</h4>
+                        <p>DHS, MICS, HDSS<br>Individual ages + coordinates</p>
+                    </div>
+                    <div class="data-card raster">
+                        <h4>🌍 Population Rasters</h4>
+                        <p>WorldPop 100m resolution<br>Gridded population totals</p>
+                    </div>
+                    <div class="data-card urban">
+                        <h4>🌃 Urban/Rural Extent</h4>
+                        <p>Captures demographic differences<br>Due to urbanicity</p>
+                    </div>
+                    <div class="data-card admin">
+                        <h4>🗺️ Admin Boundaries</h4>
+                        <p>WHO shapefiles<br>Country, region, district</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-flow">→</div>
+
+            <!-- Central Process -->
+            <div class="central-process">
+                <div class="section-title">Workflow</div>
+                    <div class="code-section">
+<span class="comment"># Initialize project structure</span><br>
+<span class="function-call">AgePopDenom::init()</span><br>
+<span class="comment"># Download and process data</span><br>
+<span class="function-call">download_dhs_datasets</span>(<span class="string">"GMB"</span>, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;email = <span class="string">"user@email.com"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;project = <span class="string">"population_analysis"</span>)<br>
+<span class="function-call">process_dhs_data()</span><br>
+<span class="function-call">download_shapefile</span>(<span class="string">"GMB"</span>)<br>
+<span class="function-call">download_pop_rasters</span>(<span class="string">"GMB"</span>)<br>
+<span class="function-call">extract_afurextent()</span><br>
+<span class="comment"># Run complete modeling pipeline</span><br>
+<span class="function-call">run_full_workflow</span>(<span class="string">"GMB"</span>)
+                    </div>
+
+                <div class="process-pipeline">
+                    <div class="process-steps">
+                        <div class="process-step">Gamma<br>Parameters</div>
+                        <div class="process-arrow">→</div>
+                        <div class="process-step">Spatial<br>Modeling</div>
+                        <div class="process-arrow">→</div>
+                        <div class="process-step">Grid<br>Prediction</div>
+                        <div class="process-arrow">→</div>
+                        <div class="process-step">Age<br>Estimates</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-flow">→</div>
+
+            <!-- Outputs -->
+            <div class="output-section">
+                <div class="section-title">Outputs</div>
+                <div class="output-cards">
+                    <div class="output-card pyramid">
+                        <h3>📊 Age Pyramid Plots</h3>
+                        <div class="output-visual">
+                            <div class="age-pyramid">
+                                <div class="pyramid-bar" style="height: 45%;"></div>
+                                <div class="pyramid-bar" style="height: 60%;"></div>
+                                <div class="pyramid-bar" style="height: 80%;"></div>
+                                <div class="pyramid-bar" style="height: 100%;"></div>
+                                <div class="pyramid-bar" style="height: 90%;"></div>
+                                <div class="pyramid-bar" style="height: 70%;"></div>
+                                <div class="pyramid-bar" style="height: 45%;"></div>
+                                <div class="pyramid-bar" style="height: 25%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="output-card raster">
+                        <h3>🗺️ Spatial Raster Maps</h3>
+                        <div class="output-visual">
+                            <div class="raster-grid">
+                                <div class="grid-cell" style="opacity: 0.4;"></div>
+                                <div class="grid-cell" style="opacity: 0.7;"></div>
+                                <div class="grid-cell" style="opacity: 0.9;"></div>
+                                <div class="grid-cell" style="opacity: 1.0;"></div>
+                                <div class="grid-cell" style="opacity: 1.0;"></div>
+                                <div class="grid-cell" style="opacity: 0.8;"></div>
+                                <div class="grid-cell" style="opacity: 0.6;"></div>
+                                <div class="grid-cell" style="opacity: 0.3;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="output-card table">
+                        <h3>📋 Summary Tables</h3>
+                        <div class="output-visual">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; font-size: 12px;">
+                                <div style="background: rgba(255,255,255,0.3); padding: 4px; border-radius: 3px;">Region</div>
+                                <div style="background: rgba(255,255,255,0.3); padding: 4px; border-radius: 3px;">0-4y</div>
+                                <div style="background: rgba(255,255,255,0.3); padding: 4px; border-radius: 3px;">5-17y</div>
+                                <div style="background: rgba(255,255,255,0.2); padding: 4px; border-radius: 3px;">Central</div>
+                                <div style="background: rgba(255,255,255,0.2); padding: 4px; border-radius: 3px;">23.4%</div>
+                                <div style="background: rgba(255,255,255,0.2); padding: 4px; border-radius: 3px;">31.2%</div>
+                            </div>
+                        </div>
+                        <p>Administrative summaries<br>by demographic groups<br><strong>Uncertainty quantified</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+<!-- webshot2::webshot("schematic_figure.html",
+"schematic_figure_final.png",
+vwidth = 1250 , # Matches your container width
+vheight = 1800, # Natural height without dead space
+zoom = 3, # High resolution
+delay = 3) -->

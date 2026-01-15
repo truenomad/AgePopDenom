@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.30">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-07-08">
+
+<title>AgePopDenom: Geostatistical Modeling for Fine-Scale Population Age-Structures</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="paper_files/libs/clipboard/clipboard.min.js"></script>
+<script src="paper_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="paper_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="paper_files/libs/quarto-html/popper.min.js"></script>
+<script src="paper_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="paper_files/libs/quarto-html/anchor.min.js"></script>
+<link href="paper_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="paper_files/libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="paper_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="paper_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="paper_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">AgePopDenom: Geostatistical Modeling for Fine-Scale Population Age-Structures</h1>
+</div>
+
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Mohamed A. Yusuf <a href="https://orcid.org/0000-0002-9339-4613" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            1
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Victor A. Alegana <a href="https://orcid.org/0000-0001-5177-9227" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            1
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Chibuzor Christopher Nnanatu <a href="https://orcid.org/0000-0002-5841-3700" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            2, 3
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Andrew Tatem <a href="https://orcid.org/0000-0002-7270-941X" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            2
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 8, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p><code>AgePopDenom</code> is an R package that generates spatial resolution (5 km × 5 km) estimates of population by single year of age across space using publicly available datasets including Demographic and Health Surveys (DHS) <span class="citation" data-cites="fabic2012">(<a href="#ref-fabic2012" role="doc-biblioref">Fabic, Choi, and Bird 2012</a>)</span>, WorldPop gridded population data <span class="citation" data-cites="tatem2017worldpop">(<a href="#ref-tatem2017worldpop" role="doc-biblioref">Andrew J. Tatem 2017</a>)</span>, and administrative boundaries. It’s designed for settings where recent, detailed age data are missing or outdated, common in many low- and middle-income countries.</p>
+<p>The package models age distributions using a Gamma distribution framework, which is well-suited for representing the typical shape of age structures (e.g., more children than elderly in most settings). It then predicts the distribution parameters across space using bivariate geostatistical models, which allow the model to estimate how age patterns vary jointly with location. To better reflect real-world patterns, the model incorporates spatial autocorrelation via Gaussian processes, which is a way of capturing the phenomenon where nearby locations tend to have similar demographic characteristics. Users can also include covariates, such as urban/rural status or other geographic features, to guide predictions. This approach moves beyond standard demographic methods by modeling age structure as a high resolution surface across geographies, capturing spatial heterogeneities, rather than assuming it is the same within large regions. As a result, AgePopDenom can produce detailed, spatially continuous age-disaggregated estimates, even in locations not directly sampled in surveys.</p>
+<p><code>AgePopDenom</code> is the first <code>R</code> package to operationalize a parameter-based geostatistical approach for modeling full age structures at fine spatial resolution (Figure 1). Unlike existing tools that focus on demographic simulation or a limited set of health indicators, <code>AgePopDenom</code> integrates survey microdata, gridded population rasters, administrative boundaries, and user-defined covariates into a single, streamlined workflow. It automates every step, from data acquisition and preprocessing to model fitting, spatial prediction, and visualization. The spatial modeling of age parameters is implemented using Template Model Builder (TMB) <span class="citation" data-cites="kristensen2016">(<a href="#ref-kristensen2016" role="doc-biblioref">Kristensen et al. 2016</a>)</span>, an <code>R</code> package designed for fitting statistical latent variable models with efficient <code>C++</code>-based optimization. This approach reduces computation time to just 7–10 minutes per country, compared to the 2–3 hours typically required by conventional <code>R</code> methods.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="schematic_figure_final.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 1:AgePopDenom workflow schematic showing the integration of input datasets, core processing pipeline, and resulting outputs.</figcaption>
+</figure>
+</div>
+</section>
+<section id="statement-of-need" class="level2">
+<h2 class="anchored" data-anchor-id="statement-of-need">Statement of need</h2>
+<p>Accurate and spatially explicit age-structured population data are essential for public health planning, disease surveillance, and broader development efforts. Such data form the basis for estimates of disease burden, vaccination coverage, and intervention impact, aiding governments and organizations in allocating resources effectively&nbsp;<span class="citation" data-cites="tatem2014 diaz2021 hay2006">(<a href="#ref-tatem2014" role="doc-biblioref">A. J. Tatem et al. 2014</a>; <a href="#ref-diaz2021" role="doc-biblioref">Diaz et al. 2021</a>; <a href="#ref-hay2006" role="doc-biblioref">Hay and Snow 2006</a>)</span>. Granular age-disaggregated data remain scarce however. Census data are infrequent and often lack subnational detail. National projections offer interim estimates, but their aggregate assumptions limit utility for local planning. Microdata from National Statistical Offices are often inaccessible due to restrictions <span class="citation" data-cites="linard2011 stevens2015">(<a href="#ref-linard2011" role="doc-biblioref">Linard, Gilbert, and Tatem 2010</a>; <a href="#ref-stevens2015" role="doc-biblioref">Stevens et al. 2015</a>)</span>. Household surveys such as those produced by the Demographic and Health Surveys (DHS) and Multiple Indicator Cluster Surveys (MICS) provide rich demographic data but are not designed for subnational estimation <span class="citation" data-cites="boerma1993 ye2012">(<a href="#ref-boerma1993" role="doc-biblioref">Boerma, Sommerfelt, et al. 1993</a>; <a href="#ref-ye2012" role="doc-biblioref">Ye et al. 2012</a>)</span>. This creates a persistent gap in small-area, age-structured population estimates.</p>
+<p>Despite advances in fine-scale population modeling—particularly for total population and select age groups like under-fives <span class="citation" data-cites="stevens2015 wardrop2018 alegana2015 pezzulo2017">(<a href="#ref-stevens2015" role="doc-biblioref">Stevens et al. 2015</a>; <a href="#ref-wardrop2018" role="doc-biblioref">Wardrop et al. 2018</a>; <a href="#ref-alegana2015" role="doc-biblioref">Alegana et al. 2015</a>; <a href="#ref-pezzulo2017" role="doc-biblioref">Pezzulo et al. 2017</a>)</span>—methods for estimating full age structures remain limited. Traditional techniques like spline interpolation <span class="citation" data-cites="mcneil1977 fukuda2010">(<a href="#ref-mcneil1977" role="doc-biblioref">McNeil, Trullell, and Turner 1977</a>; <a href="#ref-fukuda2010" role="doc-biblioref">Fukuda 2010</a>)</span> lack spatial detail and omit the potential benefits of incorporating covariates, while top-down census disaggregation often relies on outdated baselines, and bottom-up models typically exclude age <span class="citation" data-cites="wardrop2018">(<a href="#ref-wardrop2018" role="doc-biblioref">Wardrop et al. 2018</a>)</span>. AgePopDenom addresses this gap by modeling continuous age distributions via Gamma parameterization, using bivariate Gaussian processes to capture spatial autocorrelation. It delivers high-resolution estimates from survey microdata and covariates through a streamlined R workflow optimized with Template Model Builder (TMB) <span class="citation" data-cites="kristensen2016">(<a href="#ref-kristensen2016" role="doc-biblioref">Kristensen et al. 2016</a>)</span>, with built-in uncertainty quantification.</p>
+<p>Several existing R packages address adjacent topics but none support empirical, geostatistical modeling of full age structures.&nbsp;Simulation-oriented tools such as <code>IBMPopSim</code> <span class="citation" data-cites="giorgi2023efficient">(<a href="#ref-giorgi2023efficient" role="doc-biblioref">Giorgi, Kaakai, and Lemaire 2023</a>)</span>, <code>demogR</code> <span class="citation" data-cites="demogR">(<a href="#ref-demogR" role="doc-biblioref">J. H. Jones 2007</a>)</span>, <code>demography</code> <span class="citation" data-cites="demography2024">(<a href="#ref-demography2024" role="doc-biblioref">Hyndman 2024</a>)</span>, <code>popdemo</code> <span class="citation" data-cites="stott2012popdemo">(<a href="#ref-stott2012popdemo" role="doc-biblioref">Stott, Hodgson, and Townley 2012</a>)</span>, and <code>mpmsim</code> <span class="citation" data-cites="jones2025mpmsim">(<a href="#ref-jones2025mpmsim" role="doc-biblioref">O. R. Jones 2025</a>)</span> focus on cohort or matrix-based demographic modeling, rather than empirical spatial estimation. <code>SUMMER</code> <span class="citation" data-cites="summer2025">(<a href="#ref-summer2025" role="doc-biblioref">Li et al. 2025</a>)</span> package supports small-area estimation of survey-based indicators, but is limited to specific outcomes like under-five mortality and does not model full age structures. Additonally, the <code>wpp2024</code> <span class="citation" data-cites="wpp2024">(<a href="#ref-wpp2024" role="doc-biblioref">United Nations Department of Economic and Social Affairs, Population Division 2024</a>)</span> package, based on official UN model life table projections, provides standardized national age patterns but lacks spatial granularity and the ability to incorporate covariates.</p>
+</section>
+<section id="key-functionality" class="level2">
+<h2 class="anchored" data-anchor-id="key-functionality">Key functionality</h2>
+<section id="data-requirements" class="level3">
+<h3 class="anchored" data-anchor-id="data-requirements">Data Requirements</h3>
+<p><code>AgePopDenom</code> accepts a flexible range of input data types, including:</p>
+<ul>
+<li><p><strong>Survey data</strong>: Any household survey with geolocated cluster data can be used, provided it includes the variables latitude, longitude, ageyrs, and an urban/rural indicator. DHS data are natively supported and can be downloaded via the rdhs package.</p></li>
+<li><p><strong>Population rasters</strong>: Typically from WorldPop (www.worldpop.org), offering 100m resolution estimates of residential population totals.</p></li>
+<li><p><strong>Urban/rural covariates</strong>: Derived from satellite-derived nighttime lights, capturing settlement density and urbanization.</p></li>
+<li><p><strong>Administrative shapefiles</strong>: WHO shapefiles or any user-provided file with standard fields such as&nbsp;<code>country</code>,&nbsp;<code>region</code>, and&nbsp;<code>district</code>.</p></li>
+</ul>
+<p>Users may supply custom datasets if they conform to these structural expectations.</p>
+</section>
+<section id="modeling-framework" class="level3">
+<h3 class="anchored" data-anchor-id="modeling-framework">Modeling Framework</h3>
+<p>Ages are modeled using a Gamma distribution for each survey cluster. Let <span class="math inline">\(A_{ij}\)</span> represent the age of the <span class="math inline">\(j\)</span>-th individual in cluster <span class="math inline">\(i\)</span>. Each <span class="math inline">\(A_{ij}\)</span> is assumed to follow a Gamma distribution with shape <span class="math inline">\(\alpha(x_i)\)</span> and scale <span class="math inline">\(\lambda(x_i)\)</span>, estimated via maximum likelihood. That is, the Gamma distribution parameters are a function of a bivariate Gaussian Process <span class="math inline">\({x}\)</span> with an exponential covariance function.</p>
+<p>The fitted Gaussian process is used to generate predictions of the Gamma parameters at unobserved locations, capturing spatial correlation and allowing smooth interpolation across space. The Gamma cumulative distribution function is then applied to compute proportions in any defined age group, supporting fine-scale age-disaggregated estimation.</p>
+</section>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: It is essential to run this within an RStudio Project</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># so that relative paths used in init() and subsequent steps work correctly</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"AgePopDenom"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">init</span>()</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">download_dhs_datasets</span>(<span class="st">"GMB"</span>, <span class="at">email =</span> <span class="st">"email@example.org"</span>, <span class="at">project =</span> <span class="st">"demo"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">process_dhs_data</span>()</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">download_shapefile</span>(<span class="st">"GMB"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">download_pop_rasters</span>(<span class="st">"GMB"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">extract_afurextent</span>()</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">run_full_workflow</span>(<span class="st">"GMB"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p><code>AgePopDenom</code> offers both a methodological advance and a practical tool for analysts and programs working across data-sparse settings. Using survey microdata and spatial covariates, it estimates Gamma-distribution parameters at the cluster level and interpolates them via Gaussian processes <span class="citation" data-cites="alegana2015">(<a href="#ref-alegana2015" role="doc-biblioref">Alegana et al. 2015</a>)</span> to generate continuous, spatially explicit age distributions. This parameter-based method complements traditional demographic approaches <span class="citation" data-cites="mcneil1977 fukuda2010">(<a href="#ref-mcneil1977" role="doc-biblioref">McNeil, Trullell, and Turner 1977</a>; <a href="#ref-fukuda2010" role="doc-biblioref">Fukuda 2010</a>)</span> by offering subnational resolution, covariate integration, and reproducible workflows <span class="citation" data-cites="linard2011 james2018">(<a href="#ref-linard2011" role="doc-biblioref">Linard, Gilbert, and Tatem 2010</a>; <a href="#ref-james2018" role="doc-biblioref">James et al. 2018</a>)</span>. Future extensions will be focused on incorporating temporal dynamics <span class="citation" data-cites="ye2012">(<a href="#ref-ye2012" role="doc-biblioref">Ye et al. 2012</a>)</span>, Bayesian frameworks <span class="citation" data-cites="rue2017">(<a href="#ref-rue2017" role="doc-biblioref">Rue et al. 2017</a>)</span>, migration and fertility covariates, and support for longitudinal surveys. Still, the current implementation already fills a key gap by producing age-disaggregated estimates from routinely collected household survey data in data-sparsesettings. AgePopDenom provides a much-needed tool for generating detailed, policy-relevant age structures to support health and development planning.</p>
+</section>
+<section id="acknowledgements" class="level2">
+<h2 class="anchored" data-anchor-id="acknowledgements">Acknowledgements</h2>
+<p>We acknowledge the DHS Program for providing access to survey data and WorldPop for gridded population datasets. This work was supported by funding from the World Health Organization and the University of Southampton.</p>
+</section>
+<section id="references" class="level2 unnumbered">
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-alegana2015" class="csl-entry" role="listitem">
+Alegana, Victor A, Peter M Atkinson, Carla Pezzulo, Alessandro Sorichetta, D Weiss, T Bird, E Erbach-Schoenberg, and Andrew J Tatem. 2015. <span>“Fine Resolution Mapping of Population Age-Structures for Health and Development Applications.”</span> <em>Journal of The Royal Society Interface</em> 12 (105): 20150073.
+</div>
+<div id="ref-boerma1993" class="csl-entry" role="listitem">
+Boerma, J Ties, A Elisabeth Sommerfelt, et al. 1993. <span>“Demographic and Health Surveys (DHS): Contributions and Limitations.”</span> <em>World Health Stat Q</em> 46 (4): 222–26.
+</div>
+<div id="ref-diaz2021" class="csl-entry" role="listitem">
+Diaz, Theresa, Kathleen L Strong, Bochen Cao, Regina Guthold, Allisyn C Moran, Ann-Beth Moller, Jennifer Requejo, et al. 2021. <span>“A Call for Standardised Age-Disaggregated Health Data.”</span> <em>The Lancet Healthy Longevity</em> 2 (7): e436–43. <a href="https://doi.org/10.1016/s2666-7568(21)00115-x">https://doi.org/10.1016/s2666-7568(21)00115-x</a>.
+</div>
+<div id="ref-fabic2012" class="csl-entry" role="listitem">
+Fabic, Madeleine Short, YoonJoung Choi, and Sandra Bird. 2012. <span>“A Systematic Review of Demographic and Health Surveys: Data Availability and Utilization for Research.”</span> <em>Bulletin of the World Health Organization</em> 90: 604–12.
+</div>
+<div id="ref-fukuda2010" class="csl-entry" role="listitem">
+Fukuda, Kosei. 2010. <span>“Interpolation and Forecasting of Population Census Data.”</span> <em>Journal of Population Research</em> 27: 1–13.
+</div>
+<div id="ref-giorgi2023efficient" class="csl-entry" role="listitem">
+Giorgi, Daphné, Sarah Kaakai, and Vincent Lemaire. 2023. <span>“Efficient Simulation of Individual-Based Population Models: The r Package IBMPopSim.”</span> <em>arXiv Preprint arXiv:2303.06183</em>.
+</div>
+<div id="ref-hay2006" class="csl-entry" role="listitem">
+Hay, Simon I, and Robert W Snow. 2006. <span>“The Malaria Atlas Project: Developing Global Maps of Malaria Risk.”</span> <em>PLoS Medicine</em> 3 (12): e473. <a href="https://doi.org/10.1371/journal.pmed.0030473">https://doi.org/10.1371/journal.pmed.0030473</a>.
+</div>
+<div id="ref-demography2024" class="csl-entry" role="listitem">
+Hyndman, Rob. 2024. <em>Demography: Forecasting Mortality, Fertility, Migration and Population Data</em>. <a href="https://pkg.robjhyndman.com/demography/">https://pkg.robjhyndman.com/demography/</a>.
+</div>
+<div id="ref-james2018" class="csl-entry" role="listitem">
+James, William HM, Natalia Tejedor-Garavito, Sophie Elizabeth Hanspal, A Campbell-Sutton, GM Hornby, Carla Pezzulo, Kristine Nilsen, et al. 2018. <span>“Gridded Birth and Pregnancy Datasets for Africa, Latin America and the Caribbean.”</span> <em>Scientific Data</em> 5 (1): 1–11.
+</div>
+<div id="ref-demogR" class="csl-entry" role="listitem">
+Jones, James Holland. 2007. <span>“<span class="nocase">demogR</span>: A Package for the Construction and Analysis of Age-Structured Demographic Models in <span>R</span>.”</span> <em>Journal of Statistical Software</em> 22 (10): 1–28. <a href="http://dx.doi.org/10.18637/jss.v022.i10">http://dx.doi.org/10.18637/jss.v022.i10</a>.
+</div>
+<div id="ref-jones2025mpmsim" class="csl-entry" role="listitem">
+Jones, Owen R. 2025. <span>“Mpmsim: An r Package for Simulating Matrix Population Models.”</span> <em>Methods in Ecology and Evolution</em> 16 (5): 904–11.
+</div>
+<div id="ref-kristensen2016" class="csl-entry" role="listitem">
+Kristensen, Kasper, Anders Nielsen, Casper W Berg, Hans Skaug, and Bradley M Bell. 2016. <span>“TMB: Automatic Differentiation and Laplace Approximation.”</span> <em>Journal of Statistical Software</em> 70: 1–21.
+</div>
+<div id="ref-summer2025" class="csl-entry" role="listitem">
+Li, Zehang R, Bryan D Martin, Yuan Hsiao, Jessica Godwin, John Paige, Peter Gao, Jon Wakefield, Samuel J Clark, Geir-Arne Fuglstad, and Andrea Riebler. 2025. <em>SUMMER: Spatio-Temporal Under-Five Mortality Methods for Estimation</em>.
+</div>
+<div id="ref-linard2011" class="csl-entry" role="listitem">
+Linard, Catherine, Marius Gilbert, and Andrew J. Tatem. 2010. <span>“Assessing the Use of Global Land Cover Data for Guiding Large Area Population Distribution Modelling.”</span> <em>GeoJournal</em> 76 (5): 525–38. <a href="https://doi.org/10.1007/s10708-010-9364-8">https://doi.org/10.1007/s10708-010-9364-8</a>.
+</div>
+<div id="ref-mcneil1977" class="csl-entry" role="listitem">
+McNeil, Donald R, T Jamel Trullell, and John C Turner. 1977. <span>“Spline Interpolation of Demographic Oata.”</span> <em>Demography</em> 14: 245–52.
+</div>
+<div id="ref-pezzulo2017" class="csl-entry" role="listitem">
+Pezzulo, Carla, Graeme M Hornby, Alessandro Sorichetta, Andrea E Gaughan, Catherine Linard, Tomas J Bird, David Kerr, Christopher T Lloyd, and Andrew J Tatem. 2017. <span>“Sub-National Mapping of Population Pyramids and Dependency Ratios in Africa and Asia.”</span> <em>Scientific Data</em> 4 (1): 1–15.
+</div>
+<div id="ref-rue2017" class="csl-entry" role="listitem">
+Rue, Håvard, Andrea Riebler, Sigrunn H Sørbye, Janine B Illian, Daniel P Simpson, and Finn K Lindgren. 2017. <span>“Bayesian Computing with INLA: A Review.”</span> <em>Annual Review of Statistics and Its Application</em> 4 (1): 395–421.
+</div>
+<div id="ref-stevens2015" class="csl-entry" role="listitem">
+Stevens, Forrest R., Andrea E. Gaughan, Catherine Linard, and Andrew J. Tatem. 2015. <span>“Disaggregating Census Data for Population Mapping Using Random Forests with Remotely-Sensed and Ancillary Data.”</span> Edited by Luís A. Nunes Amaral. <em>PLOS ONE</em> 10 (2): e0107042. <a href="https://doi.org/10.1371/journal.pone.0107042">https://doi.org/10.1371/journal.pone.0107042</a>.
+</div>
+<div id="ref-stott2012popdemo" class="csl-entry" role="listitem">
+Stott, Iain, David J Hodgson, and Stuart Townley. 2012. <span>“Popdemo: An r Package for Population Demography Using Projection Matrix Analysis.”</span> <em>Methods in Ecology &amp; Evolution</em> 3 (5).
+</div>
+<div id="ref-tatem2014" class="csl-entry" role="listitem">
+Tatem, A. J., D. P. Gething, C. Pezzulo, D. Weiss, and S. Bhatt. 2014. <span>“Development of Pilot High-Resolution Gridded Poverty Surfaces: Methods Working Paper.”</span> Technical Report. University of Southampton.
+</div>
+<div id="ref-tatem2017worldpop" class="csl-entry" role="listitem">
+Tatem, Andrew J. 2017. <span>“WorldPop, Open Data for Spatial Demography.”</span> <em>Scientific Data</em> 4 (1): 1–4.
+</div>
+<div id="ref-wpp2024" class="csl-entry" role="listitem">
+United Nations Department of Economic and Social Affairs, Population Division. 2024. <span>“Wpp2024: An <code>R</code> Package for Accessing Data from the 2024 Revision of the World Population Prospects.”</span> GitHub.
+</div>
+<div id="ref-wardrop2018" class="csl-entry" role="listitem">
+Wardrop, Nicola A, Warren C Jochem, Tomas J Bird, Heather R Chamberlain, Donna Clarke, David Kerr, Linus Bengtsson, Sabrina Juran, Vincent Seaman, and Andrew J Tatem. 2018. <span>“Spatially Disaggregated Population Estimates in the Absence of National Population and Housing Census Data.”</span> <em>Proceedings of the National Academy of Sciences</em> 115 (14): 3529–37.
+</div>
+<div id="ref-ye2012" class="csl-entry" role="listitem">
+Ye, Yazoume, Marilyn Wamukoya, Alex Ezeh, Jacques BO Emina, and Osman Sankoh. 2012. <span>“Health and Demographic Surveillance Systems: A Step Towards Full Civil Registration and Vital Statistics System in Sub-Sahara Africa?”</span> <em>BMC Public Health</em> 12: 1–11.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

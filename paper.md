@@ -85,7 +85,9 @@ The parameters are estimated via maximum likelihood as functions of a bivariate 
 # Note: Run within an RStudio Project for correct relative paths
 install.packages("AgePopDenom")
 AgePopDenom::init()
-AgePopDenom::download_dhs_datasets("GMB", email = "email@example.org", project = "demo")
+AgePopDenom::download_dhs_datasets(
+  "GMB", email = "email@example.org", project = "demo"
+)
 AgePopDenom::process_dhs_data()
 AgePopDenom::download_shapefile("GMB")
 AgePopDenom::download_pop_rasters("GMB")

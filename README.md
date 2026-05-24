@@ -201,6 +201,20 @@ library(AgePopDenom)
 
 ------------------------------------------------------------------------
 
+## Data access
+
+`AgePopDenom` relies on microdata from the [Demographic and Health Surveys (DHS) Program](https://dhsprogram.com/), a long-running survey programme that has fielded nationally representative household surveys on population, health, and nutrition in over 90 low- and middle-income countries since 1984.
+
+DHS microdata are free but not openly downloadable — access is granted per project. Before running the pipeline:
+
+1.  **Register a DHS account** at <https://dhsprogram.com/data/new-user-registration.cfm>. You will need to provide an institutional email and a short description of the research project the data will be used for.
+2.  **Request dataset access** for each country you plan to model. From the DHS data portal, add the relevant surveys (Household Recode / "PR" and Geographic / "GE" files) to your project. Approval is typically granted within 1–2 business days.
+3.  **Use the same email and project name** when calling `download_dhs_datasets()` — the underlying `rdhs` client authenticates against your DHS account using those credentials.
+
+See `?download_dhs_datasets` for further details.
+
+------------------------------------------------------------------------
+
 ### Core Functions
 
 1.  Initialize project structure:

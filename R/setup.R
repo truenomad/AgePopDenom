@@ -270,8 +270,8 @@ cntry_codes = c("GMB")
 # Download DHS datasets
 AgePopDenom::download_dhs_datasets(
   country_codes = cntry_codes,
-  email = "my_email@exmaple.com",
-  project = "My populaiton denom project")
+  email = "my_email@example.com",
+  project = "Population denominator project")
 
 # Process DHS datasets
 AgePopDenom::process_dhs_data()

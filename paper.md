@@ -95,6 +95,10 @@ AgePopDenom::extract_afurextent()
 AgePopDenom::run_full_workflow("GMB")
 ```
 
+Users without DHS data access can run the same workflow end-to-end by replacing the `download_dhs_datasets()` and `process_dhs_data()` steps with `simulate_dummy_dhs_pr()`, which generates a DHS-like survey dataset for The Gambia (a pre-simulated copy is also shipped with the package). \autoref{fig:outputs} shows outputs from this simulated workflow: predicted Gamma parameter surfaces and the resulting mean-age prediction at 5 km × 5 km resolution. The workflow also produces age-stratified population tables with 95% uncertainty intervals, regional age pyramids, and a compiled spreadsheet of denominators.
+
+![Example outputs for The Gambia generated from the simulated example dataset: predicted Gamma scale and shape parameter surfaces and the resulting mean age prediction at 5 km × 5 km resolution.\label{fig:outputs}](example_gamma_rasters.png)
+
 # AI usage disclosure
 
 Generative AI tools were used during the development of this work. Specifically, AI assistance was used for debugging during software development and for editing and refining the manuscript text. All AI-generated suggestions were reviewed, validated, and modified by the authors. The corresponding author takes full responsibility for the final content.

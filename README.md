@@ -21,6 +21,7 @@ The package models age distributions using a Gamma distribution framework with b
 - `references.bib` - Bibliography
 - `paper.html` - Rendered HTML version
 - `schematic_figure_final.png/.html` - Workflow diagram
+- `example_gamma_rasters.png` - Example outputs figure (simulated Gambia run)
 - **`example_pipeline.R`** - Complete example demonstrating package functionality
 - **`renv.lock`** - renv lockfile with package dependencies
 - **`AgePopDenom_Paper_JOSS.Rproj`** - RStudio Project file

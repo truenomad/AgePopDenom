@@ -64,7 +64,8 @@ Suggests:
     openxlsx2,
     matrixStats,
     testthat,
-    RcppEigen
+    RcppEigen,
+    covr
 RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 Config/testthat/edition: 3

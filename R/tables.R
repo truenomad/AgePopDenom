@@ -354,7 +354,7 @@ generate_age_pop_table <- function(predictor_data,
   # Save results
   base::saveRDS(final_list, file = output_path)
   cli::cli_alert_success("Final age population data saved to {output_path}")
-  return(final_list)
+  final_list
 }
 
 #' Process Final Population Data
@@ -588,7 +588,7 @@ extract_age_param <- function(
   }
 
   cli::cli_alert_success(
-    "Model paramters extracted and saved to {output_file}.")
+    "Model parameters extracted and saved to {output_file}.")
 
-  return(params_df)
+  params_df
 }

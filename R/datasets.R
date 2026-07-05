@@ -787,7 +787,7 @@ extract_afurextent <- function(
 
   cli::cli_alert_success(
     "Raster file successfully extracted to: {raster_file}")
-  return(raster_file)
+  raster_file
 }
 
 #' Download WHO ADM2 Boundaries with Partial Update

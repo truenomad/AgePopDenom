@@ -52,6 +52,6 @@ saveRDS(dummy_params, file = file.path(dummy_dir,
 
 params_df <- extract_age_param(dir_path = dummy_dir,
                                output_file = tempdir())
-#> ✔ Model paramters extracted and saved to /tmp/RtmpqFflLL.
+#> ✔ Model paramters extracted and saved to /tmp/Rtmplnf4Dh.
 # }
 ```

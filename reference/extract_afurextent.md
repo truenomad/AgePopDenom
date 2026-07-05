@@ -40,12 +40,12 @@ It requires the \`raster\` package to load the raster file.
 ``` r
 # \donttest{
  extract_afurextent(tempdir(), overwrite = TRUE)
-#> ℹ Extracting raster file to /tmp/RtmpqFflLL...
-#> Warning: cannot remove file '/tmp/RtmpqFflLL/__MACOSX', reason 'Directory not empty'
-#> Warning: cannot remove file '/tmp/RtmpqFflLL/bslib-71d7f13118c36706c39339f77436fb7b', reason 'Directory not empty'
-#> Warning: cannot remove file '/tmp/RtmpqFflLL/downlit', reason 'Directory not empty'
-#> Warning: cannot remove file '/tmp/RtmpqFflLL/test_env', reason 'Directory not empty'
-#> ✔ Raster file successfully extracted to: /tmp/RtmpqFflLL/afurextent.asc
-#> [1] "/tmp/RtmpqFflLL/afurextent.asc"
+#> ℹ Extracting raster file to /tmp/Rtmplnf4Dh...
+#> Warning: cannot remove file '/tmp/Rtmplnf4Dh/__MACOSX', reason 'Directory not empty'
+#> Warning: cannot remove file '/tmp/Rtmplnf4Dh/bslib-71d7f13118c36706c39339f77436fb7b', reason 'Directory not empty'
+#> Warning: cannot remove file '/tmp/Rtmplnf4Dh/downlit', reason 'Directory not empty'
+#> Warning: cannot remove file '/tmp/Rtmplnf4Dh/test_env', reason 'Directory not empty'
+#> ✔ Raster file successfully extracted to: /tmp/Rtmplnf4Dh/afurextent.asc
+#> [1] "/tmp/Rtmplnf4Dh/afurextent.asc"
 # }
 ```

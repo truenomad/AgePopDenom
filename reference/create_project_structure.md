@@ -57,16 +57,16 @@ dir.create(cpp_path, recursive = TRUE, showWarnings = FALSE)
 cpp_path <- normalizePath(cpp_path, winslash = "/", mustWork = FALSE)
 
 create_project_structure(base_path = tf)
-#> ℹ Created: /tmp/RtmpZznQ5N/test_env/01_data/1a_survey_data/processed
-#> ℹ Created: /tmp/RtmpZznQ5N/test_env/01_data/1a_survey_data/raw
-#> ℹ Created: /tmp/RtmpZznQ5N/test_env/01_data/1b_rasters/urban_extent
-#> ℹ Created: /tmp/RtmpZznQ5N/test_env/01_data/1b_rasters/pop_raster
-#> ℹ Created: /tmp/RtmpZznQ5N/test_env/01_data/1c_shapefiles
-#> ! Exists: /tmp/RtmpZznQ5N/test_env/02_scripts
-#> ℹ Created: /tmp/RtmpZznQ5N/test_env/03_outputs/3a_model_outputs
-#> ℹ Created: /tmp/RtmpZznQ5N/test_env/03_outputs/3b_visualizations
-#> ℹ Created: /tmp/RtmpZznQ5N/test_env/03_outputs/3c_table_outputs
-#> ℹ Created: /tmp/RtmpZznQ5N/test_env/03_outputs/3d_compiled_results
+#> ℹ Created: /tmp/RtmpNUOBYi/test_env/01_data/1a_survey_data/processed
+#> ℹ Created: /tmp/RtmpNUOBYi/test_env/01_data/1a_survey_data/raw
+#> ℹ Created: /tmp/RtmpNUOBYi/test_env/01_data/1b_rasters/urban_extent
+#> ℹ Created: /tmp/RtmpNUOBYi/test_env/01_data/1b_rasters/pop_raster
+#> ℹ Created: /tmp/RtmpNUOBYi/test_env/01_data/1c_shapefiles
+#> ! Exists: /tmp/RtmpNUOBYi/test_env/02_scripts
+#> ℹ Created: /tmp/RtmpNUOBYi/test_env/03_outputs/3a_model_outputs
+#> ℹ Created: /tmp/RtmpNUOBYi/test_env/03_outputs/3b_visualizations
+#> ℹ Created: /tmp/RtmpNUOBYi/test_env/03_outputs/3c_table_outputs
+#> ℹ Created: /tmp/RtmpNUOBYi/test_env/03_outputs/3d_compiled_results
 #> ✔ Folder structure created successfully.
 # }
 ```

@@ -179,6 +179,14 @@ least:
 - *age_in_years* for each individual
 - An *urban* indicator (if available)
 
+If you do not (yet) have a DHS account, you can still run the entire
+workflow with simulated data:
+[`simulate_dummy_dhs_pr()`](https://truenomad.github.io/AgePopDenom/reference/simulate_dummy_dhs_pr.md)
+writes a DHS-like dataset to the expected location, and a pre-simulated
+copy is shipped with the package
+(`system.file("extdata", "example_dhs_pr_gmb.rds", package = "AgePopDenom")`).
+See the *Example: Gambia* section below for a complete runnable script.
+
 To download DHS data, do:
 
 ``` r
@@ -715,7 +723,7 @@ AgePopDenom::download_shapefile(cntry_code)
 # download population rasters from worldpop
 AgePopDenom::download_pop_rasters(cntry_code)
 
-# wxtract urban extent raster
+# extract urban extent raster
 AgePopDenom::extract_afurextent()
 
 # Run models and get outputs ---------------------------------------------------

@@ -33,7 +33,7 @@ run_full_workflow(
   output_paths = list(),
   model_params = list(),
   return_results = FALSE,
-  n_cores = parallel::detectCores() - 2,
+  n_cores = max(1, parallel::detectCores() - 2, na.rm = TRUE),
   ...
 )
 ```
@@ -188,7 +188,7 @@ run_full_workflow(
 - n_cores:
 
   Integer number of cores for parallel processing for age population
-  table, default detectCores()-2
+  table, default max(1, detectCores()-2)
 
 - ...:
 

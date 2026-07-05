@@ -16,7 +16,7 @@ generate_age_pop_table(
   country_code,
   ignore_cache = FALSE,
   output_dir,
-  n_cores = parallel::detectCores() - 2
+  n_cores = max(1, parallel::detectCores() - 2, na.rm = TRUE)
 )
 ```
 
@@ -58,8 +58,8 @@ generate_age_pop_table(
 
 - n_cores:
 
-  Integer number of cores for parallel processing, default
-  detectCores()-2
+  Integer number of cores for parallel processing, default max(1,
+  detectCores()-2)
 
 ## Value
 
@@ -115,6 +115,6 @@ output <- generate_age_pop_table(
 #> ℹ Processing interval 10/10...
 #> ✔ Completed interval 10/10.
 #> 
-#> ✔ Final age population data saved to /tmp/RtmpTS1jsq/ABC_age_tables_pop_0_99plus_yrs_by_10yrs.rds
+#> ✔ Final age population data saved to /tmp/Rtmperi88o/ABC_age_tables_pop_0_99plus_yrs_by_10yrs.rds
 # }
 ```

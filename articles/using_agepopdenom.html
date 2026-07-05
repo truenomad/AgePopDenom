@@ -233,6 +233,13 @@ contain at least:</p>
 <em>age_in_years</em> for each individual</li>
 <li>An <em>urban</em> indicator (if available)</li>
 </ul>
+<p>If you do not (yet) have a DHS account, you can still run the entire
+workflow with simulated data: <code><a href="../reference/simulate_dummy_dhs_pr.html">simulate_dummy_dhs_pr()</a></code>
+writes a DHS-like dataset to the expected location, and a pre-simulated
+copy is shipped with the package
+(<code>system.file("extdata", "example_dhs_pr_gmb.rds", package = "AgePopDenom")</code>).
+See the <em>Example: Gambia</em> section below for a complete runnable
+script.</p>
 <p>To download DHS data, do:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/download_dhs_datasets.html">download_dhs_datasets</a></span><span class="op">(</span></span>
@@ -749,7 +756,7 @@ dummy data simulation, and running the full modeling workflow.</p>
 <span><span class="co"># download population rasters from worldpop</span></span>
 <span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="../reference/download_pop_rasters.html">download_pop_rasters</a></span><span class="op">(</span><span class="va">cntry_code</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># wxtract urban extent raster</span></span>
+<span><span class="co"># extract urban extent raster</span></span>
 <span><span class="fu">AgePopDenom</span><span class="fu">::</span><span class="fu"><a href="../reference/extract_afurextent.html">extract_afurextent</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Run models and get outputs ---------------------------------------------------</span></span>

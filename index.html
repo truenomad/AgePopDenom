@@ -221,18 +221,97 @@ sudo apt-get install build-essential libxml2-dev</code></pre>
 </ol>
 <p>See <code><a href="reference/download_dhs_datasets.html">?download_dhs_datasets</a></code> for further details.</p>
 <hr>
+</div>
+<div class="section level2">
+<h2 id="quick-start-with-example-data-no-dhs-account-required">Quick start with example data (no DHS account required)<a class="anchor" aria-label="anchor" href="#quick-start-with-example-data-no-dhs-account-required"></a>
+</h2>
+<p>To try <code>AgePopDenom</code> before requesting DHS access, use the simulated example data. The package ships with a small DHS-like survey dataset for The Gambia and a simulator, <code><a href="reference/simulate_dummy_dhs_pr.html">simulate_dummy_dhs_pr()</a></code>, that regenerates it. The shapefiles and population rasters used by the pipeline are openly available and downloaded automatically — only the survey microdata normally require a DHS account.</p>
+<p>Run the full pipeline end-to-end with simulated data (inside an RStudio project):</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://truenomad.github.io/AgePopDenom/">AgePopDenom</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Create the project scaffolding in the current directory</span></span>
+<span><span class="fu"><a href="reference/init.html">init</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Simulate a DHS-like survey dataset for The Gambia and save it</span></span>
+<span><span class="co"># where the workflow expects processed survey data</span></span>
+<span><span class="fu"><a href="reference/simulate_dummy_dhs_pr.html">simulate_dummy_dhs_pr</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Download open data: district shapefile and WorldPop population</span></span>
+<span><span class="co"># raster, then extract the urban extent raster shipped with the package</span></span>
+<span><span class="fu"><a href="reference/download_shapefile.html">download_shapefile</a></span><span class="op">(</span><span class="st">"GMB"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/download_pop_rasters.html">download_pop_rasters</a></span><span class="op">(</span><span class="st">"GMB"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/extract_afurextent.html">extract_afurextent</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Fit the geostatistical model and generate all outputs</span></span>
+<span><span class="fu"><a href="reference/run_full_workflow.html">run_full_workflow</a></span><span class="op">(</span><span class="st">"GMB"</span><span class="op">)</span></span></code></pre></div>
+<p>All outputs are written to <code>03_outputs/</code>: model objects (<code>3a_model_outputs</code>), plots such as the age pyramid and prediction rasters (<code>3b_visualizations</code>), age-stratified population tables (<code>3c_table_outputs</code>), and a compiled Excel workbook (<code>3d_compiled_results</code>).</p>
+<p>A pre-simulated copy of the same dataset is included in the package if you prefer to inspect it directly:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">example_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
+<span>  <span class="st">"extdata"</span>, <span class="st">"example_dhs_pr_gmb.rds"</span>,</span>
+<span>  package <span class="op">=</span> <span class="st">"AgePopDenom"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">dummy_dhs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="va">example_data</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="example-outputs">Example outputs<a class="anchor" aria-label="anchor" href="#example-outputs"></a>
+</h3>
+<p>The quick start run above produces, among other outputs, predicted gamma parameter surfaces and the resulting mean age prediction at a 5 km × 5 km resolution:</p>
+<p><img src="reference/figures/example_gamma_rasters.png" alt="Predicted scale and shape parameter surfaces and mean age prediction for The Gambia (simulated data)" width="85%"></p>
+<p>as well as age pyramids of the modelled population structure by region:</p>
+<p><img src="reference/figures/example_age_pyramid.png" alt="Regional age pyramids of modelled population counts for The Gambia (simulated data)" width="85%"></p>
+<p>Age-stratified population tables with 95% uncertainty intervals are written both as <code>.rds</code> files and as a compiled Excel workbook, for example:</p>
+<table class="table">
+<thead><tr>
+<th>country</th>
+<th>region</th>
+<th align="right">popsize</th>
+<th align="right">0-1y mean</th>
+<th align="right">0-1y lower</th>
+<th align="right">0-1y upper</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>GAMBIA</td>
+<td>CENTRAL RIVER REGION</td>
+<td align="right">264,587</td>
+<td align="right">5,531</td>
+<td align="right">1,371</td>
+<td align="right">14,923</td>
+</tr>
+<tr>
+<td>GAMBIA</td>
+<td>LOWER RIVER REGION</td>
+<td align="right">96,310</td>
+<td align="right">1,593</td>
+<td align="right">755</td>
+<td align="right">2,902</td>
+</tr>
+<tr>
+<td>GAMBIA</td>
+<td>NORTH BANK EAST REGION</td>
+<td align="right">268,492</td>
+<td align="right">4,429</td>
+<td align="right">1,932</td>
+<td align="right">8,422</td>
+</tr>
+</tbody>
+</table>
+<p>(Values shown are from the simulated example dataset, not real DHS data.)</p>
+<hr>
+</div>
 <div class="section level3">
 <h3 id="core-functions">Core Functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
 </h3>
 <ol style="list-style-type: decimal">
 <li>Initialize project structure:</li>
 </ol>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/init.html">init</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <ol start="2" style="list-style-type: decimal">
 <li>Download required data:</li>
 </ol>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Example for Kenya and Uganda</span></span>
 <span><span class="va">countries</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"KEN"</span>, <span class="st">"UGA"</span><span class="op">)</span></span>
 <span></span>
@@ -255,7 +334,7 @@ sudo apt-get install build-essential libxml2-dev</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Run full analysis:</li>
 </ol>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/run_full_workflow.html">run_full_workflow</a></span><span class="op">(</span><span class="va">countries</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>

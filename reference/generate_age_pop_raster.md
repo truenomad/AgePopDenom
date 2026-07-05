@@ -17,7 +17,7 @@ generate_age_pop_raster(
   country_code,
   ignore_cache = FALSE,
   output_dir,
-  n_cores = parallel::detectCores() - 2
+  n_cores = max(1, parallel::detectCores() - 2, na.rm = TRUE)
 )
 ```
 
@@ -59,8 +59,8 @@ generate_age_pop_raster(
 
 - n_cores:
 
-  Integer number of cores for parallel processing, default
-  detectCores()-2
+  Integer number of cores for parallel processing, default max(1,
+  detectCores()-2)
 
 ## Value
 
@@ -131,6 +131,6 @@ res <- generate_age_pop_raster(predictor_data,
 #> ℹ Processing interval 11/11...
 #> ✔ Completed interval 11/11.
 #> 
-#> ✔ Raster stack saved to /tmp/RtmpTS1jsq/cod_age_pop_grid_0_10_yrs_by_1yrs.tif
+#> ✔ Raster stack saved to /tmp/Rtmperi88o/cod_age_pop_grid_0_10_yrs_by_1yrs.tif
 # }
 ```

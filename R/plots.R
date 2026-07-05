@@ -871,7 +871,7 @@ generate_age_pyramid_plot <- function(
 #' @param ignore_cache Logical whether to ignore cached results, default FALSE
 #' @param output_dir Character path to output directory
 #' @param n_cores Integer number of cores for parallel processing, default
-#'    detectCores()-2
+#'    max(1, detectCores()-2)
 #'
 #' @return SpatRaster object (terra package) containing multiple layers, where
 #'    each layer represents the population proportion for an age interval.
@@ -915,7 +915,10 @@ generate_age_pop_raster <- function(predictor_data,
                                     country_code,
                                     ignore_cache = FALSE,
                                     output_dir,
-                                    n_cores = parallel::detectCores() - 2) {
+                                    n_cores = max(
+                                      1, parallel::detectCores() - 2,
+                                      na.rm = TRUE
+                                    )) {
   # Construct output path
   output_path <- file.path(
     output_dir,
@@ -958,6 +961,19 @@ generate_age_pop_raster <- function(predictor_data,
     stop("Number of rows in predictions must match predictor_data")
   }
 
+  # Set up workers once for all intervals (Linux/Windows) and restore the
+  # user's future plan and options on exit
+  if (Sys.info()["sysname"] != "Darwin") {
+    previous <- setup_parallel_plan(scale_pred, shape_pred, n_cores)
+    on.exit(
+      {
+        future::plan(previous$plan)
+        options(previous$options)
+      },
+      add = TRUE
+    )
+  }
+
   # Processing loop
   for (runnum in seq_along(limslow)) {
     cli::cli_process_start(
@@ -980,7 +996,6 @@ generate_age_pop_raster <- function(predictor_data,
       )
     } else {
       # For Linux/Windows
-      future::plan(future::multisession, workers = n_cores)
       prop_age_pred <- future.apply::future_lapply(
         1:n_sim,
         function(sim) {

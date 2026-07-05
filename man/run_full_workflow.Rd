@@ -28,7 +28,7 @@ run_full_workflow(
   output_paths = list(),
   model_params = list(),
   return_results = FALSE,
-  n_cores = parallel::detectCores() - 2,
+  n_cores = max(1, parallel::detectCores() - 2, na.rm = TRUE),
   ...
 )
 }
@@ -131,7 +131,7 @@ lower values fill. Default: "#a50f15"}
 \item{return_results}{Logical. Whether to return results. Default: FALSE.}
 
 \item{n_cores}{Integer number of cores for parallel processing for age
-population table, default detectCores()-2}
+population table, default max(1, detectCores()-2)}
 
 \item{...}{Additional arguments passed to subfunctions.}
 }

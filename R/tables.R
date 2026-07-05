@@ -32,57 +32,49 @@ compute_age_proportions <- function(sim, scale, shape, run, limslow, limsup) {
   }
 }
 
-#' Run parallel computation wrapper
+#' Set Up Future Workers Sized For The Prediction Matrices
+#'
+#' @description
+#' Starts a multisession `future` plan and raises `future.globals.maxSize`
+#' so the gamma prediction matrices can be exported to the workers. The
+#' default limit (500 MiB) is too small for large countries, which would
+#' otherwise force users to change global options by hand. Returns the
+#' previous plan and options so callers can restore them via `on.exit()`.
+#'
+#' @param scale_pred Matrix of scale parameters exported to the workers
+#' @param shape_pred Matrix of shape parameters exported to the workers
+#' @param n_cores Integer number of workers to start
+#'
+#' @return List with elements `plan` and `options` holding the previous
+#'    future plan and option values.
+#'
 #' @noRd
-run_parallel_mac <- function(n_sim, scale_pred, shape_pred, runnum, n_cores) {
-  # Check for required package
-  if (!requireNamespace("pbmcapply", quietly = TRUE)) {
-    stop(
-      paste0(
-        "Package 'pbmcapply' is required for Mac parallel processing. Please ",
-        "install it with install.packages('pbmcapply')")
-      )
-  }
-
-  pbmcapply::pbmclapply(
-    1:n_sim,
-    function(sim) {
-      compute_age_proportions(sim, scale_pred, shape_pred, runnum,
-                              limslow, limsup)
-    },
-    mc.cores = n_cores,
-    mc.preschedule = FALSE
-  )
-}
-
-#' Run parallel computation wrapper for non-Mac
-#' @noRd
-run_parallel_other <- function(n_sim, scale_pred, shape_pred, runnum, n_cores) {
+setup_parallel_plan <- function(scale_pred, shape_pred, n_cores) {
   # Check for required packages
-  if (!requireNamespace("future.apply", quietly = TRUE)) {
-    stop(
-      paste0(
-        "Package 'future.apply' is required for parallel processing. ",
-        "Please install it with install.packages('future.apply')"
+  for (pkg in c("future", "future.apply")) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      stop(
+        glue::glue(
+          "Package '{pkg}' is required for parallel processing. Please ",
+          "install it with install.packages('{pkg}')"
+        )
       )
-    )
-  }
-  if (!requireNamespace("future", quietly = TRUE)) {
-    stop(
-      paste0(
-        "Package 'future' is required for parallel processing. Please ",
-        "install it with install.packages('future')"
-      )
-    )
+    }
   }
 
-  future.apply::future_lapply(
-    1:n_sim,
-    function(sim) {
-      compute_age_proportions(sim, scale_pred, shape_pred, runnum,
-                              limslow, limsup)
+  globals_size <- as.numeric(utils::object.size(scale_pred)) +
+    as.numeric(utils::object.size(shape_pred))
+  old_options <- options(
+    future.globals.maxSize = max(2 * globals_size, 500 * 1024^2)
+  )
+  old_plan <- tryCatch(
+    future::plan(future::multisession, workers = n_cores),
+    error = function(e) {
+      options(old_options)
+      stop(e)
     }
   )
+  list(plan = old_plan, options = old_options)
 }
 
 #' Generate Age Population Tables
@@ -105,7 +97,7 @@ run_parallel_other <- function(n_sim, scale_pred, shape_pred, runnum, n_cores) {
 #' @param ignore_cache Logical whether to ignore cached results, default FALSE
 #' @param output_dir Character path to output directory
 #' @param n_cores Integer number of cores for parallel processing, default
-#'    detectCores()-2
+#'    max(1, detectCores()-2)
 #'
 #' @return List containing two data frames:
 #'    - prop_df: Age-stratified population proportions with uncertainty intervals
@@ -138,7 +130,10 @@ generate_age_pop_table <- function(predictor_data,
                                    country_code,
                                    ignore_cache = FALSE,
                                    output_dir,
-                                   n_cores = parallel::detectCores() - 2) {
+                                   n_cores = max(
+                                     1, parallel::detectCores() - 2,
+                                     na.rm = TRUE
+                                   )) {
 
     # Check for required packages used in this function
     if (!requireNamespace("matrixStats", quietly = TRUE)) {
@@ -198,6 +193,19 @@ generate_age_pop_table <- function(predictor_data,
     stop("Number of rows in predictions must match predictor_data")
   }
 
+  # Set up workers once for all intervals (Linux/Windows) and restore the
+  # user's future plan and options on exit
+  if (Sys.info()["sysname"] != "Darwin") {
+    previous <- setup_parallel_plan(scale_pred, shape_pred, n_cores)
+    on.exit(
+      {
+        future::plan(previous$plan)
+        options(previous$options)
+      },
+      add = TRUE
+    )
+  }
+
   # Processing loop
   for (runnum in seq_along(limslow)) {
     cli::cli_process_start(
@@ -230,7 +238,6 @@ generate_age_pop_table <- function(predictor_data,
       )
     } else {
       # For Linux/Windows
-      future::plan(future::multisession, workers = n_cores)
       prop_age_pred <- future.apply::future_lapply(
         1:n_sim,
         function(sim) {

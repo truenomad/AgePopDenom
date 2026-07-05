@@ -215,6 +215,66 @@ See `?download_dhs_datasets` for further details.
 
 ------------------------------------------------------------------------
 
+## Quick start with example data (no DHS account required)
+
+To try `AgePopDenom` before requesting DHS access, use the simulated example data. The package ships with a small DHS-like survey dataset for The Gambia and a simulator, `simulate_dummy_dhs_pr()`, that regenerates it. The shapefiles and population rasters used by the pipeline are openly available and downloaded automatically — only the survey microdata normally require a DHS account.
+
+Run the full pipeline end-to-end with simulated data (inside an RStudio project):
+
+``` r
+library(AgePopDenom)
+
+# Create the project scaffolding in the current directory
+init()
+
+# Simulate a DHS-like survey dataset for The Gambia and save it
+# where the workflow expects processed survey data
+simulate_dummy_dhs_pr()
+
+# Download open data: district shapefile and WorldPop population
+# raster, then extract the urban extent raster shipped with the package
+download_shapefile("GMB")
+download_pop_rasters("GMB")
+extract_afurextent()
+
+# Fit the geostatistical model and generate all outputs
+run_full_workflow("GMB")
+```
+
+All outputs are written to `03_outputs/`: model objects (`3a_model_outputs`), plots such as the age pyramid and prediction rasters (`3b_visualizations`), age-stratified population tables (`3c_table_outputs`), and a compiled Excel workbook (`3d_compiled_results`).
+
+A pre-simulated copy of the same dataset is included in the package if you prefer to inspect it directly:
+
+``` r
+example_data <- system.file(
+  "extdata", "example_dhs_pr_gmb.rds",
+  package = "AgePopDenom"
+)
+dummy_dhs <- readRDS(example_data)
+```
+
+### Example outputs
+
+The quick start run above produces, among other outputs, predicted gamma parameter surfaces and the resulting mean age prediction at a 5 km × 5 km resolution:
+
+<img src="man/figures/example_gamma_rasters.png" alt="Predicted scale and shape parameter surfaces and mean age prediction for The Gambia (simulated data)" width="85%"/>
+
+as well as age pyramids of the modelled population structure by region:
+
+<img src="man/figures/example_age_pyramid.png" alt="Regional age pyramids of modelled population counts for The Gambia (simulated data)" width="85%"/>
+
+Age-stratified population tables with 95% uncertainty intervals are written both as `.rds` files and as a compiled Excel workbook, for example:
+
+| country | region | popsize | 0-1y mean | 0-1y lower | 0-1y upper |
+|---------|--------|--------:|----------:|-----------:|-----------:|
+| GAMBIA | CENTRAL RIVER REGION | 264,587 | 5,531 | 1,371 | 14,923 |
+| GAMBIA | LOWER RIVER REGION | 96,310 | 1,593 | 755 | 2,902 |
+| GAMBIA | NORTH BANK EAST REGION | 268,492 | 4,429 | 1,932 | 8,422 |
+
+(Values shown are from the simulated example dataset, not real DHS data.)
+
+------------------------------------------------------------------------
+
 ### Core Functions
 
 1.  Initialize project structure:

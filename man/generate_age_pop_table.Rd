@@ -13,7 +13,7 @@ generate_age_pop_table(
   country_code,
   ignore_cache = FALSE,
   output_dir,
-  n_cores = parallel::detectCores() - 2
+  n_cores = max(1, parallel::detectCores() - 2, na.rm = TRUE)
 )
 }
 \arguments{
@@ -39,7 +39,7 @@ default 1}
 \item{output_dir}{Character path to output directory}
 
 \item{n_cores}{Integer number of cores for parallel processing, default
-detectCores()-2}
+max(1, detectCores()-2)}
 }
 \value{
 List containing two data frames:

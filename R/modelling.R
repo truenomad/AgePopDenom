@@ -1089,7 +1089,7 @@ process_gamma_predictions <- function(gamma_prediction) {
 #' @param ur_raster_suffix Character. Suffix for urban-rural raster.
 #'   Default: "afurextent.asc".
 #' @param n_cores Integer number of cores for parallel processing for age
-#'   population table, default detectCores()-2
+#'   population table, default max(1, detectCores()-2)
 #' @param pred_save_file Logical. Whether to save prediction files.
 #'   Default: FALSE
 #' @param raster_width Integer. Width of raster plots in pixels.
@@ -1371,7 +1371,7 @@ run_full_workflow <- function(
     output_paths = list(),
     model_params = list(),
     return_results = FALSE,
-    n_cores = parallel::detectCores() - 2, ...) {
+    n_cores = max(1, parallel::detectCores() - 2, na.rm = TRUE), ...) {
   # Define default output paths
   default_output_paths <- list(
     model = here::here("03_outputs", "3a_model_outputs"),

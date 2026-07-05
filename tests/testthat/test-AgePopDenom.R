@@ -662,5 +662,34 @@ testthat::test_that("autofitVariogram() prints expected output in verbose mode",
   )
 })
 
+testthat::test_that("setup_parallel_plan() sizes future globals and restores state", {
+  testthat::skip_if_not_installed("future")
+  testthat::skip_if_not_installed("future.apply")
+
+  old_maxsize <- getOption("future.globals.maxSize")
+  scale_pred <- matrix(1, 100, 10)
+  shape_pred <- matrix(1, 100, 10)
+
+  previous <- tryCatch(
+    AgePopDenom:::setup_parallel_plan(scale_pred, shape_pred, 1),
+    error = function(e) {
+      # multisession workers cannot start (e.g. sandboxed environments);
+      # the options must have been restored before the error propagated
+      testthat::expect_identical(
+        getOption("future.globals.maxSize"), old_maxsize
+      )
+      testthat::skip("multisession workers unavailable")
+    }
+  )
+
+  # limit is raised to at least future's 500 MiB default while active
+  active_maxsize <- getOption("future.globals.maxSize")
+  future::plan(previous$plan)
+  options(previous$options)
+
+  testthat::expect_gte(active_maxsize, 500 * 1024^2)
+  testthat::expect_identical(getOption("future.globals.maxSize"), old_maxsize)
+})
+
 
 cleanup_tmb_artifacts()

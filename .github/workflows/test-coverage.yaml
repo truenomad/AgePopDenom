@@ -46,7 +46,7 @@ jobs:
         with:
           # Fail CI if the upload errors (except on forks' PRs without a token)
           fail_ci_if_error: ${{ github.event_name != 'pull_request' && true || false }}
-          file: ./cobertura.xml
+          files: ./cobertura.xml
           plugins: noop
           disable_search: true
           token: ${{ secrets.CODECOV_TOKEN }}

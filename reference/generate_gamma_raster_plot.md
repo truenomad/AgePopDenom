@@ -87,6 +87,6 @@ generate_gamma_raster_plot(predictor_data,
                            pred_list,
                            country_code = "COD",
                            output_dir = file.path(tempdir()))
-#> ✔ Raster plot saved to /tmp/RtmpNUOBYi/COD_gamma_prediction_rasters.png
+#> ✔ Raster plot saved to /tmp/RtmpqFflLL/COD_gamma_prediction_rasters.png
 # }
 ```

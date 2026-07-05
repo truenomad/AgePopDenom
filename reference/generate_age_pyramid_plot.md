@@ -96,7 +96,7 @@ res <- generate_age_pyramid_plot(
          dataset = dataset,
          country_code = "COD",
          output_dir = file.path(tempdir()))
-#> ✔ Age pyramid count plot saved to /tmp/RtmpNUOBYi/COD_age_pyramid_count.png
-#> ✔ Age pyramid prop plot saved to /tmp/RtmpNUOBYi/COD_age_pyramid_prop.png
+#> ✔ Age pyramid count plot saved to /tmp/RtmpqFflLL/COD_age_pyramid_count.png
+#> ✔ Age pyramid prop plot saved to /tmp/RtmpqFflLL/COD_age_pyramid_prop.png
 # }
 ```

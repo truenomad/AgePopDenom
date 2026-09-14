@@ -25,7 +25,7 @@ authors:
 affiliations:
   - name: World Health Organization, Regional Office for the Eastern Mediterranean, Cairo, Egypt
     index: 1
-  - name: The World Health Organization Regional Office for Africa (WHO AFRO)
+  - name: The World Health Organization Regional Office for Africa, Brazzaville, Congo
     index: 2
   - name: WorldPop, School of Geography and Environmental Science, University of Southampton, Southampton, United Kingdom
     index: 3

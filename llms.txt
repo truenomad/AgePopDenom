@@ -9,6 +9,29 @@ survey data with a novel parameter-based geostatistical modeling
 approach, the package produces high-resolution (5km x 5km) population
 estimates disaggregated by age.
 
+## Statement of need
+
+Age-structured population estimates at fine spatial resolution are
+needed for public health planning, disease surveillance, and the
+denominators behind estimates of disease burden, vaccination coverage,
+and intervention impact. Such data are scarce. Censuses are infrequent
+and often lack subnational detail, national projections rest on
+aggregate assumptions that limit their use for local planning, and
+household surveys such as DHS and MICS are not designed for subnational
+estimation. Existing fine-scale population models mostly estimate total
+population or a few age groups such as under-fives, and methods for
+estimating full age distributions at small-area level remain limited.
+
+AgePopDenom addresses this gap by modeling the continuous age
+distribution at each survey location with a Gamma distribution whose
+parameters are linked through bivariate Gaussian processes. It then
+combines the fitted model with WorldPop gridded population rasters and
+administrative boundaries to produce 5km x 5km estimates of population
+by single year of age, with uncertainty quantification. It is intended
+for epidemiologists, demographers, and programme staff who need
+age-specific denominators where census microdata are unavailable or out
+of date.
+
 ------------------------------------------------------------------------
 
 ## Installation

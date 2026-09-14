@@ -1,0 +1,33 @@
+{
+  "title": "AgePopDenom: Geostatistical Modeling for Fine-Scale Population Age-Structures",
+  "description": "An R package that generates high-resolution (5 km x 5 km) estimates of population by single year of age using Demographic and Health Surveys, WorldPop gridded population data, and administrative boundaries.",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Yusuf, Mohamed A.",
+      "orcid": "0000-0002-9339-4613",
+      "affiliation": "World Health Organization, Regional Office for the Eastern Mediterranean, Cairo, Egypt"
+    },
+    {
+      "name": "Alegana, Victor A.",
+      "orcid": "0000-0001-5177-9227",
+      "affiliation": "World Health Organization Regional Office for Africa"
+    },
+    {
+      "name": "Nnanatu, Chibuzor Christopher",
+      "orcid": "0000-0002-5841-3700",
+      "affiliation": "WorldPop, School of Geography and Environmental Science, University of Southampton, Southampton, United Kingdom; Department of Statistics, Nnamdi Azikiwe University, Awka, Nigeria"
+    },
+    {
+      "name": "Tatem, Andrew",
+      "orcid": "0000-0002-7270-941X",
+      "affiliation": "WorldPop, School of Geography and Environmental Science, University of Southampton, Southampton, United Kingdom"
+    }
+  ],
+  "keywords": ["R", "geostatistics", "geospatial", "population modeling", "demographics", "spatial analysis", "public health"],
+  "related_identifiers": [
+    {"identifier": "https://github.com/truenomad/AgePopDenom", "relation": "isSupplementTo", "scheme": "url"}
+  ]
+}

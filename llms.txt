@@ -386,8 +386,8 @@ For support, bug reports, or feature requests, please contact:
 
 - **Mo Yusuf** (Package Developer)  
   **Email**: <moyusuf@who.int>  
-  **Affiliation**: World Health Organization Regional Office for Africa,
-  P.O. Box 06, Cite du Djoue, Brazzaville, Congo
+  **Affiliation**: World Health Organization, Regional Office for the
+  Eastern Mediterranean, Cairo, Egypt
 
 Alternatively, open an issue on the [GitHub
 repository](https://github.com/truenomad/AgePopDenom).

@@ -76,18 +76,18 @@ path = tf,
 open_r_script = FALSE
 )
 #> ✔ All suggested packages are already installed.
-#> ! Exists: /tmp/Rtmp5XisFS/test_env/01_data/1a_survey_data/processed
-#> ! Exists: /tmp/Rtmp5XisFS/test_env/01_data/1a_survey_data/raw
-#> ! Exists: /tmp/Rtmp5XisFS/test_env/01_data/1b_rasters/urban_extent
-#> ! Exists: /tmp/Rtmp5XisFS/test_env/01_data/1b_rasters/pop_raster
-#> ! Exists: /tmp/Rtmp5XisFS/test_env/01_data/1c_shapefiles
-#> ! Exists: /tmp/Rtmp5XisFS/test_env/02_scripts
-#> ! Exists: /tmp/Rtmp5XisFS/test_env/03_outputs/3a_model_outputs
-#> ! Exists: /tmp/Rtmp5XisFS/test_env/03_outputs/3b_visualizations
-#> ! Exists: /tmp/Rtmp5XisFS/test_env/03_outputs/3c_table_outputs
-#> ! Exists: /tmp/Rtmp5XisFS/test_env/03_outputs/3d_compiled_results
+#> ! Exists: /tmp/RtmpeF8RAC/test_env/01_data/1a_survey_data/processed
+#> ! Exists: /tmp/RtmpeF8RAC/test_env/01_data/1a_survey_data/raw
+#> ! Exists: /tmp/RtmpeF8RAC/test_env/01_data/1b_rasters/urban_extent
+#> ! Exists: /tmp/RtmpeF8RAC/test_env/01_data/1b_rasters/pop_raster
+#> ! Exists: /tmp/RtmpeF8RAC/test_env/01_data/1c_shapefiles
+#> ! Exists: /tmp/RtmpeF8RAC/test_env/02_scripts
+#> ! Exists: /tmp/RtmpeF8RAC/test_env/03_outputs/3a_model_outputs
+#> ! Exists: /tmp/RtmpeF8RAC/test_env/03_outputs/3b_visualizations
+#> ! Exists: /tmp/RtmpeF8RAC/test_env/03_outputs/3c_table_outputs
+#> ! Exists: /tmp/RtmpeF8RAC/test_env/03_outputs/3d_compiled_results
 #> ✔ Folder structure created successfully.
 #> ℹ R script created but could not open automatically: RStudio not available.
-#> ✔ C++ script '/tmp/Rtmp5XisFS/test_env/02_scripts/model.cpp' successfully created.
+#> ✔ C++ script '/tmp/RtmpeF8RAC/test_env/02_scripts/model.cpp' successfully created.
 # }
 ```

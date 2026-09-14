@@ -21,5 +21,5 @@ if it cannot be determined.
 
 ``` r
 get_current_script_path()
-#> [1] "/home/runner/work/_temp/0fa9e6e6-a721-4e5a-beed-ba80145be734"
+#> [1] "/home/runner/work/_temp/aa81cc51-f53e-49a3-8442-580736d03f71"
 ```

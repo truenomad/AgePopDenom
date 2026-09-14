@@ -104,6 +104,6 @@ vario_plot <- generate_variogram_plot(
    fit_vario = fit_vario,
    country_code = "TZA",
    output_dir = file.path(tempdir()))
-#> ✔ Variogram saved to /tmp/Rtmp5XisFS/tza_variogram.png
+#> ✔ Variogram saved to /tmp/RtmpeF8RAC/tza_variogram.png
 # }
 ```

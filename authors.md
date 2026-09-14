@@ -16,7 +16,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/truenomad/AgePopDenom/blob/master/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/truenomad/AgePopDenom/blob/v1.2.3/DESCRIPTION)
 
 Yusuf M, Alegana V, Nnanatu C, Tatem A (2026). *AgePopDenom: Model
 Fine-Scale Age-Structured Population Data using Open-Source Data*. R
